@@ -20,7 +20,16 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);text-wrap:balance}
 .vc-body p{margin:0;color:var(--muted);line-height:1.5}
 .num{font-size:13px;letter-spacing:.04em}
 .badge{align-self:flex-start;background:var(--pick-soft);color:var(--pick);font-weight:600;font-size:14px;padding:2px 10px;border-radius:999px}
-.open{margin-top:6px;color:var(--ink);font-weight:600}
+.open{margin-top:8px;align-self:flex-start;font:inherit;font-weight:600;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:8px 18px;cursor:pointer}
+.open:hover{border-color:var(--ink)}
+.frame{cursor:pointer}
+.full{position:fixed;inset:0;z-index:10;background:var(--bg);display:flex;flex-direction:column}
+.full[hidden]{display:none}
+.full-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:var(--surface);border-bottom:2px solid var(--line)}
+.full-bar button{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+.full-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.full-bar .back{margin-inline-end:auto;font-weight:600}
+.full iframe{flex:1;width:100%;border:0;background:var(--surface)}
 .why{background:var(--surface);border-radius:16px;padding:20px 22px;border:2px solid var(--pick);line-height:1.6}
 .why h2{margin:0 0 8px;font-size:20px}
 .why ul{margin:0;padding-inline-start:1.2em}
@@ -31,13 +40,15 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);text-wrap:balance}
 <div class="grid"><article class="vc" data-v="v1">
   <div class="frame"><iframe src="v1.html" title="מחברת" loading="lazy" tabindex="-1"></iframe></div>
   <div class="vc-body"><p class="num">גרסה 1</p><h2>מחברת</h2><p>פאנל לבן עם שלבים כקו מנוקד, מתקפל לפס צר. המספרים כתובים במשבצות של מחברת חשבון.</p>
-  <a class="open" href="v1.html" target="_blank" rel="noopener">לפתוח בגודל מלא</a></div></article><article class="vc pick" data-v="v2">
+  <button class="open" data-open="v1">לפתוח בגודל מלא</button></div></article><article class="vc pick" data-v="v2">
   <div class="frame"><iframe src="v2.html" title="שולחן עבודה" loading="lazy" tabindex="-1"></iframe></div>
   <div class="vc-body"><p class="num">גרסה 2</p><span class="badge">הבחירה שלי</span><h2>שולחן עבודה</h2><p>הפאנל צבוע בצבע של הילדה ומתקפל לכפתור צף למעלה. קוביות ומקלות כמו היום, הרבה אוויר.</p>
-  <a class="open" href="v2.html" target="_blank" rel="noopener">לפתוח בגודל מלא</a></div></article><article class="vc" data-v="v3">
+  <button class="open" data-open="v2">לפתוח בגודל מלא</button></div></article><article class="vc" data-v="v3">
   <div class="frame"><iframe src="v3.html" title="מסע" loading="lazy" tabindex="-1"></iframe></div>
   <div class="vc-body"><p class="num">גרסה 3</p><h2>מסע</h2><p>השלבים הם תחנות על שביל עם סימן "את כאן". כרטיס בשני טורים: שאלה וישר מספרים מימין, מקלדת משמאל.</p>
-  <a class="open" href="v3.html" target="_blank" rel="noopener">לפתוח בגודל מלא</a></div></article></div>
+  <button class="open" data-open="v3">לפתוח בגודל מלא</button></div></article></div>
+<div class="full" id="full" hidden><div class="full-bar"><button class="back" data-close>חזרה לגלריה</button>
+<button data-open="v1">1 · מחברת</button><button data-open="v2">2 · שולחן עבודה</button><button data-open="v3">3 · מסע</button></div><iframe id="fullFrame" title="גרסה בגודל מלא"></iframe></div>
 <section class="why" id="why"><h2>למה גרסה 2, "שולחן עבודה"</h2><ul>
 <li><b>השאלה הכי בולטת.</b> התרגיל עם הקופסה הוא הדבר הכי גדול, ומסביבו אוויר. פחות דברים מתחרים על תשומת הלב של ילדה שקוראת לאט.</li>
 <li><b>הצבע שלה ממלא את הפאנל.</b> הבחירה בצבע מרגישה משמעותית, וכל ילדה רואה מיד שהיא בפרופיל שלה. בקיפול, הפאנל הופך לכפתור צף וכל הרוחב נשאר לתרגיל.</li>
@@ -47,4 +58,13 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);text-wrap:balance}
 <script>
 function fit(){ document.querySelectorAll('.frame').forEach(f=>{ const i=f.querySelector('iframe'); i.style.transform='scale('+(f.clientWidth/1280)+')'; }); }
 addEventListener('resize',fit); fit();
+const full=document.getElementById('full'), ff=document.getElementById('fullFrame');
+function openV(v){ if(ff.getAttribute('src')!==v+'.html') ff.src=v+'.html'; full.hidden=false; document.querySelectorAll('.full-bar [data-open]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.open===v)); try{ history.replaceState(null,'','#'+v); }catch(e){} }
+document.addEventListener('click', e=>{
+  const o=e.target.closest('[data-open]'); if(o){ openV(o.dataset.open); return; }
+  if(e.target.closest('[data-close]')){ full.hidden=true; try{ history.replaceState(null,'','#'); }catch(e){} return; }
+  const f=e.target.closest('.vc .frame'); if(f) openV(f.closest('.vc').dataset.v);
+});
+addEventListener('keydown', e=>{ if(e.key==='Escape' && !full.hidden){ full.hidden=true; } });
+if(/^#v[123]$/.test(location.hash)) openV(location.hash.slice(1));
 </script>

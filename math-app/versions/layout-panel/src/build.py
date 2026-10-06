@@ -157,3 +157,4 @@ addEventListener('resize',fit); fit();
 """
 open(os.path.join(OUT, 'index.html'), 'w', encoding='utf8').write(gallery)
 print('built', OUT)
+# POSTPROCESS: index.html was then edited by hand-run scripts to mark the pick and add the in-page full view (artifact pages cannot open their files in a new tab).
