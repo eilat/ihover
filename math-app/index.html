@@ -1,0 +1,498 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>משלימים לעשר</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Varela+Round&display=swap">
+<style>
+/* Layout: one centered lesson card per stage, ten-frames as the visual anchor, keypad under the question (desktop first, works with mouse and keyboard) */
+:root{
+  --bg:#EAF0F6; --surface:#FFFFFF; --ink:#1D2840; --muted:#56657E; --line:#CFD9E6;
+  --blue:#2F5BD3; --blue-soft:#DCE5FA; --sun:#F2B21E; --sun-soft:#FDF0CC;
+  --leaf:#23895A; --leaf-soft:#DDF2E7; --coral:#C9573F; --coral-soft:#FBE4DE;
+  --f-display:"Fredoka","Varela Round",system-ui,sans-serif;
+  --f-body:"Varela Round","Fredoka",system-ui,sans-serif;
+  --cell:clamp(28px,7vw,56px);
+  --r:18px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111827; --surface:#1A2336; --ink:#EAF0FA; --muted:#9DABC2; --line:#2D3A54;
+  --blue:#7096F4; --blue-soft:#24345A; --sun:#F6C445; --sun-soft:#3C3320;
+  --leaf:#4DC48B; --leaf-soft:#1E3A2E; --coral:#F08B74; --coral-soft:#42282A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111827; --surface:#1A2336; --ink:#EAF0FA; --muted:#9DABC2; --line:#2D3A54;
+  --blue:#7096F4; --blue-soft:#24345A; --sun:#F6C445; --sun-soft:#3C3320;
+  --leaf:#4DC48B; --leaf-soft:#1E3A2E; --coral:#F08B74; --coral-soft:#42282A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6;padding-inline:16px;padding-block:20px 40px}
+#app{max-width:900px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(34px,6vw,52px)}
+h2{font-size:clamp(24px,4vw,32px)}
+h3{font-size:20px}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+.card{background:var(--surface);border-radius:var(--r);padding:clamp(18px,4vw,32px);display:flex;flex-direction:column;gap:20px;box-shadow:0 1px 0 var(--line)}
+.eyebrow{font-size:14px;letter-spacing:.04em;color:var(--muted)}
+.lead{font-size:20px;color:var(--muted);max-width:34em}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.who{font-family:var(--f-display);font-size:20px}
+.path{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex-wrap:wrap}
+.path li{font-size:14px;padding:4px 12px;border-radius:999px;background:transparent;color:var(--muted);border:1.5px solid var(--line)}
+.path li.done{background:var(--leaf-soft);border-color:transparent;color:var(--leaf)}
+.path li.now{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* prompt */
+.prompt{display:flex;gap:14px;align-items:flex-start}
+.prompt p{font-family:var(--f-display);font-weight:500;font-size:clamp(22px,3.6vw,28px);line-height:1.35;flex:1;min-width:0}
+.icon-btn{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.icon-btn svg{width:24px;height:24px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ten frames */
+.frames{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;transition:opacity .4s}
+.frames.faded{opacity:.3}
+.frame{display:grid;grid-template-columns:repeat(5,var(--cell));grid-template-rows:repeat(2,var(--cell));border:3px solid var(--ink);border-radius:10px;overflow:hidden;background:var(--surface)}
+.cell{border:1px solid var(--line);display:grid;place-items:center}
+.c{width:76%;aspect-ratio:1;border-radius:50%;display:block}
+.c.blue{background:var(--blue);box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.c.sun{background:var(--sun);box-shadow:inset 0 -4px 0 rgba(0,0,0,.14)}
+.c.pop{animation:pop .35s ease-out}
+@keyframes pop{from{transform:scale(.3)}to{transform:scale(1)}}
+.frame-label{display:flex;justify-content:center;gap:16px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+.hidden-frames{text-align:center;color:var(--muted);padding:18px;border:2px dashed var(--line);border-radius:14px}
+
+.tray{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:calc(var(--cell) + 8px);padding:6px;border-radius:14px;background:var(--sun-soft)}
+.tray button{width:var(--cell);height:var(--cell);border:0;background:none;padding:0;display:grid;place-items:center}
+.tray .c{width:86%}
+.tray-static{pointer-events:none}
+
+/* equation */
+.eq{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,5vw,40px);text-align:center;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;letter-spacing:.02em}
+.eq .s{color:var(--sun);background:var(--ink);padding:0 .25em;border-radius:8px}
+.eq .b{color:var(--blue)}
+.eq .q{color:var(--muted)}
+
+/* feedback */
+.fb{border-radius:14px;padding:14px 18px;font-size:19px}
+.fb.ok{background:var(--leaf-soft);color:var(--ink)}
+.fb.ok strong{color:var(--leaf)}
+.fb.try{background:var(--coral-soft)}
+.fb.info{background:var(--blue-soft)}
+
+/* keypad */
+.answer{display:flex;justify-content:center}
+.display{min-width:120px;height:72px;border-radius:14px;border:3px solid var(--ink);display:grid;place-items:center;font-family:var(--f-display);font-size:40px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--surface)}
+.pad{display:grid;grid-template-columns:repeat(3,minmax(0,92px));gap:10px;justify-content:center;direction:ltr}
+.key{height:62px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-family:var(--f-display);font-size:26px;font-weight:600}
+.key:active{transform:translateY(1px)}
+.key:hover,.btn:hover,.tray button:hover,.feel button:hover,.icon-btn:hover{border-color:var(--blue)}
+.btn.primary:hover,.key.ok:hover{background:var(--blue);border-color:var(--blue)}
+.tray button:hover .c{transform:scale(1.08)}
+.kbd-hint{text-align:center;font-size:14px;color:var(--muted)}
+kbd{font-family:inherit;border:1.5px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:0 6px;background:var(--surface)}
+.key.ok{background:var(--ink);color:var(--surface);border-color:var(--ink);font-size:20px}
+.key.fn{font-size:22px}
+
+/* buttons */
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.row.end{justify-content:flex-start}
+.btn{min-height:54px;padding:10px 24px;border-radius:999px;border:2px solid var(--ink);background:var(--surface);font-family:var(--f-display);font-weight:500;font-size:19px}
+.btn.primary{background:var(--ink);color:var(--surface)}
+.btn.soft{border-color:var(--line)}
+.link{background:none;border:0;padding:6px 0;color:var(--blue);text-decoration:underline;text-underline-offset:4px;font-size:16px;text-align:start}
+
+.tools{display:flex;gap:10px;flex-wrap:wrap;border-top:1.5px solid var(--line);padding-top:16px}
+
+/* name input */
+.field{display:flex;flex-direction:column;gap:8px;max-width:360px}
+.field label{font-size:16px;color:var(--muted)}
+.field input{font:inherit;font-size:20px;padding:12px 16px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--ink)}
+
+/* number line */
+.alt{background:var(--blue-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.nl-wrap{overflow-x:auto;direction:ltr}
+.nl-wrap svg{display:block;width:100%;min-width:520px;height:auto}
+
+/* summary */
+.feel{display:flex;gap:10px;flex-wrap:wrap}
+.feel button{min-height:54px;padding:8px 20px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:18px}
+.feel button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.obs{display:flex;flex-direction:column;gap:6px;font-size:19px}
+
+/* parent screen */
+.parent{font-size:17px}
+.parent .card{gap:16px}
+.banner{background:var(--sun-soft);border-radius:12px;padding:10px 14px;font-size:15px}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.plist li{display:grid;grid-template-columns:5.5em 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.plist li:last-child{border-bottom:0}
+.pq{font-family:var(--f-display);font-weight:600;direction:ltr;unicode-bidi:isolate;text-align:right;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;margin-inline-end:6px}
+.chip.alone{background:var(--leaf-soft);color:var(--leaf)}
+.chip.help{background:var(--blue-soft);color:var(--blue)}
+.notes{margin:0;padding-inline-start:1.2em;display:flex;flex-direction:column;gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.grid2 > *{min-width:0}
+.quote{font-family:var(--f-display);font-size:22px;font-weight:500}
+.muted{color:var(--muted)}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<main id="app" dir="rtl" lang="he"></main>
+
+<script>
+const app = document.getElementById('app');
+const STAGES = ['פתיחה','גילוי','ביחד','לבד','סיכום'];
+const GUIDED = [[9,4],[7,6]];
+const SPEAKER = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+
+let S;
+function fresh(){
+  return {screen:'start', name:'', input:'', fb:null, say:'', idkOpen:false, idkLog:[], feeling:null, demo:false,
+    ex:{placed:0, last:-1}, g:{i:0, step:0, wrong:0, done:false}, s:null, log:[]};
+}
+S = fresh();
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function speak(t){ try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang='he-IL'; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+
+/* ---------- building blocks ---------- */
+function frames(a, added, {faded=false, popIndex=-1}={}){
+  let f1='', f2='';
+  for(let i=0;i<10;i++){
+    let cls = i<a ? 'c blue' : (i<a+added ? 'c sun' : '');
+    if(cls && i===popIndex) cls+=' pop';
+    f1 += `<span class="cell">${cls?`<span class="${cls}"></span>`:''}</span>`;
+  }
+  const over = Math.max(0, a+added-10);
+  for(let i=0;i<10;i++){
+    let cls = i<over ? 'c sun' : '';
+    if(cls && 10+i===popIndex) cls+=' pop';
+    f2 += `<span class="cell">${cls?`<span class="${cls}"></span>`:''}</span>`;
+  }
+  return `<div class="frames ${faded?'faded':''}" role="img" aria-label="שתי קופסאות של 10. ${a} כחולים ו-${added} צהובים בפנים"><div class="frame">${f1}</div><div class="frame">${f2}</div></div>`;
+}
+function tray(n, interactive=false){
+  let h='';
+  for(let i=0;i<n;i++) h += interactive
+    ? `<button data-act="place" aria-label="להכניס כדור צהוב"><span class="c sun"></span></button>`
+    : `<span style="width:var(--cell);height:var(--cell);display:grid;place-items:center"><span class="c sun" style="width:86%"></span></span>`;
+  return `<div class="tray ${interactive?'':'tray-static'}">${h}</div>`;
+}
+function prompt(html){
+  S.say = html.replace(/<[^>]+>/g,'');
+  return `<div class="prompt"><p>${html}</p><button class="icon-btn" data-act="say" aria-label="להקריא את השאלה">${SPEAKER}</button></div>`;
+}
+function feedback(){
+  if(!S.fb) return '';
+  return `<div class="fb ${S.fb.tone}" role="status">${S.fb.text}</div>`;
+}
+function keypad(){
+  const d=[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" data-act="key" data-v="${n}">${n}</button>`).join('');
+  return `<div class="answer"><output class="display" aria-live="polite">${S.input||'&nbsp;'}</output></div>
+  <div class="pad">${d}<button class="key fn" data-act="del" aria-label="מחיקה">⌫</button><button class="key" data-act="key" data-v="0">0</button><button class="key ok" data-act="check">בדיקה</button></div>
+  <p class="kbd-hint">אפשר גם להקליד במקלדת וללחוץ <kbd>Enter</kbd></p>`;
+}
+function numberLine(a,b){
+  const x = n => 24 + n*29, need = 10-a, sum = a+b, y=86;
+  let t='';
+  for(let n=0;n<=20;n++){
+    const big = n%5===0 || n===a || n===sum;
+    t += `<line x1="${x(n)}" y1="${y-(big?9:5)}" x2="${x(n)}" y2="${y+(big?9:5)}" stroke="var(--ink)" stroke-width="${n===10?3:1.5}"/>`;
+    if(big) t += `<text x="${x(n)}" y="${y+30}" text-anchor="middle" font-size="16" fill="${n===10?'var(--ink)':'var(--muted)'}" font-weight="${n===10||n===a||n===sum?700:400}">${n}</text>`;
+  }
+  const arc=(p,q,col,lab)=>{const m=(x(p)+x(q))/2, h=Math.min(60,16+(q-p)*7);
+    return `<path d="M${x(p)} ${y-4} Q${m} ${y-4-h*2} ${x(q)} ${y-4}" fill="none" stroke="${col}" stroke-width="3"/><text x="${m}" y="${y-8-h}" text-anchor="middle" font-size="17" font-weight="700" fill="${col}">${lab}</text>`;};
+  return `<div class="nl-wrap"><svg viewBox="0 0 628 128" role="img" aria-label="ישר המספרים: מ-${a} קופצים ${need} עד 10, ומשם עוד ${b-need} עד ${sum}">
+    <line x1="${x(0)}" y1="${y}" x2="${x(20)}" y2="${y}" stroke="var(--ink)" stroke-width="2"/>${t}
+    ${arc(a,10,'var(--blue)','+'+need)}${arc(10,sum,'var(--sun)','+'+(b-need))}
+    <circle cx="${x(a)}" cy="${y}" r="6" fill="var(--blue)"/><circle cx="${x(sum)}" cy="${y}" r="6" fill="var(--sun)"/></svg></div>`;
+}
+function altPanel(a,b){
+  if(!S.idkOpen) return '';
+  const need=10-a, rest=b-need;
+  const text = `בואי נראה את זה אחרת, על ישר המספרים. מתחילות ב-${a}. קופצות ${need} ומגיעות בדיוק ל-10. נשארו עוד ${rest} מתוך ה-${b}, אז קופצות עוד ${rest} ומגיעות ל-${a+b}.`;
+  return `<div class="alt"><div class="prompt"><p style="font-size:20px">${text}</p><button class="icon-btn" data-act="sayText" data-v="${esc(text)}" aria-label="להקריא">${SPEAKER}</button></div>${numberLine(a,b)}</div>`;
+}
+function tools(a,b,{hint=false}={}){
+  return `<div class="tools">
+    <button class="btn soft" data-act="idk" data-v="${a}+${b}" aria-expanded="${S.idkOpen}">${S.idkOpen?'הסתרת ההסבר':'לא הבנתי'}</button>
+    ${hint?`<button class="btn soft" data-act="hint" ${S.s.cur.hints>=3?'disabled':''}>רמז${S.s.cur.hints?` (${S.s.cur.hints}/3)`:''}</button>`:''}
+  </div>`;
+}
+function shell(stage, body){
+  return `<header class="top"><div class="who">${S.name?esc(S.name):'&nbsp;'}</div>
+  <ol class="path" aria-label="שלבי השיעור">${STAGES.map((s,i)=>`<li class="${i<stage?'done':i===stage?'now':''}" ${i===stage?'aria-current="step"':''}>${s}</li>`).join('')}</ol></header>
+  <section class="card">${body}</section>`;
+}
+
+/* ---------- screens ---------- */
+function vStart(){
+  return `<section class="card">
+    <p class="eyebrow">שכבה 3 · מיומנות 8 · שיעור 8.2</p>
+    <h1>משלימים לעשר</h1>
+    <p class="lead">איך מחברים כשעוברים את ה-10? בשיעור הזה נגלה דרך שהופכת את זה לקל.</p>
+    ${frames(8,5)}
+    <div class="field"><label for="name">מי לומדת היום?</label><input id="name" autocomplete="off" placeholder="השם שלך" value="${esc(S.name)}"></div>
+    <div class="row"><button class="btn primary" data-act="begin">יוצאות לדרך</button></div>
+    <button class="link" data-act="demoParent">לראות את מסך ההורה עם נתוני דוגמה</button>
+  </section>`;
+}
+function vIntro(){
+  return shell(0, `
+    ${prompt('יש לך קופסה עם 10 מקומות, ו-8 כדורים כחולים כבר בפנים. חברה נותנת לך עוד 5 כדורים צהובים. איפה נשים אותם?')}
+    ${frames(8,0)}
+    ${tray(5)}
+    <div class="row"><button class="btn primary" data-act="toExplore">בואי ננסה</button></div>`);
+}
+function vExplore(){
+  const p = S.ex.placed;
+  let msg;
+  if(p===0) msg = 'געי בכדור צהוב כדי להכניס אותו לקופסה.';
+  else if(p===1) msg = 'יופי. עוד אחד?';
+  else if(p===2) msg = 'הקופסה הראשונה מלאה! 2 כדורים השלימו אותה ל-10. לאן ילכו השאר?';
+  else if(p<5) msg = 'הם מתחילים קופסה חדשה.';
+  else msg = 'כל הכדורים בפנים. כמה יש בסך הכול? קופסה מלאה, שזה 10, ועוד 3. ביחד 13.';
+  const eq = p===5
+    ? `<div class="eq"><span class="b">8</span> + 5 = <span class="b">8</span> + <span class="s">2</span> + <span class="s">3</span> = 10 + 3 = 13</div>`
+    : `<div class="eq"><span class="b">8</span> + 5 = <span class="q">?</span></div>`;
+  return shell(1, `
+    ${prompt(msg)}
+    ${frames(8,p,{popIndex: S.ex.last})}
+    ${p<5 ? tray(5-p,true) : ''}
+    ${eq}
+    ${p===5 ? `<div class="fb info">הסוד: כשעוברים את ה-10, קודם ממלאים את העשר, ואז מוסיפים את מה שנשאר.</div>
+      <div class="row"><button class="btn primary" data-act="toGuided">הבנתי, ממשיכות</button></div>`:''}
+    ${p===5 ? altPanel(8,5) : ''}
+    ${p===5 ? tools(8,5) : ''}`);
+}
+function vGuided(){
+  const [a,b] = GUIDED[S.g.i], need=10-a, rest=b-need, st=S.g.step;
+  const qs = [
+    `כמה כדורים חסרים ל-${a} כדי להגיע ל-10?`,
+    `הכנסנו ${need}, והקופסה מלאה. כמה נשארו מתוך ה-${b}?`,
+    `אז כמה זה ${a} + ${b}?`
+  ];
+  const shown = S.g.done ? b : [0,need,b][st];
+  const eqs = [
+    `<span class="b">${a}</span> + ${b} = <span class="q">?</span>`,
+    `<span class="b">${a}</span> + ${b} = <span class="b">${a}</span> + <span class="s">${need}</span> + <span class="q">?</span>`,
+    `<span class="b">${a}</span> + ${b} = <span class="b">${a}</span> + <span class="s">${need}</span> + <span class="s">${rest}</span> = 10 + ${rest} = <span class="q">?</span>`,
+    `<span class="b">${a}</span> + ${b} = 10 + ${rest} = ${a+b}`
+  ];
+  const last = S.g.i === GUIDED.length-1;
+  return shell(2, `
+    <p class="eyebrow">פותרות ביחד · תרגיל ${S.g.i+1} מתוך ${GUIDED.length}</p>
+    ${S.g.done ? prompt(`${a} ועוד ${b} זה ${a+b}. ראית איך ה-${b} התפצל ל-${need} ול-${rest}?`) : prompt(qs[st])}
+    ${frames(a,shown)}
+    ${!S.g.done && st<2 ? tray(b-shown) : ''}
+    <div class="eq">${eqs[S.g.done?3:st]}</div>
+    ${feedback()}
+    ${S.g.done ? `<div class="row"><button class="btn primary" data-act="nextGuided">${last?'עכשיו לבד':'לתרגיל הבא'}</button></div>` : keypad()}
+    ${altPanel(a,b)}
+    ${tools(a,b)}`);
+}
+function vSolo(){
+  const s=S.s, p=s.cur, {a,b}=p, need=10-a, rest=b-need;
+  const lvl = Math.max(s.level, p.hints>=2?2:0);
+  let pic;
+  if(p.hints>=2) pic = frames(a,b);
+  else if(lvl===0) pic = `<div class="hidden-frames">הקופסאות בראש שלך עכשיו. אפשר לדמיין אותן.</div>`;
+  else pic = frames(a,0,{faded:lvl===1}) + (lvl===2?tray(b):'');
+  const hintText = ['',
+    `רמז: כמה חסר ל-${a} כדי להגיע ל-10? את זה לוקחים קודם מתוך ה-${b}.`,
+    `רמז: ${a} + ${need} = 10. מתוך ה-${b} נשארו עוד ${rest}.`,
+    `בואי נפתור יחד: ${a} + ${b} = 10 + ${rest}. כמה זה?`][p.hints];
+  return shell(3, `
+    <p class="eyebrow">לבד · תרגיל ${s.i+1} מתוך ${s.list.length}</p>
+    ${prompt(`כמה זה ${a} + ${b}?`)}
+    ${pic}
+    <div class="eq">${s.done?`<span class="b">${a}</span> + ${b} = 10 + ${rest} = ${a+b}`:`<span class="b">${a}</span> + ${b} = <span class="q">?</span>`}</div>
+    ${p.hints && !s.done ? `<div class="fb info">${hintText}</div>`:''}
+    ${feedback()}
+    ${s.done ? `<div class="row"><button class="btn primary" data-act="nextSolo">${s.i===s.list.length-1?'לסיכום':'לתרגיל הבא'}</button></div>` : keypad()}
+    ${altPanel(a,b)}
+    ${s.done ? '' : tools(a,b,{hint:true})}`);
+}
+function vSummary(){
+  const L=S.log, alone=L.filter(p=>p.alone).length;
+  const firstAlone = L.find(p=>p.alone);
+  const obs = [`פתרת ${L.length} תרגילים של מעבר עשרת.`];
+  if(alone) obs.push(`${alone} מהם פתרת לבד לגמרי${firstAlone?`, כמו ${firstAlone.a} + ${firstAlone.b}`:''}.`);
+  if(L.some(p=>p.hints)) obs.push('כשהיה צריך, השתמשת ברמז. זה בדיוק מה שרמזים בשבילם.');
+  const F=[['easy','היה לי קל'],['ok','היה בסדר'],['hard','היה לי קשה']];
+  return shell(4, `
+    <h2>סיימנו את השיעור!</h2>
+    <div class="fb info" style="font-size:21px">כשעוברים את ה-10, קודם ממלאים את העשר, ואז מוסיפים את מה שנשאר.</div>
+    <div class="obs">${obs.map(o=>`<p>${o}</p>`).join('')}</div>
+    <div class="eq" style="font-size:clamp(22px,4vw,32px)"><span class="b">8</span> + 5 = 10 + 3 = 13</div>
+    <h3>איך היה לך?</h3>
+    <div class="feel">${F.map(([k,l])=>`<button data-act="feel" data-v="${k}" aria-pressed="${S.feeling===k}">${l}</button>`).join('')}</div>
+    <div class="tools"><button class="btn primary" data-act="toParent">מסך הורה</button><button class="btn soft" data-act="restart">שיעור מההתחלה</button></div>`);
+}
+
+const ERR = {
+  product:{kid:(a,b)=>`נראה שכפלת. כאן אנחנו מחברים, כלומר מוסיפים ${b} ל-${a}.`, parent:'כפלה במקום לחבר.', tip:'לפני שמתחילים, לשאול: "מה הסימן אומר לנו לעשות?"'},
+  whole:{kid:(a,b)=>`הוספת את כל ה-${b} אחרי העשר. אבל חלק מה-${b} הלך קודם למלא את העשר. כמה מהם?`, parent:'הוסיפה את כל המספר השני אחרי ה-10 (למשל 7+5=15). הפירוק של המספר השני לשני חלקים עוד לא יושב.', tip:'לתרגל רק את הפירוק, בלי תרגיל: "את 5 אפשר לחלק ל-3 ועוד 2". עם אצבעות של שתי ידיים זה עובד טוב.'},
+  forgot:{kid:(a,b)=>`זה בדיוק מה שנשאר אחרי שמילאנו את העשר. עכשיו צריך להוסיף לזה את ה-10.`, parent:'כתבה רק את מה שנשאר אחרי העשר ושכחה להוסיף את ה-10.', tip:'לבקש ממנה להגיד את התרגיל בקול: "עשר ועוד שלוש". המילה "עשר" עוזרת לא לשכוח אותו.'},
+  off:{kid:()=>`קרוב מאוד! בדקי שוב כמה נשאר אחרי שמילאת את העשר.`, parent:'טעות של אחד, כנראה מספירה על האצבעות.', tip:'לעודד בדיקה עם הקופסה במקום ספירה מחדש מ-1.'},
+  under:{kid:(a,b)=>`התשובה צריכה להיות יותר מ-10, כי ${a} ועוד ${b} עוברים את העשר.`, parent:'תשובה קטנה מ-10, כלומר עוד לא ברור לה שהתרגיל עובר את העשר.', tip:'לפני הפתרון, לשאול: "התשובה תהיה יותר או פחות מ-10?"'},
+  other:{kid:(a)=>`עוד לא. נסי להתחיל מהשאלה: כמה חסר ל-${a} כדי להגיע ל-10?`, parent:'טעות שלא מתאימה לדפוס מוכר.', tip:'לבקש ממנה להסביר בקול איך חשבה. ההסבר שלה יגלה איפה היא נתקעה.'}
+};
+function classify(x,a,b){
+  if(x===a*b) return 'product';
+  if(x===10+b) return 'whole';
+  if(x===a+b-10) return 'forgot';
+  if(Math.abs(x-(a+b))===1) return 'off';
+  if(x<=10) return 'under';
+  return 'other';
+}
+
+function vParent(){
+  const L=S.log, name=S.name||'הבת שלך';
+  const byA={}; L.forEach(p=>(byA[p.a] ||= []).push(p));
+  const easyA = Object.keys(byA).filter(a=>byA[a].every(p=>p.alone)).map(Number).sort((x,y)=>y-x);
+  const hardA = Object.keys(byA).filter(a=>byA[a].some(p=>!p.alone)).map(Number).sort((x,y)=>x-y);
+  const types={}; L.forEach(p=>p.errors.forEach(t=>types[t]=(types[t]||0)+1));
+  const typeKeys = Object.keys(types).sort((x,y)=>types[y]-types[x]);
+  const allAlone = L.length && L.every(p=>p.alone);
+
+  const rows = L.map(p=>{
+    let d = p.alone ? '<span class="chip alone">לבד</span>' : `<span class="chip help">${p.hints?`${p.hints===1?'רמז אחד':p.hints+' רמזים'}`:'אחרי ניסיון נוסף'}</span>`;
+    if(p.errors.length) d += [...new Set(p.errors)].map(t=>ERR[t].parent).join(' ');
+    else if(p.alone) d += 'פתרה בניסיון הראשון.';
+    return `<li><span class="pq">${p.a} + ${p.b}</span><span>${d}</span></li>`;
+  }).join('');
+
+  const notice=[];
+  if(easyA.length) notice.push(`השלמה לעשר מ-${easyA.join(' ומ-')} כבר קלה לה.`);
+  if(hardA.length) notice.push(`מ-${hardA.join(' ומ-')} היא עוד צריכה עזרה. ככל שחסר יותר עד 10, הפירוק קשה יותר.`);
+  typeKeys.forEach(t=>notice.push(ERR[t].parent + (types[t]>1?` (${types[t]} פעמים)`:'')));
+  if(S.idkLog.length) notice.push(`ביקשה הסבר נוסף ב-${[...new Set(S.idkLog)].join(', ')}, וקיבלה הסבר על ישר המספרים.`);
+
+  const tips = typeKeys.map(t=>ERR[t].tip);
+  if(hardA.length) tips.push(`ללכת בסדר הזה: קודם 9 (חסר רק 1), אחר כך 8, ורק אז ${hardA.filter(a=>a<8).join(' ו-')||'7 ו-6'}.`);
+  if(S.idkLog.length) tips.push('ישר המספרים עזר כהסבר חלופי. אפשר לצייר אחד על נייר ולקפוץ עליו עם אצבע.');
+  if(!tips.length) tips.push('אין צורך בחיזוק מיוחד. אפשר לשאול אותה איך היא חושבת, כדי לשמוע אותה מסבירה במילים שלה.');
+
+  const h = hardA[0] || 7, bb = 10-h+3;
+  const conv = (L.find(p=>p.alone && p.a<=7) || L.find(p=>p.alone) || L[L.length-1]);
+  const feelTxt = {easy:'סיפרה שהיה לה קל.', ok:'סיפרה שהיה בסדר.', hard:'סיפרה שהיה לה קשה. כדאי לחזור על השיעור לפני שממשיכים, ולהגיד לה שבדיוק ככה לומדים משהו חדש.'}[S.feeling] || 'לא בחרה איך הרגישה.';
+  const next = allAlone ? 'מוכנה לשיעור 8.3, מספרים כפולים וקרובים (6+6, 6+7).' : `כדאי לחזור על 8.2 עם ${hardA.join(' ו-')||'7 ו-6'} לפני שממשיכים ל-8.3.`;
+
+  return `<div class="parent">
+  <header class="top"><div class="who">מסך הורה · ${esc(name)}</div><button class="btn soft" data-act="${S.demo?'restart':'backSummary'}">${S.demo?'חזרה להתחלה':'חזרה לסיכום'}</button></header>
+  <section class="card">
+    ${S.demo?'<p class="banner">אלה נתוני דוגמה, כדי לראות איך המסך נראה. אחרי שיעור אמיתי יופיע כאן מה שקרה בו.</p>':''}
+    <p class="eyebrow">שיעור 8.2 · משלימים לעשר</p>
+    <h2>${allAlone?'השיעור עבר בקלות':'מה קרה בשיעור'}</h2>
+    <p class="muted">בלי ציונים, רק מה שראינו. ${esc(name)} ${feelTxt}</p>
+    <ul class="plist">${rows}</ul>
+  </section>
+  <div class="grid2">
+    <section class="card"><h3>על מה כדאי לשים לב</h3><ul class="notes">${notice.map(n=>`<li>${n}</li>`).join('')||'<li>אין דפוס שחוזר על עצמו.</li>'}</ul></section>
+    <section class="card"><h3>איך כדאי ללמד</h3><ul class="notes">${tips.map(n=>`<li>${n}</li>`).join('')}</ul></section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h3>פעילות מחוץ למסך</h3><p>קחי קרטון ביצים של 10 ושימי בו ${h} פקקים. תני לה עוד ${bb} פקקים ושאלי: כמה ייכנסו לקרטון, וכמה יישארו בחוץ? אחר כך: כמה יש בסך הכול?</p></section>
+    <section class="card"><h3>שאלה לשיחה</h3><p class="quote">"איך פתרת את ${conv.a} + ${conv.b}?"</p><p class="muted">לתת לה להסביר עד הסוף, גם אם הדרך שלה שונה מהשיעור.</p></section>
+  </div>
+  <section class="card"><h3>הצעד הבא</h3><p>${next}</p></section>
+  </div>`;
+}
+
+/* ---------- actions ---------- */
+function makeSolo(){
+  const used=['9+4','8+5','7+6'], pool=[];
+  for(let a=6;a<=9;a++) for(let b=3;b<=9;b++) if(a+b>10 && !used.includes(a+'+'+b)) pool.push([a,b]);
+  const pick=(a,not)=>{const o=pool.filter(p=>p[0]===a && p.join()!==not); return o[Math.floor(Math.random()*o.length)];};
+  const l=[pick(9),pick(8),pick(7),pick(6)]; l.push(pick(7,l[2].join()));
+  return l;
+}
+function startSoloProblem(){ const [a,b]=S.s.list[S.s.i]; S.s.cur={a,b,errors:[],hints:0,alone:false}; S.s.done=false; }
+
+const A = {
+  begin(){ S.name=(document.getElementById('name')?.value||'').trim(); S.screen='intro'; },
+  demoParent(){
+    S=fresh(); S.demo=true; S.name='נועה (דוגמה)'; S.screen='parent'; S.feeling='ok'; S.idkLog=['7+6'];
+    S.log=[{a:9,b:5,errors:[],hints:0,alone:true},{a:8,b:4,errors:[],hints:0,alone:true},{a:7,b:5,errors:['whole'],hints:1,alone:false},{a:6,b:7,errors:['whole','off'],hints:2,alone:false},{a:7,b:8,errors:[],hints:0,alone:true}];
+  },
+  toExplore(){ S.screen='explore'; },
+  place(){ if(S.ex.placed<5){ S.ex.last = 8+S.ex.placed; S.ex.placed++; } },
+  toGuided(){ S.screen='guided'; S.idkOpen=false; S.fb=null; },
+  nextGuided(){
+    S.fb=null; S.idkOpen=false;
+    if(S.g.i<GUIDED.length-1){ S.g={i:S.g.i+1,step:0,wrong:0,done:false}; }
+    else { S.screen='solo'; S.s={i:0,list:makeSolo(),level:1,errRow:0}; startSoloProblem(); S.fb={tone:'info',text:'עכשיו את לבד. הקופסאות יתחילו להיעלם לאט לאט, ותמיד אפשר לבקש רמז.'}; }
+  },
+  nextSolo(){
+    const s=S.s; S.fb=null; S.idkOpen=false;
+    if(s.cur.alone && s.level>0) s.level--;
+    if(s.i<s.list.length-1){ s.i++; startSoloProblem(); } else { S.screen='summary'; }
+  },
+  hint(){ const p=S.s.cur; if(p.hints<3){ p.hints++; S.fb=null; } },
+  idk(v){ S.idkOpen=!S.idkOpen; if(S.idkOpen) S.idkLog.push(v); },
+  key(v){ if(S.input.length<2) S.input+=v; },
+  del(){ S.input=S.input.slice(0,-1); },
+  check(){ if(!S.input) return; const x=+S.input; S.input=''; S.screen==='guided'?guidedCheck(x):soloCheck(x); },
+  say(){ speak(S.say); return false; },
+  sayText(v){ speak(v); return false; },
+  feel(v){ S.feeling=v; },
+  toParent(){ S.screen='parent'; window.scrollTo(0,0); },
+  backSummary(){ S.screen='summary'; },
+  restart(){ S=fresh(); }
+};
+function guidedCheck(x){
+  const [a,b]=GUIDED[S.g.i], need=10-a, rest=b-need, st=S.g.step, ans=[need,rest,a+b][st];
+  const okMsg=[`<strong>נכון.</strong> ${a} ועוד ${need} זה בדיוק 10.`,`<strong>נכון.</strong> ${b} זה ${need} ועוד ${rest}.`,`<strong>נכון!</strong> ${a} + ${b} = 10 + ${rest} = ${a+b}.`];
+  const tryMsg=[`ספרי את המקומות הריקים בקופסה הראשונה.`,`מתוך ${b} כדורים, ${need} כבר נכנסו. כמה עוד מחכים בחוץ?`,`יש קופסה מלאה, שזה 10, ועוד ${rest} בקופסה השנייה.`];
+  if(x===ans || S.g.wrong>=1){
+    S.fb = x===ans ? {tone:'ok',text:okMsg[st]} : {tone:'info',text:`התשובה היא ${ans}. ${tryMsg[st]}`};
+    S.g.wrong=0;
+    if(st<2) S.g.step++; else S.g.done=true;
+  } else { S.g.wrong++; S.fb={tone:'try',text:tryMsg[st]}; }
+}
+function soloCheck(x){
+  const s=S.s, p=s.cur, {a,b}=p, rest=b-(10-a);
+  if(x===a+b){
+    p.alone = !p.hints && !p.errors.length;
+    s.done=true; s.errRow=0; S.log.push(p);
+    S.fb={tone:'ok',text:`<strong>נכון!</strong> ${a} + ${b} = 10 + ${rest} = ${a+b}.${p.alone?' פתרת את זה לבד.':''}`};
+  } else {
+    const t=classify(x,a,b); p.errors.push(t); s.errRow++;
+    let txt=ERR[t].kid(a,b);
+    if(s.errRow>=2 && s.level<2){ s.level=2; txt+=' החזרתי את הקופסאות, כדי שיהיה קל לראות.'; }
+    if(p.errors.length>=4 && p.hints<3){ p.hints=3; }
+    S.fb={tone:'try',text:txt};
+  }
+}
+
+app.addEventListener('click', e=>{
+  const t=e.target.closest('[data-act]'); if(!t || t.disabled) return;
+  const r = A[t.dataset.act]?.(t.dataset.v, t);
+  if(r!==false) render();
+});
+document.addEventListener('keydown', e=>{
+  if(!['guided','solo'].includes(S.screen) || e.target.tagName==='INPUT') return;
+  if((S.screen==='guided'&&S.g.done)||(S.screen==='solo'&&S.s.done)) return;
+  if(/^[0-9]$/.test(e.key)) A.key(e.key);
+  else if(e.key==='Backspace') A.del();
+  else if(e.key==='Enter') A.check();
+  else return;
+  e.preventDefault(); render();
+});
+app.addEventListener('keydown', e=>{ if(e.target.id==='name' && e.key==='Enter'){ A.begin(); render(); } });
+
+function render(){
+  const v={start:vStart,intro:vIntro,explore:vExplore,guided:vGuided,solo:vSolo,summary:vSummary,parent:vParent}[S.screen];
+  app.innerHTML=v();
+}
+render();
+</script>
+
+</body></html>
