@@ -130,6 +130,36 @@ kbd{font-family:inherit;border:1.5px solid var(--line);border-bottom-width:3px;b
 .grid2 > *{min-width:0}
 .quote{font-family:var(--f-display);font-size:22px;font-weight:500}
 
+/* app bar above the lesson card */
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-family:var(--f-display);font-weight:600;font-size:22px}
+.kidpick{display:flex;align-items:center;gap:8px;font-size:16px;color:var(--muted)}
+.kidpick select{font:inherit;font-size:18px;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:8px 12px;min-height:48px}
+.parent-btn{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 16px 6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:16px}
+.parent-btn svg{width:26px;height:26px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.parent-btn:hover{border-color:var(--blue)}
+/* where am I in the lesson */
+.where{display:flex;flex-direction:column;gap:8px}
+.meter{height:10px;border-radius:999px;background:var(--blue-soft);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--blue);border-radius:999px;transition:width .3s}
+.count{font-size:15px;color:var(--muted)}
+.count b{color:var(--ink);font-variant-numeric:tabular-nums}
+/* parent: stats and kids */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--bg);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-display);font-size:42px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:15px;color:var(--muted)}
+.stat.good b{color:var(--leaf)} .stat.help b{color:var(--blue)}
+.kids{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.kids li{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.kids input,.addkid input{font:inherit;font-size:18px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);min-width:0;flex:1 1 160px}
+.addkid{display:flex;gap:10px;flex-wrap:wrap}
+.btn.small{min-height:44px;padding:6px 16px;font-size:16px}
+.saved{font-size:14px;color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:24px;border:2px dashed var(--line);border-radius:14px}
+.sess{display:flex;gap:8px;flex-wrap:wrap}
+
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -155,7 +185,7 @@ const GUIDED = [[421,356],[264,182]];          // stage 3: no carry, then carry 
 
 let S;
 function fresh(){
-  return {screen:'start', name:'', input:'', fb:null, say:'', feeling:null, demo:false,
+  return {screen:'start', input:'', fb:null, say:'', feeling:null, startedAt:Date.now(),
     check:{i:0, res:[]}, tenHelp:false, skipTens:false,
     tens:{i:0, step:0, wrong:0, done:false},
     ex:{step:0},
@@ -165,7 +195,17 @@ function fresh(){
 S = fresh();
 
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+/* read aloud: prefer an Enhanced/Premium Hebrew voice (e.g. Carmit Enhanced on a Mac) over the basic one */
+let VOICE=null;
+function pickVoice(){
+  try{
+    const he=speechSynthesis.getVoices().filter(v=>/^he|^iw/i.test(v.lang));
+    const score=v=>(/premium/i.test(v.name)?4:0)+(/enhanced|משופר/i.test(v.name)?3:0)+(/natural|online/i.test(v.name)?2:0)+(v.localService?0:1);
+    VOICE=he.sort((a,b)=>score(b)-score(a))[0]||null;
+  }catch(e){}
+}
+try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged', pickVoice); }catch(e){}
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
 const digits = n => ({h:Math.floor(n/100), t:Math.floor(n/10)%10, o:n%10});
 
 /* ---------- building blocks ---------- */
@@ -210,12 +250,25 @@ function padOnly(){
   return `<div class="pad">${d}<button class="key" data-act="del" aria-label="מחיקה">⌫</button><button class="key" data-act="key" data-v="0">0</button><button class="key ok" data-act="check">בדיקה</button></div>
   <p class="kbd-hint">כותבות בקופסה המסומנת. אפשר ללחוץ על קופסה אחרת, להקליד במקלדת וללחוץ <kbd>Enter</kbd></p>`;
 }
+/* how many exercises in this lesson, and how many are done */
+function progress(){
+  const total = CHECK.length + (S.skipTens?0:TENS.length) + GUIDED.length + 5;
+  const tensDone = S.screen==='start'||S.screen==='check' ? 0 : S.skipTens ? 0 : (S.screen==='tens' ? S.tens.i+(S.tens.done?1:0) : TENS.length);
+  const gDone = S.screen==='guided' ? S.g.i+(S.g.W.done?1:0) : ['solo','summary'].includes(S.screen) ? GUIDED.length : 0;
+  const done = S.check.res.length + tensDone + gDone + S.log.length;
+  return {done, total};
+}
 function shell(stage, body){
-  return `<header class="top"><div class="who">${S.name?esc(S.name):'&nbsp;'}</div>
-  <ol class="path" aria-label="שלבי השיעור">${STAGES.map((s,i)=>{
-    const cls = (i===1&&S.skipTens&&stage>1)?'skip':(i<stage?'done':i===stage?'now':'');
-    return `<li class="${cls}" ${i===stage?'aria-current="step"':''}>${s}</li>`;}).join('')}</ol></header>
-  <section class="card">${body}</section>`;
+  const {done,total}=progress();
+  return `<section class="card">
+  <div class="where">
+    <ol class="path" aria-label="שלבי השיעור">${STAGES.map((s,i)=>{
+      const cls = (i===1&&S.skipTens&&stage>1)?'skip':(i<stage?'done':i===stage?'now':'');
+      return `<li class="${cls}" ${i===stage?'aria-current="step"':''}>${s}</li>`;}).join('')}</ol>
+    <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${Math.round(done/total*100)}%"></span></div>
+    <p class="count">פתרת <b>${done}</b> מתוך <b>${total}</b> תרגילים · נשארו <b>${total-done}</b></p>
+  </div>
+  ${body}</section>`;
 }
 const tenHint = (x,y) => { const n=10-x; return n>0&&n<y ? `${x} + ${n} = 10, ועוד ${y-n} זה ${x+y}.` : ''; };
 
@@ -282,14 +335,21 @@ function checkField(W, x, {revealAfter=2, onWrong}={}){
 
 /* ---------- screens ---------- */
 function vStart(){
+  const kid=currentKid();
+  if(!UI.kids.length) return `<section class="card">
+    <h1>חיבור בראש</h1>
+    <p class="lead">לפני שמתחילים, ההורה מוסיפה את שמות הילדות שלומדות. כל אחת תקבל התקדמות משלה.</p>
+    <div class="row"><button class="btn primary" data-act="toParent">להוספת ילדות</button></div>
+  </section>`;
+  const inProgress = S.screen==='start' && S.resume;
   return `<section class="card">
     <p class="eyebrow">חיבור בראש · מספרים גדולים בעזרת מספרים קטנים</p>
-    <h1>חיבור בראש</h1>
+    <h1>שלום ${esc(kid.name)}!</h1>
     <p class="lead">איך מחברים 573 + 340 בלי דף ובלי עט? מפרקים את התרגיל הגדול להרבה תרגילים קטנים.</p>
     <div class="eq">573 + 340</div>
-    <div class="field"><label for="name">מי לומדת היום?</label><input id="name" autocomplete="off" placeholder="השם שלך" value="${esc(S.name)}"></div>
-    <div class="row"><button class="btn primary" data-act="begin">יוצאות לדרך</button></div>
-    <button class="btn soft" data-act="demoParent" style="align-self:flex-start">לראות את מסך ההורה עם נתוני דוגמה</button>
+    ${inProgress ? `<p class="fb info">עצרת באמצע השיעור. ההתקדמות שלך שמורה.</p>
+      <div class="row"><button class="btn primary" data-act="resume">ממשיכות מאיפה שעצרתי</button><button class="btn soft" data-act="restart">שיעור מההתחלה</button></div>`
+      : `<div class="row"><button class="btn primary" data-act="begin">יוצאות לדרך</button></div>`}
   </section>`;
 }
 function vCheck(){
@@ -380,7 +440,7 @@ function vSummary(){
     <div class="eq" style="font-size:clamp(22px,4vw,32px)">573 + 340 = 800 + 110 + 3 = 913</div>
     <h3>איך היה לך?</h3>
     <div class="feel">${F.map(([k,l])=>`<button data-act="feel" data-v="${k}" aria-pressed="${S.feeling===k}">${l}</button>`).join('')}</div>
-    <div class="tools"><button class="btn primary" data-act="toParent">מסך הורה</button><button class="btn soft" data-act="restart">שיעור מההתחלה</button></div>`);
+    <div class="tools"><button class="btn soft" data-act="restart">שיעור מההתחלה</button></div>`);
 }
 
 /* ---------- mistakes: what the child sees, what the parent sees, how to help ---------- */
@@ -406,20 +466,36 @@ function classify(x,a,b){
   return 'other';
 }
 
-function vParent(){
-  const L=S.log, name=S.name||'הבת שלך';
+const PARENT_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3.2"/><path d="M3.5 20v-1.5A4.5 4.5 0 0 1 8 14h2a4.5 4.5 0 0 1 4.5 4.5V20"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14.2h1.8A3.7 3.7 0 0 1 21 17.9V20"/></svg>';
+function vBar(){
+  const opts = UI.kids.map(k=>`<option value="${esc(k.id)}" ${k.id===UI.kidId?'selected':''}>${esc(k.name)}</option>`).join('');
+  return `<header class="appbar">
+    <div class="brand"><span class="logo">מתמטיקידס</span>
+      ${UI.kids.length ? `<label class="kidpick">מי לומדת היום? <select id="kid" aria-label="מי לומדת היום">${opts}</select></label>` : ''}</div>
+    ${UI.view==='parent'
+      ? `<button class="parent-btn" data-act="backLesson">חזרה לשיעור</button>`
+      : `<button class="parent-btn" data-act="toParent" aria-label="מסך הורה">${PARENT_ICON}<span>הורה</span></button>`}
+  </header>`;
+}
+/* everything a kid did: finished lessons + the one in progress */
+function kidSessions(){
+  const done = (UI.history[UI.kidId]||[]);
+  const live = !S.sessId && (S.log.length || S.check.res.length) ? [{live:true, log:S.log, check:S.check.res, feeling:S.feeling, startedAt:S.startedAt}] : [];
+  return [...done, ...live];
+}
+function lessonReport(sess, name){
+  const L=sess.log||[], chk=sess.check||[];
   const types={}; L.forEach(p=>p.errors.forEach(t=>types[t]=(types[t]||0)+1));
   const keys=Object.keys(types).sort((x,y)=>types[y]-types[x]);
   const carryP=L.filter(p=>p.carry), carryAlone=carryP.filter(p=>p.alone).length;
   const plainP=L.filter(p=>!p.carry), plainAlone=plainP.filter(p=>p.alone).length;
   const allAlone=L.length && L.every(p=>p.alone);
-  const chk=S.check.res;
   const rows=L.map(p=>{
     let dd = p.alone ? '<span class="chip alone">לבד</span>' : `<span class="chip help">${p.hints?(p.hints===1?'רמז אחד':p.hints+' רמזים'):'אחרי ניסיון נוסף'}</span>`;
     dd += p.errors.length ? [...new Set(p.errors)].map(t=>ERR[t].parent).join(' ') : (p.alone?'פתרה בניסיון הראשון.':'');
     return `<li><span class="pq">${p.a} + ${p.b}</span><span>${dd}</span></li>`;}).join('');
   const notice=[];
-  if(chk.length){
+  if(chk.length===CHECK.length){
     const miss=chk.filter(r=>!r.ok).map(r=>r.skill);
     if(!miss.length) notice.push('בבדיקה בהתחלה ענתה נכון על הכול, ולכן דילגנו על שלב העשרות.');
     if(miss.includes('ten')) notice.push('בבדיקה, חיבור עד 20 דרך העשר (כמו 8 + 6) עוד לא יושב. לכן קיבלה רמזים של "השלמה לעשר" לאורך השיעור.');
@@ -433,26 +509,54 @@ function vParent(){
   if(chk.some(r=>!r.ok&&r.skill==='ten')) tips.push('לתרגל השלמה לעשר בנפרד (יש לנו את השיעור "משלימים לעשר").');
   if(!tips.length) tips.push('אין צורך בחיזוק מיוחד. אפשר לבקש ממנה להסביר לך איך היא פותרת, במילים שלה.');
   const conv = L.find(p=>p.alone&&p.carry) || L.find(p=>p.alone) || L[L.length-1] || {a:573,b:340};
-  const feelTxt={easy:'סיפרה שהיה לה קל.', ok:'סיפרה שהיה בסדר.', hard:'סיפרה שהיה לה קשה. כדאי לחזור על השיעור לפני שממשיכים, ולהגיד לה שככה בדיוק לומדים משהו חדש.'}[S.feeling]||'לא בחרה איך הרגישה.';
-  const next = allAlone ? 'מוכנה לשלב הבא: גם האחדות עוברות 10 (כמו 258 + 137), ואחר כך חיסור בראש באותה דרך.' : 'כדאי לחזור על השיעור, בעיקר על תרגילים שבהם העשרות עוברות 10, לפני שממשיכים.';
-  return `<div class="parent">
-  <header class="top"><div class="who">מסך הורה · ${esc(name)}</div><button class="btn soft" data-act="${S.demo?'restart':'backSummary'}">${S.demo?'חזרה להתחלה':'חזרה לסיכום'}</button></header>
-  <section class="card">
-    ${S.demo?'<p class="fb info" style="font-size:15px">אלה נתוני דוגמה. אחרי שיעור אמיתי יופיע כאן מה שקרה בו.</p>':''}
-    <p class="eyebrow">חיבור בראש · מקום אחרי מקום</p>
-    <h2>${allAlone?'השיעור עבר בקלות':'מה קרה בשיעור'}</h2>
-    <p class="muted">בלי ציונים, רק מה שראינו. ${esc(name)} ${feelTxt}</p>
-    <ul class="plist">${rows||'<li><span></span><span>עוד לא נפתרו תרגילים לבד.</span></li>'}</ul>
+  const feelTxt={easy:'סיפרה שהיה לה קל.', ok:'סיפרה שהיה בסדר.', hard:'סיפרה שהיה לה קשה. כדאי לחזור על השיעור לפני שממשיכים, ולהגיד לה שככה בדיוק לומדים משהו חדש.'}[sess.feeling]||'';
+  const next = sess.live ? 'השיעור עוד באמצע.' : allAlone ? 'מוכנה לשלב הבא: גם האחדות עוברות 10 (כמו 258 + 137), ואחר כך חיסור בראש באותה דרך.' : 'כדאי לחזור על השיעור, בעיקר על תרגילים שבהם העשרות עוברות 10, לפני שממשיכים.';
+  const when = new Date(sess.startedAt||Date.now()).toLocaleDateString('he-IL',{day:'numeric',month:'long'});
+  return `<section class="card">
+    <p class="eyebrow">חיבור בראש · ${when}${sess.live?' · בתהליך':''}</p>
+    <h2>${sess.live?'השיעור שעכשיו':allAlone?'השיעור עבר בקלות':'מה קרה בשיעור'}</h2>
+    <p class="muted">בלי ציונים, רק מה שראינו. ${feelTxt?esc(name)+' '+feelTxt:''}</p>
+    <ul class="plist">${rows||'<li><span></span><span>עוד לא הגיעה לתרגילים לבד.</span></li>'}</ul>
   </section>
   <div class="grid2">
-    <section class="card"><h3>על מה כדאי לשים לב</h3><ul class="notes">${notice.map(n=>`<li>${n}</li>`).join('')||'<li>אין דפוס שחוזר על עצמו.</li>'}</ul></section>
+    <section class="card"><h3>על מה כדאי לשים לב</h3><ul class="notes">${notice.map(n=>`<li>${n}</li>`).join('')||'<li>עוד אין מספיק נתונים.</li>'}</ul></section>
     <section class="card"><h3>איך כדאי ללמד</h3><ul class="notes">${tips.map(n=>`<li>${n}</li>`).join('')}</ul></section>
   </div>
   <div class="grid2">
     <section class="card"><h3>פעילות מחוץ למסך</h3><p>משחק כסף: שטרות של 100, מטבעות של 10 ושל 1 (אפשר מנייר). שימי לה 573 ועוד 340 בשתי ערמות, ובקשי לאחד אותן. כשיש 10 מטבעות של 10, מחליפות אותם בשטר של 100.</p></section>
     <section class="card"><h3>שאלה לשיחה</h3><p class="quote">"איך פתרת את <span class="ltr">${conv.a} + ${conv.b}</span>?"</p><p class="muted">לתת לה להסביר עד הסוף, גם אם הדרך שלה שונה מהשיעור.</p></section>
   </div>
-  <section class="card"><h3>הצעד הבא</h3><p>${next}</p></section>
+  <section class="card"><h3>הצעד הבא</h3><p>${next}</p></section>`;
+}
+function vParent(){
+  const kid=currentKid();
+  const kidsCard = `<section class="card">
+    <h3>הילדות</h3>
+    <ul class="kids">${UI.kids.map(k=>`<li><input id="kn-${esc(k.id)}" value="${esc(k.name)}" aria-label="שם">
+      <button class="btn soft small" data-act="renameKid" data-v="${esc(k.id)}">שמירת שם</button>
+      <button class="btn soft small" data-act="delKid" data-v="${esc(k.id)}">${UI.confirmDel===k.id?'בטוח? כל ההתקדמות שלה תימחק':'מחיקה'}</button></li>`).join('')}</ul>
+    <div class="addkid"><input id="newkid" placeholder="שם של ילדה" aria-label="שם של ילדה חדשה"><button class="btn primary small" data-act="addKid">הוספה</button></div>
+    <p class="saved">${UI.cloud?'נשמר בענן: אותם נתונים בכל מחשב שפותח את הקישור.':'נשמר רק בדפדפן הזה, כי השמירה בענן לא זמינה כאן.'}</p>
+  </section>`;
+  if(!kid) return `<div class="parent"><section class="card"><h2>מסך הורה</h2><p class="lead">הוסיפי את הילדות שלומדות. אחר כך אפשר לבחור מהרשימה למעלה מי לומדת היום.</p></section>${kidsCard}</div>`;
+  const all=kidSessions(), probs=all.flatMap(s=>s.log||[]);
+  const alone=probs.filter(p=>p.alone).length, helped=probs.length-alone, finished=all.filter(s=>!s.live).length;
+  const pct = probs.length ? Math.round(alone/probs.length*100) : 0;
+  const pick = UI.sessIdx==null || !all[UI.sessIdx] ? all.length-1 : UI.sessIdx;
+  return `<div class="parent">
+  <section class="card">
+    <p class="eyebrow">מסך הורה</p>
+    <h2>${esc(kid.name)}</h2>
+    <div class="stats">
+      <div class="stat"><b>${finished}</b><span>שיעורים שהושלמו</span></div>
+      <div class="stat"><b>${probs.length}</b><span>תרגילים בשלב "לבד"</span></div>
+      <div class="stat good"><b>${alone}</b><span>בלי שום עזרה${probs.length?` (${pct}%)`:''}</span></div>
+      <div class="stat help"><b>${helped}</b><span>עם רמז או ניסיון נוסף</span></div>
+    </div>
+    ${all.length>1?`<div class="sess">${all.map((s,i)=>`<button class="btn small ${i===pick?'primary':'soft'}" data-act="pickSess" data-v="${i}">${s.live?'עכשיו':new Date(s.startedAt).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'})}</button>`).join('')}</div>`:''}
+  </section>
+  ${all.length ? lessonReport(all[pick], kid.name) : `<p class="empty">עוד אין שיעורים. כשהיא תתחיל, יופיע כאן מה שקרה.</p>`}
+  ${kidsCard}
   </div>`;
 }
 
@@ -470,13 +574,8 @@ function makeProblem(carry){
 function startSoloProblem(){ const [a,b]=S.s.list[S.s.i]; S.s.cur={a,b,errors:[],hints:0,alone:false,carry:digits(a).t+digits(b).t>=10}; S.s.done=false; }
 
 const A = {
-  begin(){ S.name=(document.getElementById('name')?.value||'').trim(); S.screen='check'; },
-  demoParent(){
-    S=fresh(); S.demo=true; S.name='נועה (דוגמה)'; S.screen='parent'; S.feeling='ok';
-    S.check.res=[{skill:'ten',ok:true},{skill:'ten',ok:false},{skill:'place',ok:true},{skill:'tens',ok:true},{skill:'tens',ok:true}];
-    S.log=[{a:312,b:465,errors:[],hints:0,alone:true,carry:false},{a:257,b:381,errors:['concat'],hints:1,alone:false,carry:true},
-      {a:143,b:524,errors:[],hints:0,alone:true,carry:false},{a:468,b:270,errors:['drop'],hints:0,alone:false,carry:true},{a:395,b:142,errors:[],hints:0,alone:true,carry:true}];
-  },
+  begin(){ S=fresh(); S.screen='check'; },
+  resume(){ S=S.resume; },
   nextCheck(){
     S.fb=null; S.check.wait=false;
     if(S.check.i<CHECK.length-1){ S.check.i++; return; }
@@ -499,7 +598,7 @@ const A = {
   nextSolo(){
     const s=S.s; S.fb=null;
     if(s.cur.alone && s.level>0) s.level--;
-    if(s.i<s.list.length-1){ s.i++; startSoloProblem(); } else S.screen='summary';
+    if(s.i<s.list.length-1){ s.i++; startSoloProblem(); } else { S.screen='summary'; finishLesson(); }
   },
   hint(){ const p=S.s.cur; if(p.hints<3){ p.hints++; S.fb=null; } },
   key(v){ const W=activeSheet(); if(W){ const f=W.fields[W.cur]; if(f.val.length<4) f.val+=v; } else if(S.input.length<4) S.input+=v; },
@@ -513,10 +612,18 @@ const A = {
     ({check:checkCheck, tens:tensCheck, solo:soloCheck})[S.screen]?.(x);
   },
   say(){ speak(S.say); return false; },
-  feel(v){ S.feeling=v; },
-  toParent(){ S.screen='parent'; window.scrollTo(0,0); },
-  backSummary(){ S.screen='summary'; },
-  restart(){ S=fresh(); }
+  feel(v){ S.feeling=v; const h=UI.history[UI.kidId]; if(h?.length && h[h.length-1].id===S.sessId){ h[h.length-1].feeling=v; saveHistory(UI.kidId); } },
+  toParent(){ UI.view='parent'; UI.sessIdx=null; UI.confirmDel=null; refreshKid(); window.scrollTo(0,0); },
+  backLesson(){ UI.view='lesson'; },
+  pickSess(v){ UI.sessIdx=+v; },
+  restart(){ S=fresh(); },
+  addKid(){ const el=document.getElementById('newkid'), n=(el?.value||'').trim(); if(!n) return;
+    const k={id:'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), name:n}; UI.kids.push(k); saveKids();
+    if(!UI.kidId) selectKid(k.id); },
+  renameKid(id){ const k=UI.kids.find(k=>k.id===id), n=(document.getElementById('kn-'+id)?.value||'').trim(); if(k&&n&&n!==k.name){ k.name=n; saveKids(); } },
+  delKid(id){ if(UI.confirmDel!==id){ UI.confirmDel=id; return; }
+    UI.confirmDel=null; UI.kids=UI.kids.filter(k=>k.id!==id); saveKids(); store.del('progress/'+id); store.del('history/'+id); delete UI.history[id];
+    if(UI.kidId===id) selectKid(UI.kids[0]?.id||null); }
 };
 function activeSheet(){
   if(S.screen==='guided' && !S.g.W.done) return S.g.W;
@@ -572,28 +679,100 @@ function soloCheck(x){
 app.addEventListener('click', e=>{
   const t=e.target.closest('[data-act]'); if(!t||t.disabled) return;
   const r=A[t.dataset.act]?.(t.dataset.v, t);
-  if(r!==false) render();
+  if(r!==false){ render(); persist(); }
 });
 document.addEventListener('keydown', e=>{
-  if(!['check','tens','guided','solo'].includes(S.screen) || e.target.tagName==='INPUT') return;
+  if(UI.view!=='lesson' || !['check','tens','guided','solo'].includes(S.screen) || ['INPUT','SELECT'].includes(e.target.tagName)) return;
   const locked = (S.screen==='check'&&S.check.wait)||(S.screen==='tens'&&S.tens.done)||(S.screen==='guided'&&S.g.W.done)||(S.screen==='solo'&&S.s.done);
   if(locked){ if(e.key==='Enter'){ const b=app.querySelector('.btn.primary'); if(b){ e.preventDefault(); b.click(); } } return; }
   if(/^[0-9]$/.test(e.key)) A.key(e.key);
   else if(e.key==='Backspace') A.del();
   else if(e.key==='Enter') A.check();
   else return;
-  e.preventDefault(); render();
+  e.preventDefault(); render(); persist();
 });
-app.addEventListener('keydown', e=>{ if(e.target.id==='name' && e.key==='Enter'){ A.begin(); render(); } });
+app.addEventListener('keydown', e=>{ if(e.target.id==='newkid' && e.key==='Enter'){ A.addKid(); render(); } });
+app.addEventListener('change', e=>{ if(e.target.id==='kid'){ selectKid(e.target.value); } });
 
 function render(){
-  const v={start:vStart,check:vCheck,tens:vTens,explore:vExplore,guided:vGuided,solo:vSolo,summary:vSummary,parent:vParent}[S.screen];
-  app.innerHTML=ltrMath(v());
+  if(UI.loading){ app.innerHTML=`<p class="empty">טוענת…</p>`; return; }
+  const body = UI.view==='parent' ? vParent() : !currentKid() ? vStart() : ({start:vStart,check:vCheck,tens:vTens,explore:vExplore,guided:vGuided,solo:vSolo,summary:vSummary})[S.screen]();
+  app.innerHTML=ltrMath(vBar()+body);
+}
+
+/* ---------- saving: the artifact's shared store when available, otherwise this browser ----------
+   family/kids        {kids:[{id,name}]}
+   progress/<kidId>   {state}  the lesson in progress, to continue where she stopped
+   history/<kidId>    {sessions:[...]}  finished lessons, for the parent screen */
+const UI={view:'lesson', kids:[], kidId:null, history:{}, loading:true, cloud:false, sessIdx:null, confirmDel:null};
+const store={
+  db:null,
+  async get(path){
+    if(this.db){ try{ const s=await this.db.doc(path).get(); return s.exists?s.data():null; }catch(e){} }
+    try{ return JSON.parse(localStorage.getItem('mk:'+path)||'null'); }catch(e){ return null; }
+  },
+  async set(path,data){
+    try{ localStorage.setItem('mk:'+path, JSON.stringify(data)); }catch(e){}
+    if(this.db){ try{ await this.db.doc(path).set(data); }catch(e){ if(e?.code==='unavailable'){ await new Promise(r=>setTimeout(r,800+Math.random()*800)); try{ await this.db.doc(path).set(data); }catch(_){} } } }
+  },
+  async del(path){ try{ localStorage.removeItem('mk:'+path); }catch(e){} if(this.db){ try{ await this.db.doc(path).delete(); }catch(e){} } }
+};
+/* one write at a time per document; the latest state wins */
+const pending={}, writing={};
+function queueWrite(path,data){
+  pending[path]=data;
+  if(writing[path]) return;
+  writing[path]=true;
+  (async()=>{ while(pending[path]!==undefined){ const d=pending[path]; delete pending[path]; await store.set(path,d); } writing[path]=false; })();
+}
+const currentKid=()=>UI.kids.find(k=>k.id===UI.kidId)||null;
+function saveKids(){ queueWrite('family/kids',{kids:UI.kids}); }
+function saveHistory(id){ queueWrite('history/'+id,{sessions:(UI.history[id]||[]).slice(-60)}); }
+let lastSaved='';
+function persist(){
+  if(!UI.kidId || UI.view!=='lesson' || S.screen==='start') return;
+  const {resume, ...state}=S, json=JSON.stringify(state);
+  if(json===lastSaved) return;
+  lastSaved=json; queueWrite('progress/'+UI.kidId,{state:json, at:Date.now()});
+}
+function finishLesson(){
+  S.sessId = S.sessId || 's'+Date.now().toString(36);
+  const h=(UI.history[UI.kidId] ||= []);
+  if(!h.some(x=>x.id===S.sessId)) h.push({id:S.sessId, lesson:'mental-addition', startedAt:S.startedAt, endedAt:Date.now(), log:S.log, check:S.check.res, feeling:S.feeling});
+  saveHistory(UI.kidId);
+}
+async function loadKid(id){
+  const [p,h]=await Promise.all([store.get('progress/'+id), store.get('history/'+id)]);
+  UI.history[id]=h?.sessions||[];
+  S=fresh();
+  if(p?.state){ try{ const st=JSON.parse(p.state); if(st.screen && st.screen!=='start' && st.screen!=='summary') S.resume=st; }catch(e){} }
+  lastSaved='';
+}
+async function selectKid(id){
+  UI.kidId=id; UI.sessIdx=null;
+  try{ id?localStorage.setItem('mk:currentKid',id):localStorage.removeItem('mk:currentKid'); }catch(e){}
+  if(id){ await loadKid(id); } else S=fresh();
+  render();
+}
+async function refreshKid(){
+  if(!UI.kidId) return;
+  const h=await store.get('history/'+UI.kidId); if(h?.sessions) UI.history[UI.kidId]=h.sessions;
+  if(UI.view==='parent') render();
+}
+async function boot(){
+  if(window.claude?.use){ try{ store.db=await window.claude.use('db'); }catch(e){} }
+  UI.cloud=!!store.db;
+  const k=await store.get('family/kids'); UI.kids=k?.kids||[];
+  let id=null; try{ id=localStorage.getItem('mk:currentKid'); }catch(e){}
+  if(!UI.kids.some(x=>x.id===id)) id=UI.kids[0]?.id||null;
+  UI.kidId=id; if(id) await loadKid(id);
+  UI.loading=false; render();
 }
 /* inside Hebrew sentences the browser reverses "392 + 510" into "510 + 392"; isolate every expression as LTR */
 function ltrMath(html){
   return html.replace(/>([^<]+)</g, (m,t)=>'>'+t.replace(/\d+(?:\s*[+=→×-]\s*\d+)+(?:\s*=\s*\?)?/g, x=>`<span class="ltr">${x}</span>`)+'<');
 }
+boot();
 render();
 </script>
 </body>
