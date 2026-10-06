@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חיבור בראש</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Varela+Round&display=swap">
+<style>
+/* Same visual language as the "complete to ten" demo: one lesson card, place-value blocks as the visual anchor, keypad under the question. Desktop first. */
+:root{
+  --bg:#EAF0F6; --surface:#FFFFFF; --ink:#1D2840; --muted:#56657E; --line:#CFD9E6;
+  --blue:#2F5BD3; --blue-soft:#DCE5FA; --sun:#F2B21E; --sun-soft:#FDF0CC;
+  --leaf:#23895A; --leaf-soft:#DDF2E7; --coral:#C9573F; --coral-soft:#FBE4DE;
+  --f-display:"Fredoka","Varela Round",system-ui,sans-serif;
+  --f-body:"Varela Round","Fredoka",system-ui,sans-serif;
+  --r:18px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111827; --surface:#1A2336; --ink:#EAF0FA; --muted:#9DABC2; --line:#2D3A54;
+  --blue:#7096F4; --blue-soft:#24345A; --sun:#F6C445; --sun-soft:#3C3320;
+  --leaf:#4DC48B; --leaf-soft:#1E3A2E; --coral:#F08B74; --coral-soft:#42282A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111827; --surface:#1A2336; --ink:#EAF0FA; --muted:#9DABC2; --line:#2D3A54;
+  --blue:#7096F4; --blue-soft:#24345A; --sun:#F6C445; --sun-soft:#3C3320;
+  --leaf:#4DC48B; --leaf-soft:#1E3A2E; --coral:#F08B74; --coral-soft:#42282A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6;padding:20px 16px 40px}
+#app{max-width:900px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(34px,6vw,52px)} h2{font-size:clamp(24px,4vw,32px)} h3{font-size:20px}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+.card{background:var(--surface);border-radius:var(--r);padding:clamp(18px,4vw,32px);display:flex;flex-direction:column;gap:20px;box-shadow:0 1px 0 var(--line)}
+.eyebrow{font-size:14px;letter-spacing:.04em;color:var(--muted)}
+.lead{font-size:20px;color:var(--muted);max-width:34em}
+.muted{color:var(--muted)}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.who{font-family:var(--f-display);font-size:20px}
+.path{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex-wrap:wrap}
+.path li{font-size:14px;padding:4px 12px;border-radius:999px;color:var(--muted);border:1.5px solid var(--line)}
+.path li.done{background:var(--leaf-soft);border-color:transparent;color:var(--leaf)}
+.path li.now{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.path li.skip{text-decoration:line-through;opacity:.6}
+
+.prompt{display:flex;gap:14px;align-items:flex-start}
+.prompt p{font-family:var(--f-display);font-weight:500;font-size:clamp(22px,3.6vw,28px);line-height:1.35;flex:1;min-width:0}
+.icon-btn{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.icon-btn svg{width:24px;height:24px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* numbers always read left to right */
+.ltr{direction:ltr;unicode-bidi:isolate}
+.eq{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,5vw,40px);text-align:center;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+.eq .q{color:var(--muted)}
+.h{color:var(--blue)} .t{color:#B07F0C} .o{color:var(--leaf)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .t{color:var(--sun)}}
+:root[data-theme="dark"] .t{color:var(--sun)}
+
+/* place-value table: hundreds | tens | ones, left to right like the digits */
+.pv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;direction:ltr}
+.col{border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;border:2px solid transparent;transition:opacity .3s,border-color .3s}
+.col.hc{background:var(--blue-soft)} .col.tc{background:var(--sun-soft)} .col.oc{background:var(--leaf-soft)}
+.col.dim{opacity:.35}
+.col.focus{border-color:var(--ink)}
+.col-title{font-size:15px;color:var(--muted);direction:rtl}
+.blocks{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;align-items:flex-end;min-height:40px}
+.blocks + .blocks{padding-top:8px;border-top:2px dashed var(--line);width:100%}
+.hb{width:34px;height:34px;border-radius:4px;background:var(--blue);background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:3.4px 3.4px}
+.tb{width:8px;height:34px;border-radius:3px;background:var(--sun);background-image:linear-gradient(rgba(0,0,0,.18) 1px,transparent 1px);background-size:8px 3.4px}
+.ob{width:10px;height:10px;border-radius:50%;background:var(--leaf)}
+.mini{font-family:var(--f-display);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums;direction:ltr}
+.mini .q{color:var(--muted)}
+.mini small{display:block;font-size:16px;color:var(--muted);font-weight:500;text-align:center}
+
+.fb{border-radius:14px;padding:14px 18px;font-size:19px}
+.fb.ok{background:var(--leaf-soft)} .fb.ok strong{color:var(--leaf)}
+.fb.try{background:var(--coral-soft)}
+.fb.info{background:var(--blue-soft)}
+
+.answer{display:flex;justify-content:center}
+.display{min-width:140px;height:72px;padding-inline:16px;border-radius:14px;border:3px solid var(--ink);display:grid;place-items:center;font-family:var(--f-display);font-size:40px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--surface);direction:ltr}
+.pad{display:grid;grid-template-columns:repeat(3,minmax(0,92px));gap:10px;justify-content:center;direction:ltr}
+.key{height:62px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-family:var(--f-display);font-size:26px;font-weight:600}
+.key:active{transform:translateY(1px)}
+.key.ok{background:var(--ink);color:var(--surface);border-color:var(--ink);font-size:20px}
+.key:hover,.btn:hover,.icon-btn:hover,.feel button:hover{border-color:var(--blue)}
+.kbd-hint{text-align:center;font-size:14px;color:var(--muted)}
+kbd{font-family:inherit;border:1.5px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:0 6px;background:var(--surface)}
+
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{min-height:54px;padding:10px 24px;border-radius:999px;border:2px solid var(--ink);background:var(--surface);font-family:var(--f-display);font-weight:500;font-size:19px}
+.btn.primary{background:var(--ink);color:var(--surface)}
+.btn.soft{border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.tools{display:flex;gap:10px;flex-wrap:wrap;border-top:1.5px solid var(--line);padding-top:16px}
+
+.field{display:flex;flex-direction:column;gap:8px;max-width:360px}
+.field label{font-size:16px;color:var(--muted)}
+.field input{font:inherit;font-size:20px;padding:12px 16px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--ink)}
+
+.feel{display:flex;gap:10px;flex-wrap:wrap}
+.feel button{min-height:54px;padding:8px 20px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:18px}
+.feel button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+
+.parent{font-size:17px;display:flex;flex-direction:column;gap:18px}
+.parent .card{gap:14px}
+.plist{list-style:none;margin:0;padding:0}
+.plist li{display:grid;grid-template-columns:7.5em 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.plist li:last-child{border-bottom:0}
+.pq{font-family:var(--f-display);font-weight:600;direction:ltr;unicode-bidi:isolate;text-align:right;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;margin-inline-end:6px}
+.chip.alone{background:var(--leaf-soft);color:var(--leaf)}
+.chip.help{background:var(--blue-soft);color:var(--blue)}
+.notes{margin:0;padding-inline-start:1.2em;display:flex;flex-direction:column;gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.grid2 > *{min-width:0}
+.quote{font-family:var(--f-display);font-size:22px;font-weight:500}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<script>
+const app = document.getElementById('app');
+const STAGES = ['בדיקה קצרה','עשרות','גילוי','ביחד','לבד','סיכום'];
+const SPEAKER = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+const PLACE = {h:'מאות', t:'עשרות', o:'אחדות'};
+
+/* the short check at the start: no right/wrong verdicts, it only decides where to start */
+const CHECK = [
+  {q:'כמה זה 7 + 4?', a:11, skill:'ten'},
+  {q:'כמה זה 8 + 6?', a:14, skill:'ten'},
+  {q:'במספר 573, כמה עשרות יש? (הספרה של העשרות)', a:7, skill:'place'},
+  {q:'כמה זה 40 + 30?', a:70, skill:'tens'},
+  {q:'כמה זה 70 + 50?', a:120, skill:'tens'}
+];
+const TENS = [[4,3],[7,4],[6,5]];              // stage 1: tens are small numbers too
+const GUIDED = [[421,356],[264,182]];          // stage 3: no carry, then carry in the tens
+
+let S;
+function fresh(){
+  return {screen:'start', name:'', input:'', fb:null, say:'', feeling:null, demo:false,
+    check:{i:0, res:[]}, tenHelp:false, skipTens:false,
+    tens:{i:0, step:0, wrong:0, done:false},
+    ex:{step:0},
+    g:{i:0, step:0, wrong:0, done:false},
+    s:null, log:[]};
+}
+S = fresh();
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+const digits = n => ({h:Math.floor(n/100), t:Math.floor(n/10)%10, o:n%10});
+
+/* ---------- building blocks ---------- */
+function blocks(n, kind){ let h=''; for(let i=0;i<n;i++) h+=`<span class="${kind}"></span>`; return h; }
+function numBlocks(n){
+  const d=digits(n);
+  return {h:blocks(d.h,'hb'), t:blocks(d.t,'tb'), o:blocks(d.o,'ob')};
+}
+/* the place-value table. a, b: the two numbers. show: which columns show their small sum.
+   focus: the column being worked on. hideBlocks: just the digits, no pictures */
+function table(a, b, {show={}, focus=null, hideBlocks=false, dimOthers=false}={}){
+  const A=numBlocks(a), B=numBlocks(b), da=digits(a), db=digits(b);
+  const col = (k, cls) => {
+    const sum = da[k]+db[k];
+    const val = show[k]==='value' ? `<small>${PLACE[k]}: ${sum*({h:100,t:10,o:1}[k])}</small>` : '';
+    const mini = show[k] ? `${da[k]} + ${db[k]} = ${sum}${val}` : `${da[k]} + ${db[k]} = <span class="q">?</span>`;
+    return `<div class="col ${cls} ${focus===k?'focus':''} ${dimOthers&&focus&&focus!==k?'dim':''}">
+      <span class="col-title">${PLACE[k]}</span>
+      ${hideBlocks?'':`<div class="blocks">${A[k]}</div><div class="blocks">${B[k]}</div>`}
+      <span class="mini">${mini}</span></div>`;
+  };
+  return `<div class="pv" role="img" aria-label="טבלת מאות, עשרות ואחדות של ${a} ו-${b}">${col('h','hc')}${col('t','tc')}${col('o','oc')}</div>`;
+}
+function tensPic(a,b){
+  return `<div class="pv" style="grid-template-columns:1fr"><div class="col tc">
+    <span class="col-title">עשרות. כל מקל הוא 10</span>
+    <div class="blocks">${blocks(a,'tb')}</div><div class="blocks">${blocks(b,'tb')}</div></div></div>`;
+}
+function prompt(html){
+  S.say = html.replace(/<[^>]+>/g,'');
+  return `<div class="prompt"><p>${html}</p><button class="icon-btn" data-act="say" aria-label="להקריא">${SPEAKER}</button></div>`;
+}
+function feedback(){ return S.fb ? `<div class="fb ${S.fb.tone}" role="status">${S.fb.text}</div>` : ''; }
+function keypad(){
+  const d=[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" data-act="key" data-v="${n}">${n}</button>`).join('');
+  return `<div class="answer"><output class="display" aria-live="polite">${S.input||'&nbsp;'}</output></div>
+  <div class="pad">${d}<button class="key" data-act="del" aria-label="מחיקה">⌫</button><button class="key" data-act="key" data-v="0">0</button><button class="key ok" data-act="check">בדיקה</button></div>
+  <p class="kbd-hint">אפשר גם להקליד במקלדת וללחוץ <kbd>Enter</kbd></p>`;
+}
+function shell(stage, body){
+  return `<header class="top"><div class="who">${S.name?esc(S.name):'&nbsp;'}</div>
+  <ol class="path" aria-label="שלבי השיעור">${STAGES.map((s,i)=>{
+    const cls = (i===1&&S.skipTens&&stage>1)?'skip':(i<stage?'done':i===stage?'now':'');
+    return `<li class="${cls}" ${i===stage?'aria-current="step"':''}>${s}</li>`;}).join('')}</ol></header>
+  <section class="card">${body}</section>`;
+}
+const tenHint = (x,y) => { const n=10-x; return n>0&&n<y ? `${x} + ${n} = 10, ועוד ${y-n} זה ${x+y}.` : ''; };
+
+/* ---------- steps for a guided problem: one small question at a time ---------- */
+function stepsFor(a,b){
+  const da=digits(a), db=digits(b), st=[];
+  st.push({k:'h', q:`מתחילות מהמאות. כמה זה ${da.h} + ${db.h}?`, a:da.h+db.h, ok:`${da.h+db.h} מאות, כלומר ${(da.h+db.h)*100}.`});
+  st.push({k:'t', q:`עכשיו העשרות. כמה זה ${da.t} + ${db.t}?`, a:da.t+db.t, ok:`${da.t+db.t} עשרות.`, ten:[da.t,db.t]});
+  if(da.t+db.t>=10) st.push({k:'t', q:`${da.t+db.t} עשרות, כמה זה במספרים?`, a:(da.t+db.t)*10, ok:`${da.t+db.t} עשרות זה ${(da.t+db.t)*10}. יש פה עוד מאה אחת!`});
+  st.push({k:'o', q:`והאחדות. כמה זה ${da.o} + ${db.o}?`, a:da.o+db.o, ok:`${da.o+db.o} אחדות.`, ten:[da.o,db.o]});
+  const H=(da.h+db.h)*100, T=(da.t+db.t)*10, O=da.o+db.o;
+  st.push({k:null, q:`עכשיו מחברות הכול: ${H} + ${T} + ${O}. כמה זה?`, a:a+b, ok:`${a} + ${b} = ${a+b}.`, parts:[H,T,O]});
+  return st;
+}
+function shownFor(steps, upto){
+  const show={};
+  steps.slice(0,upto).forEach(s=>{ if(s.k) show[s.k] = (s.k==='t' && s.a>=100) || s.k==='h' ? 'value' : 'sum'; });
+  return show;
+}
+
+/* ---------- screens ---------- */
+function vStart(){
+  return `<section class="card">
+    <p class="eyebrow">חיבור בראש · מספרים גדולים בעזרת מספרים קטנים</p>
+    <h1>חיבור בראש</h1>
+    <p class="lead">איך מחברים 573 + 340 בלי דף ובלי עט? מפרקים את התרגיל הגדול להרבה תרגילים קטנים.</p>
+    <div class="eq">573 + 340</div>
+    <div class="field"><label for="name">מי לומדת היום?</label><input id="name" autocomplete="off" placeholder="השם שלך" value="${esc(S.name)}"></div>
+    <div class="row"><button class="btn primary" data-act="begin">יוצאות לדרך</button></div>
+    <button class="btn soft" data-act="demoParent" style="align-self:flex-start">לראות את מסך ההורה עם נתוני דוגמה</button>
+  </section>`;
+}
+function vCheck(){
+  const c=CHECK[S.check.i];
+  return shell(0, `
+    <p class="eyebrow">שאלה ${S.check.i+1} מתוך ${CHECK.length}</p>
+    ${prompt(c.q)}
+    <p class="muted">כמה שאלות קצרות, כדי שאדע מאיפה להתחיל. אין פה ציון.</p>
+    ${feedback()}
+    ${S.check.wait ? `<div class="row"><button class="btn primary" data-act="nextCheck">${S.check.i===CHECK.length-1?'מתחילות את השיעור':'לשאלה הבאה'}</button></div>` : keypad()}`);
+}
+function vTens(){
+  const [a,b]=TENS[S.tens.i], st=S.tens.step, last=S.tens.i===TENS.length-1;
+  const qs=[`יש ${a} מקלות של עשר, ועוד ${b} מקלות. כמה מקלות יש בסך הכול? כמה זה ${a} + ${b}?`, `אז כמה זה ${a*10} + ${b*10}?`];
+  const eq = S.tens.done ? `${a*10} + ${b*10} = ${(a+b)*10}` : st===0 ? `${a*10} + ${b*10} = <span class="q">?</span>` : `${a} + ${b} = ${a+b} &nbsp;→&nbsp; ${a*10} + ${b*10} = <span class="q">?</span>`;
+  const hint = S.tenHelp && st===0 && !S.tens.done && tenHint(a,b) ? `<div class="fb info">רמז: ${tenHint(a,b).replace(/ זה \d+\.$/,'.')}</div>` : '';
+  return shell(1, `
+    <p class="eyebrow">עשרות הן מספרים קטנים · ${S.tens.i+1} מתוך ${TENS.length}</p>
+    ${S.tens.done ? prompt(`${a} עשרות ועוד ${b} עשרות זה ${a+b} עשרות, כלומר ${(a+b)*10}. מחברות כמו מספרים קטנים, ומוסיפות 0 בסוף.`) : prompt(qs[st])}
+    ${tensPic(a,b)}
+    <div class="eq">${eq}</div>
+    ${hint}${feedback()}
+    ${S.tens.done ? `<div class="row"><button class="btn primary" data-act="nextTens">${last?'עכשיו מספרים גדולים':'לתרגיל הבא'}</button></div>` : keypad()}`);
+}
+function vExplore(){
+  const a=573, b=340, st=S.ex.step;
+  const lines=[
+    'זה התרגיל: 573 + 340. בכל מספר יש מאות (ריבועים), עשרות (מקלות) ואחדות (נקודות). נחבר כל סוג בנפרד.',
+    'מאות: 5 + 3 = 8. זה 8 מאות, כלומר 800.',
+    'עשרות: 7 + 4 = 11. זה 11 עשרות, כלומר 110. שמת לב? 10 עשרות הן עוד מאה אחת.',
+    'אחדות: 3 + 0 = 3.',
+    'ועכשיו מחברות את החלקים: 800 + 110 + 3 = 913.'
+  ];
+  const show = st>=1 ? {h:'value'} : {};
+  if(st>=2) show.t='value'; if(st>=3) show.o='sum';
+  const focus = [null,'h','t','o',null][st];
+  return shell(2, `
+    ${prompt(lines[st])}
+    ${table(a,b,{show, focus})}
+    <div class="eq">${st<4?`573 + 340 = <span class="q">?</span>`:`800 + 110 + 3 = 913`}</div>
+    ${st===4?`<div class="fb info">הסוד: במקום תרגיל אחד גדול, עושים שלושה תרגילים קטנים. מאות, עשרות, אחדות. ואז מחברים.</div>`:''}
+    <div class="row">${st>0?`<button class="btn soft" data-act="exBack">אחורה</button>`:''}
+      <button class="btn primary" data-act="exNext">${st<4?'הלאה':'הבנתי, ממשיכות'}</button></div>`);
+}
+function vGuided(){
+  const [a,b]=GUIDED[S.g.i], steps=stepsFor(a,b), st=S.g.step, cur=steps[st], last=S.g.i===GUIDED.length-1;
+  const hint = S.tenHelp && cur?.ten && tenHint(...cur.ten) && !S.g.done ? `<div class="fb info">רמז: ${tenHint(...cur.ten).replace(/ זה \d+\.$/,'.')}</div>` : '';
+  return shell(3, `
+    <p class="eyebrow">פותרות ביחד · תרגיל ${S.g.i+1} מתוך ${GUIDED.length}</p>
+    ${S.g.done ? prompt(`${a} + ${b} = ${a+b}. שלושה תרגילים קטנים, ותרגיל אחד גדול נפתר.`) : prompt(cur.q)}
+    ${table(a,b,{show:shownFor(steps, S.g.done?steps.length:st), focus:S.g.done?null:cur.k, dimOthers:true})}
+    <div class="eq">${S.g.done?`${a} + ${b} = ${a+b}`:`${a} + ${b} = <span class="q">?</span>`}</div>
+    ${hint}${feedback()}
+    ${S.g.done ? `<div class="row"><button class="btn primary" data-act="nextGuided">${last?'עכשיו לבד':'לתרגיל הבא'}</button></div>` : keypad()}`);
+}
+function vSolo(){
+  const s=S.s, p=s.cur, {a,b}=p, d=digits(a), e=digits(b);
+  const lvl = Math.max(s.level, p.hints>=2?2:0);
+  let pic;
+  if(lvl===0) pic = `<p class="muted" style="text-align:center">הטבלה בראש שלך עכשיו. מאות, עשרות, אחדות.</p>`;
+  else if(lvl===1) pic = table(a,b,{hideBlocks:true});
+  else pic = table(a,b,{show: p.hints>=2 ? {h:'value',t:'value',o:'sum'} : {}});
+  const H=(d.h+e.h)*100, T=(d.t+e.t)*10, O=d.o+e.o;
+  const hintText = ['',
+    `רמז: קודם המאות. כמה זה ${d.h} + ${e.h}?${S.tenHelp&&tenHint(d.t,e.t)?` ובעשרות: ${tenHint(d.t,e.t)}`:''}`,
+    `רמז: מאות ${H}, עשרות ${T}, אחדות ${O}. עכשיו לחבר אותם.`,
+    `בואי נפתור יחד: ${H} + ${T} + ${O}. כמה זה?`][p.hints];
+  return shell(4, `
+    <p class="eyebrow">לבד · תרגיל ${s.i+1} מתוך ${s.list.length}</p>
+    ${prompt(`כמה זה ${a} + ${b}?`)}
+    ${pic}
+    <div class="eq">${s.done?`${a} + ${b} = ${a+b}`:`${a} + ${b} = <span class="q">?</span>`}</div>
+    ${p.hints && !s.done ? `<div class="fb info">${hintText}</div>`:''}
+    ${feedback()}
+    ${s.done ? `<div class="row"><button class="btn primary" data-act="nextSolo">${s.i===s.list.length-1?'לסיכום':'לתרגיל הבא'}</button></div>` : keypad()}
+    ${s.done ? '' : `<div class="tools"><button class="btn soft" data-act="hint" ${p.hints>=3?'disabled':''}>רמז${p.hints?` (${p.hints}/3)`:''}</button></div>`}`);
+}
+function vSummary(){
+  const L=S.log, alone=L.filter(p=>p.alone).length, first=L.find(p=>p.alone);
+  const obs=[`פתרת ${L.length} תרגילי חיבור של מספרים גדולים, בראש.`];
+  if(alone) obs.push(`${alone} מהם פתרת לבד לגמרי${first?`, כמו ${first.a} + ${first.b}`:''}.`);
+  if(L.some(p=>p.hints)) obs.push('כשהיה צריך, ביקשת רמז. בשביל זה הם שם.');
+  const F=[['easy','היה לי קל'],['ok','היה בסדר'],['hard','היה לי קשה']];
+  return shell(5, `
+    <h2>סיימנו את השיעור!</h2>
+    <div class="fb info" style="font-size:21px">במקום תרגיל אחד גדול, שלושה תרגילים קטנים: מאות, עשרות, אחדות. ואז מחברים.</div>
+    ${obs.map(o=>`<p>${o}</p>`).join('')}
+    <div class="eq" style="font-size:clamp(22px,4vw,32px)">573 + 340 = 800 + 110 + 3 = 913</div>
+    <h3>איך היה לך?</h3>
+    <div class="feel">${F.map(([k,l])=>`<button data-act="feel" data-v="${k}" aria-pressed="${S.feeling===k}">${l}</button>`).join('')}</div>
+    <div class="tools"><button class="btn primary" data-act="toParent">מסך הורה</button><button class="btn soft" data-act="restart">שיעור מההתחלה</button></div>`);
+}
+
+/* ---------- mistakes: what the child sees, what the parent sees, how to help ---------- */
+const ERR = {
+  concat:{kid:p=>`כתבת את ${p.T/10} העשרות כמו שתי ספרות. אבל ${p.T/10} עשרות זה ${p.T}, כלומר עוד מאה אחת. נסי לחבר ${p.H} + ${p.T} + ${p.O}.`,
+    parent:'כתבה את סכום העשרות כמו שהוא, בלי להמיר (למשל 8 ואחריו 11 ואחריו 3, כלומר 8113).', tip:'לחזור על "10 עשרות הן מאה": לספור 10 מקלות של עשר ולהחליף אותם בשטר של 100.'},
+  drop:{kid:p=>`כמעט! ה-${p.T/10} עשרות הן ${p.T}. יש בהן עוד מאה אחת שצריך להוסיף.`,
+    parent:'הפסידה את המאה שנוצרת מהעשרות (למשל 813 במקום 913).', tip:'לבקש שתגיד בקול "11 עשרות זה 110" לפני שהיא מחברת הכול.'},
+  place:{kid:()=>`קרוב! בדקי שוב מקום אחד. אולי במאות או בעשרות התבלבלו הספרות.`,
+    parent:'טעות של 10 או 100, כנראה בלבול בין המקומות.', tip:'לכתוב את שני המספרים זה מתחת לזה ולהצביע: מאות, עשרות, אחדות.'},
+  small:{kid:()=>`יש טעות קטנה באחד התרגילים הקטנים. בדקי את האחדות.`,
+    parent:'טעות קטנה בחיבור האחדות.', tip:'לתרגל חיבור עד 20 בנפרד, כמה דקות ביום.'},
+  other:{kid:p=>`עוד לא. בואי נתחיל מהמאות: כמה זה ${digits(p.a).h} + ${digits(p.b).h}?`,
+    parent:'טעות שלא מתאימה לדפוס מוכר.', tip:'לבקש ממנה להסביר בקול איך חשבה. ההסבר יגלה איפה נתקעה.'}
+};
+function parts(a,b){ const d=digits(a), e=digits(b); return {a,b,H:(d.h+e.h)*100, T:(d.t+e.t)*10, O:d.o+e.o}; }
+function classify(x,a,b){
+  const p=parts(a,b), d=digits(a), e=digits(b), sum=a+b;
+  if(p.T>=100 && x===+`${d.h+e.h}${d.t+e.t}${d.o+e.o}`) return 'concat';
+  if(p.T>=100 && x===sum-100) return 'drop';
+  if([10,100].includes(Math.abs(x-sum))) return 'place';
+  if(Math.abs(x-sum)<10) return 'small';
+  return 'other';
+}
+
+function vParent(){
+  const L=S.log, name=S.name||'הבת שלך';
+  const types={}; L.forEach(p=>p.errors.forEach(t=>types[t]=(types[t]||0)+1));
+  const keys=Object.keys(types).sort((x,y)=>types[y]-types[x]);
+  const carryP=L.filter(p=>p.carry), carryAlone=carryP.filter(p=>p.alone).length;
+  const plainP=L.filter(p=>!p.carry), plainAlone=plainP.filter(p=>p.alone).length;
+  const allAlone=L.length && L.every(p=>p.alone);
+  const chk=S.check.res;
+  const rows=L.map(p=>{
+    let dd = p.alone ? '<span class="chip alone">לבד</span>' : `<span class="chip help">${p.hints?(p.hints===1?'רמז אחד':p.hints+' רמזים'):'אחרי ניסיון נוסף'}</span>`;
+    dd += p.errors.length ? [...new Set(p.errors)].map(t=>ERR[t].parent).join(' ') : (p.alone?'פתרה בניסיון הראשון.':'');
+    return `<li><span class="pq">${p.a} + ${p.b}</span><span>${dd}</span></li>`;}).join('');
+  const notice=[];
+  if(chk.length){
+    const miss=chk.filter(r=>!r.ok).map(r=>r.skill);
+    if(!miss.length) notice.push('בבדיקה בהתחלה ענתה נכון על הכול, ולכן דילגנו על שלב העשרות.');
+    if(miss.includes('ten')) notice.push('בבדיקה, חיבור עד 20 דרך העשר (כמו 8 + 6) עוד לא יושב. לכן קיבלה רמזים של "השלמה לעשר" לאורך השיעור.');
+    if(miss.includes('place')) notice.push('בבדיקה, לא היה לה ברור איזו ספרה היא העשרות. כדאי לחזק את זה לפני שממשיכים.');
+    if(miss.includes('tens')) notice.push('בבדיקה, חיבור של עשרות שלמות (40 + 30) עוד לא היה אוטומטי. עברה את שלב העשרות.');
+  }
+  if(plainP.length) notice.push(`תרגילים בלי מעבר מאה: ${plainAlone} מתוך ${plainP.length} לבד.`);
+  if(carryP.length) notice.push(`תרגילים שבהם העשרות עוברות 10 (כמו 573 + 340): ${carryAlone} מתוך ${carryP.length} לבד.${carryAlone<carryP.length?' זה החלק הקשה בשיעור.':''}`);
+  keys.forEach(t=>notice.push(ERR[t].parent+(types[t]>1?` (${types[t]} פעמים)`:'')));
+  const tips=keys.map(t=>ERR[t].tip);
+  if(chk.some(r=>!r.ok&&r.skill==='ten')) tips.push('לתרגל השלמה לעשר בנפרד (יש לנו את השיעור "משלימים לעשר").');
+  if(!tips.length) tips.push('אין צורך בחיזוק מיוחד. אפשר לבקש ממנה להסביר לך איך היא פותרת, במילים שלה.');
+  const conv = L.find(p=>p.alone&&p.carry) || L.find(p=>p.alone) || L[L.length-1] || {a:573,b:340};
+  const feelTxt={easy:'סיפרה שהיה לה קל.', ok:'סיפרה שהיה בסדר.', hard:'סיפרה שהיה לה קשה. כדאי לחזור על השיעור לפני שממשיכים, ולהגיד לה שככה בדיוק לומדים משהו חדש.'}[S.feeling]||'לא בחרה איך הרגישה.';
+  const next = allAlone ? 'מוכנה לשלב הבא: גם האחדות עוברות 10 (כמו 258 + 137), ואחר כך חיסור בראש באותה דרך.' : 'כדאי לחזור על השיעור, בעיקר על תרגילים שבהם העשרות עוברות 10, לפני שממשיכים.';
+  return `<div class="parent">
+  <header class="top"><div class="who">מסך הורה · ${esc(name)}</div><button class="btn soft" data-act="${S.demo?'restart':'backSummary'}">${S.demo?'חזרה להתחלה':'חזרה לסיכום'}</button></header>
+  <section class="card">
+    ${S.demo?'<p class="fb info" style="font-size:15px">אלה נתוני דוגמה. אחרי שיעור אמיתי יופיע כאן מה שקרה בו.</p>':''}
+    <p class="eyebrow">חיבור בראש · מקום אחרי מקום</p>
+    <h2>${allAlone?'השיעור עבר בקלות':'מה קרה בשיעור'}</h2>
+    <p class="muted">בלי ציונים, רק מה שראינו. ${esc(name)} ${feelTxt}</p>
+    <ul class="plist">${rows||'<li><span></span><span>עוד לא נפתרו תרגילים לבד.</span></li>'}</ul>
+  </section>
+  <div class="grid2">
+    <section class="card"><h3>על מה כדאי לשים לב</h3><ul class="notes">${notice.map(n=>`<li>${n}</li>`).join('')||'<li>אין דפוס שחוזר על עצמו.</li>'}</ul></section>
+    <section class="card"><h3>איך כדאי ללמד</h3><ul class="notes">${tips.map(n=>`<li>${n}</li>`).join('')}</ul></section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h3>פעילות מחוץ למסך</h3><p>משחק כסף: שטרות של 100, מטבעות של 10 ושל 1 (אפשר מנייר). שימי לה 573 ועוד 340 בשתי ערמות, ובקשי לאחד אותן. כשיש 10 מטבעות של 10, מחליפות אותם בשטר של 100.</p></section>
+    <section class="card"><h3>שאלה לשיחה</h3><p class="quote">"איך פתרת את <span class="ltr">${conv.a} + ${conv.b}</span>?"</p><p class="muted">לתת לה להסביר עד הסוף, גם אם הדרך שלה שונה מהשיעור.</p></section>
+  </div>
+  <section class="card"><h3>הצעד הבא</h3><p>${next}</p></section>
+  </div>`;
+}
+
+/* ---------- solo problems ---------- */
+const rnd=(lo,hi)=>lo+Math.floor(Math.random()*(hi-lo+1));
+function makeProblem(carry){
+  for(;;){
+    const ha=rnd(1,6), hb=rnd(1,8-ha), oa=rnd(0,9), ob=rnd(0,9-oa);
+    let ta, tb;
+    if(carry){ ta=rnd(2,9); tb=rnd(Math.max(1,10-ta),9); } else { ta=rnd(0,8); tb=rnd(0,9-ta); }
+    const a=ha*100+ta*10+oa, b=hb*100+tb*10+ob;
+    if(!GUIDED.some(g=>g[0]===a&&g[1]===b) && !(a===573&&b===340)) return [a,b];
+  }
+}
+function startSoloProblem(){ const [a,b]=S.s.list[S.s.i]; S.s.cur={a,b,errors:[],hints:0,alone:false,carry:digits(a).t+digits(b).t>=10}; S.s.done=false; }
+
+const A = {
+  begin(){ S.name=(document.getElementById('name')?.value||'').trim(); S.screen='check'; },
+  demoParent(){
+    S=fresh(); S.demo=true; S.name='נועה (דוגמה)'; S.screen='parent'; S.feeling='ok';
+    S.check.res=[{skill:'ten',ok:true},{skill:'ten',ok:false},{skill:'place',ok:true},{skill:'tens',ok:true},{skill:'tens',ok:true}];
+    S.log=[{a:312,b:465,errors:[],hints:0,alone:true,carry:false},{a:257,b:381,errors:['concat'],hints:1,alone:false,carry:true},
+      {a:143,b:524,errors:[],hints:0,alone:true,carry:false},{a:468,b:270,errors:['drop'],hints:0,alone:false,carry:true},{a:395,b:142,errors:[],hints:0,alone:true,carry:true}];
+  },
+  nextCheck(){
+    S.fb=null; S.check.wait=false;
+    if(S.check.i<CHECK.length-1){ S.check.i++; return; }
+    const r=S.check.res, okAll=k=>r.filter(x=>x.skill===k).every(x=>x.ok);
+    S.tenHelp=!okAll('ten'); S.skipTens=okAll('tens')&&okAll('place');
+    S.screen = S.skipTens ? 'explore' : 'tens';
+  },
+  nextTens(){
+    S.fb=null;
+    if(S.tens.i<TENS.length-1) S.tens={i:S.tens.i+1,step:0,wrong:0,done:false}; else S.screen='explore';
+  },
+  exNext(){ if(S.ex.step<4) S.ex.step++; else { S.screen='guided'; S.fb=null; } },
+  exBack(){ if(S.ex.step>0) S.ex.step--; },
+  nextGuided(){
+    S.fb=null;
+    if(S.g.i<GUIDED.length-1){ S.g={i:S.g.i+1,step:0,wrong:0,done:false}; }
+    else { S.screen='solo'; S.s={i:0,list:[false,true,false,true,true].map(makeProblem),level:1,errRow:0}; startSoloProblem();
+      S.fb={tone:'info',text:'עכשיו את לבד. הטבלה תיעלם לאט לאט, ותמיד אפשר לבקש רמז.'}; }
+  },
+  nextSolo(){
+    const s=S.s; S.fb=null;
+    if(s.cur.alone && s.level>0) s.level--;
+    if(s.i<s.list.length-1){ s.i++; startSoloProblem(); } else S.screen='summary';
+  },
+  hint(){ const p=S.s.cur; if(p.hints<3){ p.hints++; S.fb=null; } },
+  key(v){ if(S.input.length<4) S.input+=v; },
+  del(){ S.input=S.input.slice(0,-1); },
+  check(){
+    if(!S.input) return; const x=+S.input; S.input='';
+    ({check:checkCheck, tens:tensCheck, guided:guidedCheck, solo:soloCheck})[S.screen]?.(x);
+  },
+  say(){ speak(S.say); return false; },
+  feel(v){ S.feeling=v; },
+  toParent(){ S.screen='parent'; window.scrollTo(0,0); },
+  backSummary(){ S.screen='summary'; },
+  restart(){ S=fresh(); }
+};
+function checkCheck(x){
+  const c=CHECK[S.check.i], ok=x===c.a;
+  S.check.res.push({skill:c.skill, ok});
+  S.check.wait=true;
+  S.fb = ok ? {tone:'ok', text:'<strong>נכון.</strong>'} : {tone:'info', text:'תודה. זה עוזר לי לדעת מאיפה להתחיל.'};
+}
+function tensCheck(x){
+  const [a,b]=TENS[S.tens.i], st=S.tens.step, ans=[a+b,(a+b)*10][st];
+  if(x===ans || S.tens.wrong>=1){
+    S.fb = x===ans ? {tone:'ok',text:`<strong>נכון.</strong> ${st===0?`${a} + ${b} = ${a+b}.`:`${a*10} + ${b*10} = ${(a+b)*10}.`}`}
+                   : {tone:'info',text:`התשובה היא ${ans}. ${st===0?(tenHint(a,b)||''):`${a+b} עשרות זה ${ans}.`}`};
+    S.tens.wrong=0; if(st===0) S.tens.step=1; else S.tens.done=true;
+  } else {
+    S.tens.wrong++;
+    S.fb={tone:'try',text: st===0 ? `ספרי את המקלות. ${S.tenHelp&&tenHint(a,b)?'אפשר גם דרך העשר: '+tenHint(a,b).replace(/ זה \d+\.$/,'.'):''}` : `${a+b} מקלות של עשר. כמה זה ${a+b} פעמים 10?`};
+  }
+}
+function guidedCheck(x){
+  const [a,b]=GUIDED[S.g.i], steps=stepsFor(a,b), cur=steps[S.g.step];
+  if(x===cur.a || S.g.wrong>=1){
+    S.fb = x===cur.a ? {tone:'ok',text:`<strong>נכון.</strong> ${cur.ok}`} : {tone:'info',text:`התשובה היא ${cur.a}. ${cur.ok}`};
+    S.g.wrong=0;
+    if(S.g.step<steps.length-1) S.g.step++; else S.g.done=true;
+  } else {
+    S.g.wrong++;
+    let t = cur.parts ? `מחברות את שלושת החלקים: ${cur.parts.join(' + ')}. קודם ${cur.parts[0]} + ${cur.parts[1]}.`
+          : cur.a>=100&&cur.k==='t' ? `כל עשר עשרות הן מאה. ${cur.a/10} עשרות זה מאה ועוד ${cur.a/10-10} עשרות.`
+          : (S.tenHelp&&cur.ten&&tenHint(...cur.ten)) ? `נסי דרך העשר: ${tenHint(...cur.ten).replace(/ זה \d+\.$/,'.')}`
+          : `ספרי את הצורות בעמודה המסומנת.`;
+    S.fb={tone:'try',text:t};
+  }
+}
+function soloCheck(x){
+  const s=S.s, p=s.cur, {a,b}=p;
+  if(x===a+b){
+    p.alone=!p.hints && !p.errors.length;
+    s.done=true; s.errRow=0; S.log.push(p);
+    const q=parts(a,b);
+    S.fb={tone:'ok',text:`<strong>נכון!</strong> <span class="ltr">${q.H} + ${q.T} + ${q.O} = ${a+b}</span>.${p.alone?' פתרת את זה לבד.':''}`};
+  } else {
+    const t=classify(x,a,b); p.errors.push(t); s.errRow++;
+    let txt=ERR[t].kid(parts(a,b));
+    if(s.errRow>=2 && s.level<2){ s.level=2; txt+=' החזרתי את הטבלה עם הצורות, כדי שיהיה קל לראות.'; }
+    if(p.errors.length>=4 && p.hints<3) p.hints=3;
+    S.fb={tone:'try',text:txt};
+  }
+}
+
+app.addEventListener('click', e=>{
+  const t=e.target.closest('[data-act]'); if(!t||t.disabled) return;
+  const r=A[t.dataset.act]?.(t.dataset.v, t);
+  if(r!==false) render();
+});
+document.addEventListener('keydown', e=>{
+  if(!['check','tens','guided','solo'].includes(S.screen) || e.target.tagName==='INPUT') return;
+  const locked = (S.screen==='check'&&S.check.wait)||(S.screen==='tens'&&S.tens.done)||(S.screen==='guided'&&S.g.done)||(S.screen==='solo'&&S.s.done);
+  if(locked){ if(e.key==='Enter'){ const b=app.querySelector('.btn.primary'); if(b){ e.preventDefault(); b.click(); } } return; }
+  if(/^[0-9]$/.test(e.key)) A.key(e.key);
+  else if(e.key==='Backspace') A.del();
+  else if(e.key==='Enter') A.check();
+  else return;
+  e.preventDefault(); render();
+});
+app.addEventListener('keydown', e=>{ if(e.target.id==='name' && e.key==='Enter'){ A.begin(); render(); } });
+
+function render(){
+  const v={start:vStart,check:vCheck,tens:vTens,explore:vExplore,guided:vGuided,solo:vSolo,summary:vSummary,parent:vParent}[S.screen];
+  app.innerHTML=ltrMath(v());
+}
+/* inside Hebrew sentences the browser reverses "392 + 510" into "510 + 392"; isolate every expression as LTR */
+function ltrMath(html){
+  return html.replace(/>([^<]+)</g, (m,t)=>'>'+t.replace(/\d+(?:\s*[+=→×-]\s*\d+)+(?:\s*=\s*\?)?/g, x=>`<span class="ltr">${x}</span>`)+'<');
+}
+render();
+</script>
+</body>
+</html>
