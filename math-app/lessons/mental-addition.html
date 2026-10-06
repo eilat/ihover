@@ -65,8 +65,17 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-o
 .pv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;direction:ltr}
 .col{border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;border:2px solid transparent;transition:opacity .3s,border-color .3s}
 .col.hc{background:var(--blue-soft)} .col.tc{background:var(--sun-soft)} .col.oc{background:var(--leaf-soft)}
-.col.dim{opacity:.35}
-.col.focus{border-color:var(--ink)}
+.col.focus{border-color:var(--ink);box-shadow:0 0 0 3px var(--surface) inset}
+/* answer boxes under each column (the child's worksheet) */
+.fld{display:flex;align-items:center;gap:8px;direction:ltr;font-family:var(--f-display);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums}
+.box{min-width:78px;height:54px;padding:0 10px;border-radius:12px;border:2.5px dashed var(--muted);background:var(--surface);font-family:var(--f-display);font-size:28px;font-weight:600;color:var(--ink)}
+.box.on{border:3px solid var(--ink);box-shadow:0 0 0 4px var(--blue-soft)}
+.box.done{border:2.5px solid var(--leaf);background:var(--leaf-soft);color:var(--leaf);cursor:default}
+.box.big{min-width:120px;height:64px;font-size:34px}
+.vals{font-size:16px;color:var(--muted);direction:rtl}
+.sumrow{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.bundle{display:flex;gap:5px;padding:6px 8px 4px;border:2.5px solid var(--ink);border-radius:10px;position:relative}
+.bundle::after{content:"100";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:13px;font-weight:600;padding:0 8px;border-radius:999px}
 .col-title{font-size:15px;color:var(--muted);direction:rtl}
 .blocks{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;align-items:flex-end;min-height:40px}
 .blocks + .blocks{padding-top:8px;border-top:2px dashed var(--line);width:100%}
@@ -150,7 +159,7 @@ function fresh(){
     check:{i:0, res:[]}, tenHelp:false, skipTens:false,
     tens:{i:0, step:0, wrong:0, done:false},
     ex:{step:0},
-    g:{i:0, step:0, wrong:0, done:false},
+    g:{i:0, W:null},
     s:null, log:[]};
 }
 S = fresh();
@@ -167,13 +176,13 @@ function numBlocks(n){
 }
 /* the place-value table. a, b: the two numbers. show: which columns show their small sum.
    focus: the column being worked on. hideBlocks: just the digits, no pictures */
-function table(a, b, {show={}, focus=null, hideBlocks=false, dimOthers=false}={}){
+function table(a, b, {show={}, focus=null, hideBlocks=false}={}){
   const A=numBlocks(a), B=numBlocks(b), da=digits(a), db=digits(b);
   const col = (k, cls) => {
     const sum = da[k]+db[k];
     const val = show[k]==='value' ? `<small>${PLACE[k]}: ${sum*({h:100,t:10,o:1}[k])}</small>` : '';
     const mini = show[k] ? `${da[k]} + ${db[k]} = ${sum}${val}` : `${da[k]} + ${db[k]} = <span class="q">?</span>`;
-    return `<div class="col ${cls} ${focus===k?'focus':''} ${dimOthers&&focus&&focus!==k?'dim':''}">
+    return `<div class="col ${cls} ${focus===k?'focus':''}">
       <span class="col-title">${PLACE[k]}</span>
       ${hideBlocks?'':`<div class="blocks">${A[k]}</div><div class="blocks">${B[k]}</div>`}
       <span class="mini">${mini}</span></div>`;
@@ -196,6 +205,11 @@ function keypad(){
   <div class="pad">${d}<button class="key" data-act="del" aria-label="מחיקה">⌫</button><button class="key" data-act="key" data-v="0">0</button><button class="key ok" data-act="check">בדיקה</button></div>
   <p class="kbd-hint">אפשר גם להקליד במקלדת וללחוץ <kbd>Enter</kbd></p>`;
 }
+function padOnly(){
+  const d=[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" data-act="key" data-v="${n}">${n}</button>`).join('');
+  return `<div class="pad">${d}<button class="key" data-act="del" aria-label="מחיקה">⌫</button><button class="key" data-act="key" data-v="0">0</button><button class="key ok" data-act="check">בדיקה</button></div>
+  <p class="kbd-hint">כותבות בקופסה המסומנת. אפשר ללחוץ על קופסה אחרת, להקליד במקלדת וללחוץ <kbd>Enter</kbd></p>`;
+}
 function shell(stage, body){
   return `<header class="top"><div class="who">${S.name?esc(S.name):'&nbsp;'}</div>
   <ol class="path" aria-label="שלבי השיעור">${STAGES.map((s,i)=>{
@@ -205,21 +219,65 @@ function shell(stage, body){
 }
 const tenHint = (x,y) => { const n=10-x; return n>0&&n<y ? `${x} + ${n} = 10, ועוד ${y-n} זה ${x+y}.` : ''; };
 
-/* ---------- steps for a guided problem: one small question at a time ---------- */
-function stepsFor(a,b){
-  const da=digits(a), db=digits(b), st=[];
-  st.push({k:'h', q:`מתחילות מהמאות. כמה זה ${da.h} + ${db.h}?`, a:da.h+db.h, ok:`${da.h+db.h} מאות, כלומר ${(da.h+db.h)*100}.`});
-  st.push({k:'t', q:`עכשיו העשרות. כמה זה ${da.t} + ${db.t}?`, a:da.t+db.t, ok:`${da.t+db.t} עשרות.`, ten:[da.t,db.t]});
-  if(da.t+db.t>=10) st.push({k:'t', q:`${da.t+db.t} עשרות, כמה זה במספרים?`, a:(da.t+db.t)*10, ok:`${da.t+db.t} עשרות זה ${(da.t+db.t)*10}. יש פה עוד מאה אחת!`});
-  st.push({k:'o', q:`והאחדות. כמה זה ${da.o} + ${db.o}?`, a:da.o+db.o, ok:`${da.o+db.o} אחדות.`, ten:[da.o,db.o]});
-  const H=(da.h+db.h)*100, T=(da.t+db.t)*10, O=da.o+db.o;
-  st.push({k:null, q:`עכשיו מחברות הכול: ${H} + ${T} + ${O}. כמה זה?`, a:a+b, ok:`${a} + ${b} = ${a+b}.`, parts:[H,T,O]});
-  return st;
+/* ---------- the worksheet: a box under each column, then the long sum ---------- */
+function makeSheet(a,b){
+  const da=digits(a), db=digits(b), hs=da.h+db.h, ts=da.t+db.t, os=da.o+db.o, H=hs*100, T=ts*10, O=os, F=[];
+  F.push({id:'h', k:'h', pre:`${da.h} + ${db.h} =`, ans:hs, q:`מתחילות מהמאות. כמה זה ${da.h} + ${db.h}? כתבי בקופסה של המאות.`, okt:`${hs} מאות, כלומר ${H}.`});
+  F.push({id:'t', k:'t', pre:`${da.t} + ${db.t} =`, ans:ts, ten:[da.t,db.t], q:`עכשיו העשרות. כמה זה ${da.t} + ${db.t}?`, okt:`${ts} עשרות.`});
+  if(ts>=10) F.push({id:'tc', k:'t', pre:`${ts} עשרות =`, ans:T,
+    q:`יצאו ${ts} עשרות, כלומר ${ts} מקלות של 10. עשרה מקלות הם מאה שלמה, הם במסגרת. כמה שווים כל ${ts} המקלות?`,
+    okt:`${ts} עשרות זה ${T}: מאה, ועוד ${T-100}.`});
+  F.push({id:'o', k:'o', pre:`${da.o} + ${db.o} =`, ans:os, ten:[da.o,db.o], q:`והאחדות. כמה זה ${da.o} + ${db.o}?`, okt:`${os} אחדות.`});
+  F.push({id:'sum', k:null, pre:`${H} + ${T} + ${O} =`, ans:a+b, parts:[H,T,O], q:`כל העמודות מוכנות. עכשיו מחברות את החלקים: ${H} + ${T} + ${O}.`, okt:`${a} + ${b} = ${a+b}.`});
+  return {a, b, H, T, O, ts, fields:F.map(f=>({...f, val:'', ok:false, wrong:0, helped:false})), cur:0, done:false};
 }
-function shownFor(steps, upto){
-  const show={};
-  steps.slice(0,upto).forEach(s=>{ if(s.k) show[s.k] = (s.k==='t' && s.a>=100) || s.k==='h' ? 'value' : 'sum'; });
-  return show;
+const colsDone = W => W.fields.every(f=>f.k===null || f.ok);
+function nextField(W){
+  const i = W.fields.findIndex(f=>!f.ok && f.k!==null);
+  W.cur = i>=0 ? i : W.fields.findIndex(f=>!f.ok);
+  if(W.cur<0){ W.cur=W.fields.length-1; W.done=true; }
+}
+function sheet(W, {showBlocks=true}={}){
+  const A=numBlocks(W.a), B=numBlocks(W.b), cur=W.fields[W.cur];
+  const box = (f,i,big='') => f.ok
+    ? `<span class="box done ${big}" style="display:inline-grid;place-items:center">${f.val}</span>`
+    : `<button class="box ${big} ${i===W.cur&&!W.done?'on':''}" data-act="pick" data-v="${i}" aria-label="קופסת תשובה">${f.val}</button>`;
+  const col = (k, cls) => {
+    let pic = `<div class="blocks">${A[k]}</div><div class="blocks">${B[k]}</div>`;
+    const tc = W.fields.find(f=>f.id==='tc');
+    if(k==='t' && tc && (W.fields[W.cur]===tc || tc.ok))
+      pic = `<div class="blocks"><span class="bundle">${blocks(10,'tb')}</span>${blocks(W.ts-10,'tb')}</div>`;
+    const fl = W.fields.map((f,i)=>f.k===k ? `<div class="fld"><span>${f.pre}</span>${box(f,i)}</div>` : '').join('');
+    const h = W.fields.find(f=>f.id==='h'), t = W.fields.find(f=>f.id==='t');
+    const note = k==='h'&&h.ok ? `<span class="vals">מאות: ${W.H}</span>` : k==='t'&&t.ok&&!tc ? `<span class="vals">עשרות: ${W.T}</span>` : '';
+    return `<div class="col ${cls} ${!W.done&&cur.k===k?'focus':''}"><span class="col-title">${PLACE[k]}</span>${showBlocks?pic:''}${fl}${note}</div>`;
+  };
+  const s = W.fields[W.fields.length-1], si = W.fields.length-1;
+  const sum = colsDone(W) ? `<div class="eq sumrow"><span>${s.pre}</span>${box(s,si,'big')}</div>`
+                          : `<div class="eq">${W.a} + ${W.b} = <span class="q">?</span></div>`;
+  return `<div class="pv">${col('h','hc')}${col('t','tc')}${col('o','oc')}</div>${sum}`;
+}
+function fieldHint(W,f){
+  if(f.id==='sum') return `קודם ${f.parts[0]} + ${f.parts[1]}, ואז מוסיפות עוד ${f.parts[2]}.`;
+  if(f.id==='tc') return `המסגרת היא 100. מחוץ למסגרת יש עוד ${W.ts-10} מקלות, כלומר ${(W.ts-10)*10}. כמה זה 100 ועוד ${(W.ts-10)*10}?`;
+  if(S.tenHelp && f.ten && tenHint(...f.ten)) return `נסי דרך העשר: ${tenHint(...f.ten).replace(/ זה \d+\.$/,'.')}`;
+  return `ספרי את הצורות בעמודה המסומנת.`;
+}
+/* returns true when the answer was right */
+function checkField(W, x, {revealAfter=2, onWrong}={}){
+  const f=W.fields[W.cur];
+  if(x===f.ans){
+    f.ok=true; f.val=String(x); nextField(W);
+    S.fb={tone:'ok', text:`<strong>נכון.</strong> ${f.okt}`};
+    return true;
+  }
+  f.wrong++; f.val='';
+  onWrong?.(f,x);
+  if(f.wrong>=revealAfter){
+    f.ok=true; f.helped=true; f.val=String(f.ans); nextField(W);
+    S.fb={tone:'info', text:`התשובה היא ${f.ans}. ${f.okt}`};
+  } else if(!onWrong) S.fb={tone:'try', text:fieldHint(W,f)};
+  return false;
 }
 
 /* ---------- screens ---------- */
@@ -277,36 +335,36 @@ function vExplore(){
       <button class="btn primary" data-act="exNext">${st<4?'הלאה':'הבנתי, ממשיכות'}</button></div>`);
 }
 function vGuided(){
-  const [a,b]=GUIDED[S.g.i], steps=stepsFor(a,b), st=S.g.step, cur=steps[st], last=S.g.i===GUIDED.length-1;
-  const hint = S.tenHelp && cur?.ten && tenHint(...cur.ten) && !S.g.done ? `<div class="fb info">רמז: ${tenHint(...cur.ten).replace(/ זה \d+\.$/,'.')}</div>` : '';
+  const W=S.g.W, last=S.g.i===GUIDED.length-1;
   return shell(3, `
     <p class="eyebrow">פותרות ביחד · תרגיל ${S.g.i+1} מתוך ${GUIDED.length}</p>
-    ${S.g.done ? prompt(`${a} + ${b} = ${a+b}. שלושה תרגילים קטנים, ותרגיל אחד גדול נפתר.`) : prompt(cur.q)}
-    ${table(a,b,{show:shownFor(steps, S.g.done?steps.length:st), focus:S.g.done?null:cur.k, dimOthers:true})}
-    <div class="eq">${S.g.done?`${a} + ${b} = ${a+b}`:`${a} + ${b} = <span class="q">?</span>`}</div>
-    ${hint}${feedback()}
-    ${S.g.done ? `<div class="row"><button class="btn primary" data-act="nextGuided">${last?'עכשיו לבד':'לתרגיל הבא'}</button></div>` : keypad()}`);
+    ${W.done ? prompt(`${W.a} + ${W.b} = ${W.a+W.b}. שלושה תרגילים קטנים, ותרגיל אחד גדול נפתר.`) : prompt(W.fields[W.cur].q)}
+    ${sheet(W)}
+    ${feedback()}
+    ${W.done ? `<div class="row"><button class="btn primary" data-act="nextGuided">${last?'עכשיו לבד':'לתרגיל הבא'}</button></div>` : padOnly()}`);
 }
+function soloSheet(){ const s=S.s; return Math.max(s.level, s.cur.hints>=2?2:0)===2; }
 function vSolo(){
   const s=S.s, p=s.cur, {a,b}=p, d=digits(a), e=digits(b);
-  const lvl = Math.max(s.level, p.hints>=2?2:0);
+  const useSheet = soloSheet();
+  if(useSheet && !p.W) p.W = makeSheet(a,b);
+  if(useSheet && p.hints>=3) p.W.fields.forEach(f=>{ if(f.k!==null && !f.ok){ f.ok=true; f.helped=true; f.val=String(f.ans); } }), nextField(p.W);
   let pic;
-  if(lvl===0) pic = `<p class="muted" style="text-align:center">הטבלה בראש שלך עכשיו. מאות, עשרות, אחדות.</p>`;
-  else if(lvl===1) pic = table(a,b,{hideBlocks:true});
-  else pic = table(a,b,{show: p.hints>=2 ? {h:'value',t:'value',o:'sum'} : {}});
-  const H=(d.h+e.h)*100, T=(d.t+e.t)*10, O=d.o+e.o;
+  if(useSheet) pic = sheet(p.W);
+  else if(s.level===1) pic = table(a,b,{hideBlocks:true}) + `<div class="eq">${s.done?`${a} + ${b} = ${a+b}`:`${a} + ${b} = <span class="q">?</span>`}</div>`;
+  else pic = `<p class="muted" style="text-align:center">הטבלה בראש שלך עכשיו. מאות, עשרות, אחדות.</p><div class="eq">${s.done?`${a} + ${b} = ${a+b}`:`${a} + ${b} = <span class="q">?</span>`}</div>`;
   const hintText = ['',
     `רמז: קודם המאות. כמה זה ${d.h} + ${e.h}?${S.tenHelp&&tenHint(d.t,e.t)?` ובעשרות: ${tenHint(d.t,e.t)}`:''}`,
-    `רמז: מאות ${H}, עשרות ${T}, אחדות ${O}. עכשיו לחבר אותם.`,
-    `בואי נפתור יחד: ${H} + ${T} + ${O}. כמה זה?`][p.hints];
+    `פתחתי לך את הטבלה עם הקופסאות. פותרות עמודה אחרי עמודה.`,
+    `מילאתי את העמודות. נשאר לחבר את החלקים.`][p.hints];
+  const say = useSheet && !s.done ? p.W.fields[p.W.cur].q : `כמה זה ${a} + ${b}?`;
   return shell(4, `
     <p class="eyebrow">לבד · תרגיל ${s.i+1} מתוך ${s.list.length}</p>
-    ${prompt(`כמה זה ${a} + ${b}?`)}
+    ${prompt(say)}
     ${pic}
-    <div class="eq">${s.done?`${a} + ${b} = ${a+b}`:`${a} + ${b} = <span class="q">?</span>`}</div>
     ${p.hints && !s.done ? `<div class="fb info">${hintText}</div>`:''}
     ${feedback()}
-    ${s.done ? `<div class="row"><button class="btn primary" data-act="nextSolo">${s.i===s.list.length-1?'לסיכום':'לתרגיל הבא'}</button></div>` : keypad()}
+    ${s.done ? `<div class="row"><button class="btn primary" data-act="nextSolo">${s.i===s.list.length-1?'לסיכום':'לתרגיל הבא'}</button></div>` : (useSheet?padOnly():keypad())}
     ${s.done ? '' : `<div class="tools"><button class="btn soft" data-act="hint" ${p.hints>=3?'disabled':''}>רמז${p.hints?` (${p.hints}/3)`:''}</button></div>`}`);
 }
 function vSummary(){
@@ -333,8 +391,8 @@ const ERR = {
     parent:'הפסידה את המאה שנוצרת מהעשרות (למשל 813 במקום 913).', tip:'לבקש שתגיד בקול "11 עשרות זה 110" לפני שהיא מחברת הכול.'},
   place:{kid:()=>`קרוב! בדקי שוב מקום אחד. אולי במאות או בעשרות התבלבלו הספרות.`,
     parent:'טעות של 10 או 100, כנראה בלבול בין המקומות.', tip:'לכתוב את שני המספרים זה מתחת לזה ולהצביע: מאות, עשרות, אחדות.'},
-  small:{kid:()=>`יש טעות קטנה באחד התרגילים הקטנים. בדקי את האחדות.`,
-    parent:'טעות קטנה בחיבור האחדות.', tip:'לתרגל חיבור עד 20 בנפרד, כמה דקות ביום.'},
+  small:{kid:()=>`יש טעות קטנה באחד התרגילים הקטנים. בדקי עמודה אחרי עמודה.`,
+    parent:'טעות באחד התרגילים הקטנים (מאות, עשרות או אחדות).', tip:'לתרגל חיבור עד 20 בנפרד, כמה דקות ביום.'},
   other:{kid:p=>`עוד לא. בואי נתחיל מהמאות: כמה זה ${digits(p.a).h} + ${digits(p.b).h}?`,
     parent:'טעות שלא מתאימה לדפוס מוכר.', tip:'לבקש ממנה להסביר בקול איך חשבה. ההסבר יגלה איפה נתקעה.'}
 };
@@ -430,11 +488,11 @@ const A = {
     S.fb=null;
     if(S.tens.i<TENS.length-1) S.tens={i:S.tens.i+1,step:0,wrong:0,done:false}; else S.screen='explore';
   },
-  exNext(){ if(S.ex.step<4) S.ex.step++; else { S.screen='guided'; S.fb=null; } },
+  exNext(){ if(S.ex.step<4) S.ex.step++; else { S.screen='guided'; S.fb=null; S.g={i:0, W:makeSheet(...GUIDED[0])}; } },
   exBack(){ if(S.ex.step>0) S.ex.step--; },
   nextGuided(){
     S.fb=null;
-    if(S.g.i<GUIDED.length-1){ S.g={i:S.g.i+1,step:0,wrong:0,done:false}; }
+    if(S.g.i<GUIDED.length-1){ S.g={i:S.g.i+1, W:makeSheet(...GUIDED[S.g.i+1])}; }
     else { S.screen='solo'; S.s={i:0,list:[false,true,false,true,true].map(makeProblem),level:1,errRow:0}; startSoloProblem();
       S.fb={tone:'info',text:'עכשיו את לבד. הטבלה תיעלם לאט לאט, ותמיד אפשר לבקש רמז.'}; }
   },
@@ -444,11 +502,15 @@ const A = {
     if(s.i<s.list.length-1){ s.i++; startSoloProblem(); } else S.screen='summary';
   },
   hint(){ const p=S.s.cur; if(p.hints<3){ p.hints++; S.fb=null; } },
-  key(v){ if(S.input.length<4) S.input+=v; },
-  del(){ S.input=S.input.slice(0,-1); },
+  key(v){ const W=activeSheet(); if(W){ const f=W.fields[W.cur]; if(f.val.length<4) f.val+=v; } else if(S.input.length<4) S.input+=v; },
+  del(){ const W=activeSheet(); if(W){ const f=W.fields[W.cur]; f.val=f.val.slice(0,-1); } else S.input=S.input.slice(0,-1); },
+  pick(v){ const W=activeSheet(), i=+v; if(!W||W.fields[i].ok) return; if(W.fields[i].k===null && !colsDone(W)) return; W.cur=i; },
   check(){
+    const W=activeSheet();
+    if(W){ const f=W.fields[W.cur]; if(!f.val) return; const x=+f.val;
+      return S.screen==='guided' ? void checkField(W,x) : soloSheetCheck(x); }
     if(!S.input) return; const x=+S.input; S.input='';
-    ({check:checkCheck, tens:tensCheck, guided:guidedCheck, solo:soloCheck})[S.screen]?.(x);
+    ({check:checkCheck, tens:tensCheck, solo:soloCheck})[S.screen]?.(x);
   },
   say(){ speak(S.say); return false; },
   feel(v){ S.feeling=v; },
@@ -456,6 +518,24 @@ const A = {
   backSummary(){ S.screen='summary'; },
   restart(){ S=fresh(); }
 };
+function activeSheet(){
+  if(S.screen==='guided' && !S.g.W.done) return S.g.W;
+  if(S.screen==='solo' && !S.s.done && soloSheet() && S.s.cur.W) return S.s.cur.W;
+  return null;
+}
+function soloSheetCheck(x){
+  const s=S.s, p=s.cur, W=p.W;
+  checkField(W, x, {revealAfter:3, onWrong:(f,v)=>{
+    const t = f.id==='sum' ? classify(v,p.a,p.b) : f.id==='tc' ? (v===W.ts||v===W.ts*100?'concat':'place') : 'small';
+    p.errors.push(t);
+    S.fb={tone:'try', text: f.id==='sum' ? ERR[t].kid(parts(p.a,p.b)) : fieldHint(W,f)};
+  }});
+  if(W.done){
+    p.alone = !p.hints && !p.errors.length && !W.fields.some(f=>f.helped);
+    s.done=true; s.errRow=0; S.log.push(p);
+    S.fb={tone:'ok', text:`<strong>נכון!</strong> <span class="ltr">${W.H} + ${W.T} + ${W.O} = ${p.a+p.b}</span>.`};
+  }
+}
 function checkCheck(x){
   const c=CHECK[S.check.i], ok=x===c.a;
   S.check.res.push({skill:c.skill, ok});
@@ -473,21 +553,6 @@ function tensCheck(x){
     S.fb={tone:'try',text: st===0 ? `ספרי את המקלות. ${S.tenHelp&&tenHint(a,b)?'אפשר גם דרך העשר: '+tenHint(a,b).replace(/ זה \d+\.$/,'.'):''}` : `${a+b} מקלות של עשר. כמה זה ${a+b} פעמים 10?`};
   }
 }
-function guidedCheck(x){
-  const [a,b]=GUIDED[S.g.i], steps=stepsFor(a,b), cur=steps[S.g.step];
-  if(x===cur.a || S.g.wrong>=1){
-    S.fb = x===cur.a ? {tone:'ok',text:`<strong>נכון.</strong> ${cur.ok}`} : {tone:'info',text:`התשובה היא ${cur.a}. ${cur.ok}`};
-    S.g.wrong=0;
-    if(S.g.step<steps.length-1) S.g.step++; else S.g.done=true;
-  } else {
-    S.g.wrong++;
-    let t = cur.parts ? `מחברות את שלושת החלקים: ${cur.parts.join(' + ')}. קודם ${cur.parts[0]} + ${cur.parts[1]}.`
-          : cur.a>=100&&cur.k==='t' ? `כל עשר עשרות הן מאה. ${cur.a/10} עשרות זה מאה ועוד ${cur.a/10-10} עשרות.`
-          : (S.tenHelp&&cur.ten&&tenHint(...cur.ten)) ? `נסי דרך העשר: ${tenHint(...cur.ten).replace(/ זה \d+\.$/,'.')}`
-          : `ספרי את הצורות בעמודה המסומנת.`;
-    S.fb={tone:'try',text:t};
-  }
-}
 function soloCheck(x){
   const s=S.s, p=s.cur, {a,b}=p;
   if(x===a+b){
@@ -498,7 +563,7 @@ function soloCheck(x){
   } else {
     const t=classify(x,a,b); p.errors.push(t); s.errRow++;
     let txt=ERR[t].kid(parts(a,b));
-    if(s.errRow>=2 && s.level<2){ s.level=2; txt+=' החזרתי את הטבלה עם הצורות, כדי שיהיה קל לראות.'; }
+    if(s.errRow>=2 && s.level<2){ s.level=2; txt+=' פתחתי לך את הטבלה עם הקופסאות. אפשר לפתור עמודה אחרי עמודה.'; }
     if(p.errors.length>=4 && p.hints<3) p.hints=3;
     S.fb={tone:'try',text:txt};
   }
@@ -511,7 +576,7 @@ app.addEventListener('click', e=>{
 });
 document.addEventListener('keydown', e=>{
   if(!['check','tens','guided','solo'].includes(S.screen) || e.target.tagName==='INPUT') return;
-  const locked = (S.screen==='check'&&S.check.wait)||(S.screen==='tens'&&S.tens.done)||(S.screen==='guided'&&S.g.done)||(S.screen==='solo'&&S.s.done);
+  const locked = (S.screen==='check'&&S.check.wait)||(S.screen==='tens'&&S.tens.done)||(S.screen==='guided'&&S.g.W.done)||(S.screen==='solo'&&S.s.done);
   if(locked){ if(e.key==='Enter'){ const b=app.querySelector('.btn.primary'); if(b){ e.preventDefault(); b.click(); } } return; }
   if(/^[0-9]$/.test(e.key)) A.key(e.key);
   else if(e.key==='Backspace') A.del();
