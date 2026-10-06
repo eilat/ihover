@@ -22,3 +22,16 @@ vocabulary are where distinctive choices come from.
 Every version gets one thing a visitor will remember, and only one. Examples: a live price that
 updates as you type, a menu that unfolds like a paper map, a hero photo that tracks the cursor,
 a giant number that counts up once. Keep everything around it calm.
+
+## Extra directions for kids' learning screens (מתמטיקידס)
+
+| # | Direction | Layout skeleton | How the math is shown | Color world | Density |
+|---|-----------|-----------------|-----------------------|-------------|---------|
+| 11 | Workbench | Lesson card in the middle, materials on a tray beside it | Objects you drag or click (balls, ten-frames, blocks) | Calm, one warm accent for "things you touch" | Airy |
+| 12 | Journey map | The lesson is a path of stops; each stop is one small step | Steps reveal one at a time | Natural outdoor tones | Medium |
+| 13 | Story problem | A short story scene frames every exercise | Characters and things from the story | Picture-book palette, not saturated | Medium |
+| 14 | Number line world | One long number line is the stage for everything | Jumps and arcs | Two clear colors on a light ground | Sparse |
+| 15 | Notebook | Looks like a squared math notebook, with handwriting-style hints | Written steps, crossed-out tries kept visible | Paper and pencil colors that are not cream | Medium |
+| 16 | Quiet focus | One question per screen, nothing else | Big numerals, one visual aid | One deep color + white | Sparse |
+
+For parent screens use 4 (Catalogue), 9 (Dashboard) or 2 (Editorial), kept plain and readable.
