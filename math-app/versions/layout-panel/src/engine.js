@@ -189,7 +189,7 @@ function vModal(){
 }
 function render(){
   applyColor();
-  const nav = S.collapsed ? (CFG.collapse==='rail' ? vRail() : (S.open ? vPanel() : `<button class="fab" data-act="openFloat" aria-label="פתיחת התפריט">${ICON.menu}<span class="avatar sm">${esc(kid().name[0])}</span></button>`)) : vPanel();
+  const nav = S.collapsed ? (CFG.collapse==='rail' ? vRail() : `<button class="fab" data-act="unfold" aria-label="פתיחת התפריט">${ICON.menu}<span class="avatar sm">${esc(kid().name[0])}</span></button>`) : vPanel();
   const e=EX[S.i];
   const body = S.finished ? vDone() : e.type==='sheet' ? vSheet() : vSimple(e);
   document.getElementById('app').className = `shell ${S.collapsed?'is-collapsed':''} ${S.open?'is-open':''}`;
@@ -251,7 +251,6 @@ document.addEventListener('click', e=>{
   const r=A[t.dataset.act]?.(t.dataset.v);
   if(r!==false) render();
 });
-document.addEventListener('click', e=>{ if(CFG.collapse==='float' && S.collapsed && S.open && !e.target.closest('.panel,.fab')){ S.open=false; render(); } });
 document.addEventListener('change', e=>{ if(e.target.id==='kid'){ S.kid=+e.target.value; render(); } });
 document.addEventListener('keydown', e=>{
   if(e.target.tagName==='SELECT') return;

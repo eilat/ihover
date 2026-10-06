@@ -53,6 +53,8 @@ V = [
 .panel .steps li.now .dot{border-color:#fff}
 .panel .parent{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.4);color:#fff}
 .card{background:var(--surface);border-radius:28px;padding:clamp(24px,5vw,56px)}
+/* folded: the floating button is out of the grid flow, so the lesson takes the whole width */
+.shell.is-collapsed{grid-template-columns:minmax(0,1fr)}
 .shell.is-collapsed .stage{padding-top:84px}
 .work{gap:30px}
 .toast{animation:toast2 1.7s cubic-bezier(.3,1.6,.5,1) both}
