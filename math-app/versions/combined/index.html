@@ -37,21 +37,22 @@ svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-lin
 .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);position:relative;min-height:64px}
 .chip{display:flex;align-items:center;gap:10px;min-height:48px;padding:4px 14px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:18px;font-weight:600}
 .chip:hover{border-color:var(--accent)}
-.avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:600}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--accent);display:grid;place-items:center;overflow:hidden;flex:none}
+.avatar svg{width:100%;height:100%;display:block;stroke:none}
 .chip svg{width:20px;height:20px;color:var(--accent)}
 .lesson-name{flex:1;text-align:center;color:var(--muted);font-size:16px}
 .timer{font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .lock{width:44px;height:44px;border-radius:12px;border:2px solid transparent;background:transparent;display:grid;place-items:center;color:var(--muted)}
 .lock:hover{border-color:var(--line)}
 .lock svg{width:22px;height:22px}
-.pop{position:absolute;top:calc(100% + 6px);inset-inline-start:16px;z-index:20;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:18px;width:min(340px,calc(100vw - 32px));display:flex;flex-direction:column;gap:16px}
+.pop{position:absolute;top:calc(100% + 6px);inset-inline-start:16px;z-index:20;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:18px;width:min(400px,calc(100vw - 32px));display:flex;flex-direction:column;gap:16px}
 .pop h3{margin:0;font-size:15px;color:var(--muted);font-weight:600}
 .pop .kids{display:flex;gap:8px;flex-wrap:wrap}
 .kidbtn{min-height:44px;padding:4px 14px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:flex;gap:8px;align-items:center}
 .kidbtn[aria-pressed="true"]{border-color:var(--ink)}
-.kidbtn .avatar{width:30px;height:30px;font-size:15px}
-.sws{display:grid;grid-template-columns:repeat(6,56px);gap:8px}
-.sw{width:56px;height:56px;border-radius:50%;border:4px solid var(--surface);background:var(--c);box-shadow:0 0 0 2px var(--line);display:grid;place-items:center;color:#fff;padding:0}
+.kidbtn .avatar{width:34px;height:34px}
+.sws{display:grid;grid-template-columns:repeat(6,52px);gap:8px}
+.sw{width:52px;height:52px;border-radius:50%;border:4px solid var(--surface);background:var(--c);box-shadow:0 0 0 2px var(--line);display:grid;place-items:center;color:#fff;padding:0}
 .sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
 .sw svg{width:24px;height:24px;stroke-width:3}
 .toggle{display:flex;align-items:center;gap:12px;min-height:48px;border:0;background:transparent;padding:0;text-align:start}
@@ -150,7 +151,8 @@ svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-lin
 .screen p{margin:0;color:var(--muted);font-size:19px}
 .who{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
 .whocard{width:200px;min-height:170px;border-radius:20px;border:3px solid var(--c,var(--line));background:color-mix(in srgb,var(--c,var(--line)) 12%,var(--surface));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-family:var(--f-display);font-size:26px;font-weight:600}
-.whocard .avatar{width:72px;height:72px;font-size:32px;background:var(--c,var(--muted))}
+.whocard .avatar{width:96px;height:96px;background:var(--c,var(--muted))}
+.whocard{min-height:200px}
 .whocard:hover{box-shadow:0 8px 20px rgba(0,0,0,.1)}
 .screen .sws{grid-template-columns:repeat(3,72px);gap:14px}
 .screen .sw{width:72px;height:72px}
@@ -223,16 +225,36 @@ const ICON={
   close:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 const PLACE={h:'מאות',t:'עשרות',o:'אחדות'};
+/* simple drawn characters, one per girl (on a circle in her colour) */
+const FACES={
+  lili:`<svg viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/>
+    <circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/>
+    <ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/>
+    <path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/>
+    <circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/>
+    <circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/>
+    <path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  nori:`<svg viewBox="0 0 64 64" aria-hidden="true">
+    <path d="M12 40c-1-16 8-27 20-27s21 11 20 27c0 6-2 10-4 12H16c-2-2-4-6-4-12z" fill="#2E2A33"/>
+    <ellipse cx="32" cy="38" rx="15.5" ry="17" fill="#E9B98F"/>
+    <path d="M16 33c2-10 9-15 16-15s14 5 16 15c-6-2-11-6-14-11-3 6-10 10-18 11z" fill="#2E2A33"/>
+    <path d="M42 15l7-4-1 8z M42 15l8 3-6 4z" fill="#E8457A"/><circle cx="43.5" cy="16.5" r="2.4" fill="#C72F63"/>
+    <circle cx="26" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="38" cy="39" r="2.3" fill="#2B2B2B"/>
+    <circle cx="22.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="41.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/>
+    <path d="M27.5 47c2.6 2.3 6.4 2.3 9 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
+};
+const avatar=k=>`<span class="avatar" style="background:${accentOf(k)}">${FACES[k.face]||FACES.lili}</span>`;
 const digits=n=>({h:Math.floor(n/100),t:Math.floor(n/10)%10,o:n%10});
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const L=x=>`<span class="ltr">${x}</span>`;
 
 /* ---------- state (prototype: kids and choices remembered in this browser) ---------- */
-let KIDS=[{id:'a',name:'מאיה',color:null,timer:false},{id:'b',name:'נועה',color:null,timer:false}];
-try{ const k=JSON.parse(localStorage.getItem('combo:kids')||'null'); if(k) KIDS=k; }catch(e){}
-const saveKids=()=>{ try{ localStorage.setItem('combo:kids',JSON.stringify(KIDS)); }catch(e){} };
+let KIDS=[{id:'a',name:'לילי',color:null,timer:false,face:'lili'},{id:'b',name:'נורי',color:null,timer:false,face:'nori'}];
+try{ const k=JSON.parse(localStorage.getItem('combo:kids2')||'null'); if(k) KIDS=k; }catch(e){}
+const saveKids=()=>{ try{ localStorage.setItem('combo:kids2',JSON.stringify(KIDS)); }catch(e){} };
 const S={screen:'who', kid:null, i:0, input:'', wrong:0, note:null, toast:null, locked:false, W:null, ex:0,
-  pop:false, gate:null, timeMs:0, tickFrom:null};
+  pop:false, gate:null, exT:{ms:0,from:null,frozen:false}};
 const kid=()=>KIDS.find(k=>k.id===S.kid);
 const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
 function applyAccent(){ document.documentElement.style.setProperty('--accent', accentOf(kid())); }
@@ -243,11 +265,20 @@ function pickVoice(){ try{ const he=speechSynthesis.getVoices().filter(v=>/^he|^
 try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){}
 function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
 
-/* ---------- timer: opt-in, whole lesson, minutes only, pauses when the window is hidden ---------- */
-function timerRun(on){ if(on && S.tickFrom==null) S.tickFrom=Date.now(); if(!on && S.tickFrom!=null){ S.timeMs+=Date.now()-S.tickFrom; S.tickFrom=null; } }
-const minutes=()=>Math.floor((S.timeMs+(S.tickFrom!=null?Date.now()-S.tickFrom:0))/60000);
-document.addEventListener('visibilitychange',()=>timerRun(!document.hidden && S.screen==='lesson'));
-setInterval(()=>{ if(kid()?.timer && S.screen==='lesson') renderBar(); },20000);
+/* ---------- timer: opt-in, per exercise. Runs only while an exercise is on screen and unsolved,
+   pauses when the window is hidden, and is never compared or shown to the parent. ---------- */
+const fmt=ms=>{ const s=Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
+const exMs=()=>S.exT.ms+(S.exT.from!=null?Date.now()-S.exT.from:0);
+function syncTimer(){
+  const it=ITEMS[S.i];
+  const run=S.screen==='lesson' && !document.hidden && !S.exT.frozen && it && it.type!=='explore';
+  if(run && S.exT.from==null) S.exT.from=Date.now();
+  if(!run && S.exT.from!=null){ S.exT.ms+=Date.now()-S.exT.from; S.exT.from=null; }
+}
+function freezeTimer(){ S.exT.frozen=true; syncTimer(); }
+const timeTag=()=>kid()?.timer ? ` ⏱ ${fmt(exMs())}` : '';
+document.addEventListener('visibilitychange',syncTimer);
+setInterval(()=>{ const el=document.getElementById('tmr'); if(el) el.textContent=`⏱ ${fmt(exMs())}`; },1000);
 
 /* ---------- worksheet model (math teacher's flow: every column is written as its value) ---------- */
 function makeW(a,b,cols){
@@ -295,10 +326,10 @@ function hintFor(W,k,x){
   return W.carry ? `כמו להחליף 10 מטבעות של 10 בשטר של 100: ${L(`${W.H} + 100 = ${W.H+100}`)}, ועוד ${W.T-100}.` : `${L(`${W.H} + ${W.T} = ${W.H+W.T}`)}. ועוד ${W.O}?`;
 }
 function finishW(W){
-  W.finished=true; S.locked=true;
+  W.finished=true; S.locked=true; freezeTimer();
   if(W.carry && W.cols){ W.traded=true;
-    S.note={ok:true, text:`נכון! המאה שהייתה בתוך העשרות עברה למאות. ${W.hs+1} מאות, ${W.ts-10} עשרות ו-${W.os} אחדות: ${W.sum}.`}; }
-  else S.note={ok:true, text:`נכון! ${L(`${W.a} + ${W.b} = ${W.sum}`)}.`};
+    S.note={ok:true, text:`נכון! המאה שהייתה בתוך העשרות עברה למאות. ${W.hs+1} מאות, ${W.ts-10} עשרות ו-${W.os} אחדות: ${W.sum}.${timeTag()}`}; }
+  else S.note={ok:true, text:`נכון! ${L(`${W.a} + ${W.b} = ${W.sum}`)}.${timeTag()}`};
 }
 function checkW(x){
   const W=S.W, k=W.cur;
@@ -316,7 +347,7 @@ function checkW(x){
   if(W.wrong[k]>=3){
     W.done[k]=true; W.val[k]=String(W.ans[k]);
     if(k==='t' && W.carry) W.frame=true;
-    if(k==='sum'){ finishW(W); S.note={ok:false, text:`התשובה היא ${W.sum}. ${S.note.text}`}; render(); return; }
+    if(k==='sum'){ finishW(W); S.note={ok:false, text:`התשובה היא ${W.sum}. ${S.note.text.replace(/ ⏱ .*$/,'')}`}; render(); return; }
     S.note={text:`התשובה היא ${W.ans[k]}. בואי נמשיך.`}; nextField(W); render(); return;
   }
   S.note={text:hintFor(W,k,x)}; render();
@@ -404,24 +435,23 @@ function renderBar(){
   const k=kid(), bar=document.getElementById('bar');
   if(!k){ bar.innerHTML=`<span class="lesson-name" style="text-align:start;font-weight:600;color:var(--ink)">מתמטיקידס</span><button class="lock" data-act="gate" aria-label="מסך הורה">${ICON.lock}</button>`; return; }
   const sws=COLORS.map(c=>`<button class="sw" style="--c:${c.c}" data-act="color" data-v="${c.id}" aria-label="צבע ${c.name}" aria-pressed="${k.color===c.id}">${k.color===c.id?ICON.check:''}</button>`).join('');
-  bar.innerHTML=`<button class="chip" data-act="pop" aria-expanded="${S.pop}"><span class="avatar">${esc(k.name[0])}</span>${esc(k.name)}${ICON.palette}</button>
+  bar.innerHTML=`<button class="chip" data-act="pop" aria-expanded="${S.pop}">${avatar(k)}${esc(k.name)}${ICON.palette}</button>
     <span class="lesson-name">חיבור בראש</span>
-    ${k.timer && S.screen==='lesson'?`<span class="timer" aria-label="זמן בשיעור">⏱ ${minutes()} דק'</span>`:''}
+    ${k.timer && S.screen==='lesson' && ITEMS[S.i].type!=='explore'?`<span class="timer" id="tmr" aria-label="זמן בתרגיל הזה">⏱ ${fmt(exMs())}</span>`:''}
     <button class="lock" data-act="gate" aria-label="מסך הורה">${ICON.lock}</button>
     ${S.pop?`<div class="pop" role="dialog" aria-label="ההגדרות שלי">
-      <div><h3>מי לומדת?</h3><div class="kids">${KIDS.map(x=>`<button class="kidbtn" style="--accent:${accentOf(x)}" data-act="switch" data-v="${x.id}" aria-pressed="${x.id===k.id}"><span class="avatar">${esc(x.name[0])}</span>${esc(x.name)}</button>`).join('')}</div></div>
+      <div><h3>מי לומדת?</h3><div class="kids">${KIDS.map(x=>`<button class="kidbtn" style="--accent:${accentOf(x)}" data-act="switch" data-v="${x.id}" aria-pressed="${x.id===k.id}">${avatar(x)}${esc(x.name)}</button>`).join('')}</div></div>
       <div><h3>הצבע שלי</h3><div class="sws">${sws}</div></div>
-      <button class="toggle" data-act="timer" aria-pressed="${k.timer}"><span class="switch"></span><span>להראות לי כמה זמן עבר</span></button>
+      <button class="toggle" data-act="timer" aria-pressed="${k.timer}"><span class="switch"></span><span>להראות לי כמה זמן לוקח לי כל תרגיל</span></button>
     </div>`:''}`;
 }
 function vScreen(){
-  if(S.screen==='who') return `<div class="card"><h1>מי לומדת היום?</h1><div class="who">${KIDS.map(k=>`<button class="whocard" style="--c:${k.color?accentOf(k):'var(--line)'}" data-act="pickKid" data-v="${k.id}"><span class="avatar">${esc(k.name[0])}</span>${esc(k.name)}</button>`).join('')}</div></div>`;
+  if(S.screen==='who') return `<div class="card"><h1>מי לומדת היום?</h1><div class="who">${KIDS.map(k=>`<button class="whocard" style="--c:${k.color?accentOf(k):'var(--line)'}" data-act="pickKid" data-v="${k.id}">${avatar(k)}${esc(k.name)}</button>`).join('')}</div></div>`;
   if(S.screen==='color'){ const k=kid(); return `<div class="card"><h1>שלום ${esc(k.name)}! איזה צבע את רוצה?</h1><p>אפשר להחליף אותו מתי שרוצים, למעלה ליד השם שלך.</p>
     <div class="sws">${COLORS.map(c=>`<button class="sw" style="--c:${c.c}" data-act="firstColor" data-v="${c.id}" aria-label="צבע ${c.name}"></button>`).join('')}</div></div>`; }
   if(S.screen==='trans'){ const t=TRANSITIONS[S.i]; return `<div class="card"><h1>${t.title}</h1>${mapHtml(t.stop)}<p>${t.text}</p><button class="btn primary" data-act="go">ממשיכות</button></div>`; }
   if(S.screen==='done'){ const k=kid(); return `<div class="card"><h1>סיימנו את השיעור!</h1>${mapHtml(3)}
     <p>במקום תרגיל אחד גדול, שלושה תרגילים קטנים: מאות, עשרות, אחדות. ואז מחברים.</p>
-    ${k.timer?`<p>השיעור לקח לך ${minutes()<=1?'דקה אחת':minutes()+' דקות'}.</p>`:''}
     <button class="btn primary" data-act="again">עוד פעם מההתחלה</button></div>`; }
   return '';
 }
@@ -448,10 +478,11 @@ function render(){
   document.getElementById('layout').hidden=!lesson;
   document.getElementById('screen').hidden=lesson;
   document.getElementById('screen').className='screen';
-  if(!lesson){ document.getElementById('screen').innerHTML=vScreen(); return; }
+  if(!lesson){ document.getElementById('screen').innerHTML=vScreen(); syncTimer(); return; }
   const it=ITEMS[S.i];
   document.getElementById('main').innerHTML = it.type==='simple'?vSimple(it):it.type==='explore'?vExplore():vSheet(it);
   document.getElementById('kp').innerHTML=keypad();
+  syncTimer();
 }
 
 /* ---------- flow ---------- */
@@ -460,36 +491,36 @@ function toast(text, at, then){
   setTimeout(()=>{ if(S.toast?.id===id){ S.toast=null; then?.(); render(); } },1800);
 }
 function startItem(){
-  const it=ITEMS[S.i]; S.input=''; S.wrong=0; S.note=null; S.locked=false; S.ex=0;
+  const it=ITEMS[S.i]; S.input=''; S.wrong=0; S.note=null; S.locked=false; S.ex=0; S.exT={ms:0,from:null,frozen:false};
   S.W = it.type==='sheet' ? makeW(it.a,it.b,true) : it.type==='solo' ? makeW(it.a,it.b,false) : null;
   clearScratch();
 }
 function advance(){
-  if(S.i>=ITEMS.length-1){ S.screen='done'; timerRun(false); return; }
+  if(S.i>=ITEMS.length-1){ S.screen='done'; return; }
   S.i++; startItem();
-  if(TRANSITIONS[S.i]){ S.screen='trans'; timerRun(false); }
+  if(TRANSITIONS[S.i]){ S.screen='trans'; }
 }
 function checkSimple(){
   const it=ITEMS[S.i]; if(!S.input) return; const x=+S.input;
-  if(x===it.ans){ S.locked=true; S.note=null; toast(`נכון! ${L(`${it.a} + ${it.b} = ${it.ans}`)}`,'main',advance); return; }
+  if(x===it.ans){ S.locked=true; S.note=null; freezeTimer(); toast(`נכון! ${L(`${it.a} + ${it.b} = ${it.ans}`)}${timeTag()}`,'main',advance); return; }
   S.input=''; S.wrong++;
-  if(S.wrong>=3){ S.locked=true; S.note={text:`התשובה היא ${it.ans}. ${it.hints[1]}`}; render(); setTimeout(()=>{ advance(); render(); },2800); return; }
+  if(S.wrong>=3){ S.locked=true; freezeTimer(); S.note={text:`התשובה היא ${it.ans}. ${it.hints[1]}`}; render(); setTimeout(()=>{ advance(); render(); },2800); return; }
   S.note={text:it.hints[S.wrong-1]}; render();
 }
 const A={
-  pickKid(v){ S.kid=v; S.pop=false; const k=kid(); S.screen = k.color ? 'lesson' : 'color'; if(S.screen==='lesson'){ S.i=0; startItem(); timerRun(true); } },
-  firstColor(v){ kid().color=v; saveKids(); S.screen='lesson'; S.i=0; S.timeMs=0; startItem(); timerRun(true); },
+  pickKid(v){ S.kid=v; S.pop=false; const k=kid(); S.screen = k.color ? 'lesson' : 'color'; if(S.screen==='lesson'){ S.i=0; startItem(); } },
+  firstColor(v){ kid().color=v; saveKids(); S.screen='lesson'; S.i=0; startItem(); },
   pop(){ S.pop=!S.pop; },
   color(v){ kid().color=v; saveKids(); },
   timer(){ const k=kid(); k.timer=!k.timer; saveKids(); },
-  switch(v){ if(v===S.kid){ S.pop=false; return; } S.pop=false; timerRun(false); S.timeMs=0; S.kid=v; const k=kid(); if(!k.color){ S.screen='color'; } else { S.screen='lesson'; S.i=0; startItem(); timerRun(true); } },
+  switch(v){ if(v===S.kid){ S.pop=false; return; } S.pop=false; S.kid=v; const k=kid(); if(!k.color){ S.screen='color'; } else { S.screen='lesson'; S.i=0; startItem(); } },
   say(){ const p=document.querySelector('.task p'); if(p) speak(p.textContent); return false; },
   hint(){ const W=S.W; if(!W||W.cols) return; W.cols=true; nextField(W); S.note=null; },
   exNext(){ if(S.ex<4) S.ex++; else advance(); },
   exBack(){ if(S.ex>0) S.ex--; },
-  go(){ S.screen='lesson'; timerRun(true); },
+  go(){ S.screen='lesson'; },
   next(){ advance(); },
-  again(){ S.i=0; S.timeMs=0; startItem(); S.screen='lesson'; timerRun(true); },
+  again(){ S.i=0; startItem(); S.screen='lesson'; },
   noop(){},
   pick(v){ const W=S.W; if(!W||W.finished||W.done[v]) return; if(v==='sum' && W.cols && !colsDone(W) && ITEMS[S.i].mode==='ביחד') return; W.cur=v; },
   key(v){ if(S.locked) return; if(S.W){ const k=S.W.cur; if(S.W.val[k].length<4) S.W.val[k]+=v; } else if(S.input.length<4) S.input+=v; },
