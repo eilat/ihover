@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מתמטיקידס · משולבת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Assistant:wght@400;600&display=swap">
+<style>
+/* Combined version: notebook look (v1) + sticks in a box (v2) + top bar instead of a side panel.
+   One anchor per screen: the exercise with its answer box. Tools have fixed homes: speaker top-right of the task,
+   hint next to the progress line, keypad and scratchpad in a left column, timer (opt-in) in the top bar. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --ink:#1E2633; --muted:#5A6577; --line:#D3DAE3;
+  --h:#2F5BD3; --h-soft:#DCE5FA; --t:#D9980A; --t-soft:#FCEFC9; --o:#23895A; --o-soft:#DCF1E5;
+  --good:#1F7A4D; --good-soft:#DDF2E7; --hint-bg:#FFF1C9; --accent:#7444C9;
+  --f-display:"Rubik",system-ui,sans-serif; --f-body:"Assistant","Rubik",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161D; --surface:#1B212B; --ink:#E8EDF4; --muted:#9AA6B8; --line:#2E3746;
+  --h:#7096F4; --h-soft:#24345A; --t:#F2BE3C; --t-soft:#3C3320; --o:#4DC48B; --o-soft:#1E3A2E;
+  --good:#3FB37A; --good-soft:#1C3A2B; --hint-bg:#3D3420; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161D; --surface:#1B212B; --ink:#E8EDF4; --muted:#9AA6B8; --line:#2E3746;
+  --h:#7096F4; --h-soft:#24345A; --t:#F2BE3C; --t-soft:#3C3320; --o:#4DC48B; --o-soft:#1E3A2E;
+  --good:#3FB37A; --good-soft:#1C3A2B; --hint-bg:#3D3420; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ltr{direction:ltr;unicode-bidi:isolate}
+[hidden]{display:none!important}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);position:relative;min-height:64px}
+.chip{display:flex;align-items:center;gap:10px;min-height:48px;padding:4px 14px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:18px;font-weight:600}
+.chip:hover{border-color:var(--accent)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:600}
+.chip svg{width:20px;height:20px;color:var(--accent)}
+.lesson-name{flex:1;text-align:center;color:var(--muted);font-size:16px}
+.timer{font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lock{width:44px;height:44px;border-radius:12px;border:2px solid transparent;background:transparent;display:grid;place-items:center;color:var(--muted)}
+.lock:hover{border-color:var(--line)}
+.lock svg{width:22px;height:22px}
+.pop{position:absolute;top:calc(100% + 6px);inset-inline-start:16px;z-index:20;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:18px;width:min(340px,calc(100vw - 32px));display:flex;flex-direction:column;gap:16px}
+.pop h3{margin:0;font-size:15px;color:var(--muted);font-weight:600}
+.pop .kids{display:flex;gap:8px;flex-wrap:wrap}
+.kidbtn{min-height:44px;padding:4px 14px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:flex;gap:8px;align-items:center}
+.kidbtn[aria-pressed="true"]{border-color:var(--ink)}
+.kidbtn .avatar{width:30px;height:30px;font-size:15px}
+.sws{display:grid;grid-template-columns:repeat(6,56px);gap:8px}
+.sw{width:56px;height:56px;border-radius:50%;border:4px solid var(--surface);background:var(--c);box-shadow:0 0 0 2px var(--line);display:grid;place-items:center;color:#fff;padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.sw svg{width:24px;height:24px;stroke-width:3}
+.toggle{display:flex;align-items:center;gap:12px;min-height:48px;border:0;background:transparent;padding:0;text-align:start}
+.switch{width:52px;height:30px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle[aria-pressed="true"] .switch{background:var(--accent)}
+.toggle[aria-pressed="true"] .switch::after{transform:translateX(-22px)}
+
+/* layout: exercise column (right) + tools column (left) */
+.layout{max-width:1100px;margin-inline:auto;padding-block:20px 40px;padding-inline:16px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:20px;align-items:start}
+.card{background:var(--surface);border-radius:8px;padding:clamp(18px,3vw,32px);box-shadow:0 1px 2px rgba(0,0,0,.06);min-width:0;
+  background-image:linear-gradient(color-mix(in srgb,var(--accent) 9%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--accent) 9%,transparent) 1px,transparent 1px);background-size:28px 28px}
+.main{display:flex;flex-direction:column;gap:18px}
+.tools{display:flex;flex-direction:column;gap:14px;position:sticky;top:16px}
+.toolbox{background:var(--surface);border-radius:8px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+/* task line with speaker */
+.task{display:flex;align-items:center;gap:12px}
+.say{flex:none;width:52px;height:52px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;padding:0;box-shadow:0 3px 8px color-mix(in srgb,var(--accent) 35%,transparent)}
+.say svg{width:26px;height:26px}
+.task p{margin:0;font-size:23px;font-weight:600;font-family:var(--f-display);background:var(--surface);padding:2px 6px;border-radius:6px}
+.task .ch{color:var(--h)} .task .ct{color:var(--t)} .task .co{color:var(--o)}
+
+/* the anchor: exercise + answer box */
+.anchor{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-family:var(--f-display);font-weight:600;font-size:clamp(44px,5.6vw,62px);line-height:1.1;font-variant-numeric:tabular-nums}
+.anchor.sm{font-size:clamp(36px,4.4vw,48px)}
+.slot{position:relative;display:inline-flex}
+.box{min-width:84px;height:56px;padding:0 12px;border-radius:10px;border:2.5px dashed var(--muted);background:var(--surface);font-family:var(--f-display);font-weight:600;font-size:28px;color:var(--ink);display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
+.box.big{min-width:150px;height:1.45em;font-size:1em;border-width:3px}
+.box.on{border:3px solid var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 22%,transparent)}
+.box.done{border:3px solid var(--good);background:var(--good-soft);color:var(--good);cursor:default}
+.box.wait{cursor:default;color:var(--muted)}
+.parts{text-align:center;font-family:var(--f-display);font-weight:600;font-size:26px}
+.parts .h{color:var(--h)} .parts .t{color:var(--t)} .parts .o{color:var(--o)}
+.toast{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--good);color:#fff;font-family:var(--f-body);font-size:17px;font-weight:600;padding:6px 14px;border-radius:999px;box-shadow:0 6px 16px rgba(0,0,0,.15);animation:toast 1.8s ease both;z-index:5;direction:rtl}
+.toast::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--good)}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,6px) scale(.9)}12%{opacity:1;transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0}}
+
+/* progress line + hint button */
+.prog{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:48px}
+.prog p{margin:0;font-size:16px;color:var(--muted);background:var(--surface);padding:0 6px;border-radius:6px}
+.prog b{color:var(--ink)}
+.hintbtn{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 16px;border-radius:999px;border:2px solid #E7B416;background:var(--hint-bg);font-weight:600}
+.hintbtn svg{width:22px;height:22px}
+.note{background:var(--hint-bg);border-radius:12px;padding:12px 16px;font-size:19px}
+.note.ok{background:var(--good-soft)}
+
+/* sticks box */
+.tray{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;border-radius:12px;background:var(--t-soft);border:2px solid color-mix(in srgb,var(--t) 40%,transparent)}
+.tray .row{display:flex;gap:6px;justify-content:center}
+.tray .tb{width:11px;height:44px}
+.tray .row + .row{border-top:2px dashed color-mix(in srgb,var(--t) 50%,transparent);padding-top:8px;width:100%}
+
+/* columns */
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;direction:ltr}
+.col{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 8px;border-radius:12px;border:2px solid var(--line);background:var(--surface);transition:box-shadow .2s,border-color .2s}
+.col.on{border:3px solid var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 16%,transparent),0 8px 20px rgba(0,0,0,.08)}
+.col-title{font-size:16px;font-weight:600;direction:rtl;display:flex;gap:6px;align-items:center}
+.c-h .col-title{color:var(--h)} .c-t .col-title{color:var(--t)} .c-o .col-title{color:var(--o)}
+.col-title .ok{color:var(--good);width:18px;height:18px;stroke-width:3}
+.blocks{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:flex-end;min-height:34px;width:100%;padding:6px;border-radius:8px}
+.c-h .blocks{background:var(--h-soft)} .c-t .blocks{background:var(--t-soft)} .c-o .blocks{background:var(--o-soft)}
+.blocks + .blocks{margin-top:-4px}
+.hb{width:28px;height:28px;border-radius:3px;background:var(--h);background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:2.8px 2.8px}
+.hb.arrived{animation:arrive .9s cubic-bezier(.3,1.3,.5,1) both;box-shadow:0 0 0 3px var(--accent)}
+@keyframes arrive{0%{transform:translateX(160px) scale(.6);opacity:.3}100%{transform:none;opacity:1}}
+.tb{width:7px;height:28px;border-radius:3px;background:var(--t)}
+.ob{width:9px;height:9px;border-radius:50%;background:var(--o)}
+.bundle{display:flex;gap:3px;padding:8px 6px 4px;border:2.5px solid var(--ink);border-radius:8px;position:relative;animation:pop .4s ease both}
+.bundle::after{content:"100";position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:12px;font-weight:600;padding:0 8px;border-radius:999px;font-family:var(--f-display)}
+@keyframes pop{from{transform:scale(.85);opacity:.4}to{transform:none;opacity:1}}
+.fld{display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--f-display);font-weight:600;font-size:21px;font-variant-numeric:tabular-nums}
+.explore-val{font-family:var(--f-display);font-weight:600;font-size:21px;min-height:56px;display:grid;place-items:center}
+
+/* keypad + scratchpad */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;direction:ltr}
+.key{height:56px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-family:var(--f-display);font-weight:600;font-size:24px}
+.key:hover{border-color:var(--accent)}
+.key.ok{background:var(--accent);border-color:var(--accent);color:#fff;font-size:18px}
+.kbd{margin:8px 0 0;font-size:13px;color:var(--muted);text-align:center}
+.scrbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.scrbtn svg{width:20px;height:20px}
+.scr{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.scr canvas{width:100%;height:220px;border-radius:10px;border:2px dashed var(--line);background:var(--surface);touch-action:none;cursor:crosshair}
+.scr .row{display:flex;gap:8px}
+.scr .row button{flex:1;min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-size:15px}
+.scr .row button[aria-pressed="true"]{border-color:var(--ink);font-weight:600}
+.btn{min-height:52px;padding:8px 24px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:18px;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* full screens: who / colour / transition / done */
+.screen{max-width:760px;margin:40px auto;padding:0 16px}
+.screen .card{display:flex;flex-direction:column;gap:22px;align-items:center;text-align:center;padding:40px 24px}
+.screen h1{margin:0;font-family:var(--f-display);font-size:clamp(30px,4vw,40px)}
+.screen p{margin:0;color:var(--muted);font-size:19px}
+.who{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.whocard{width:200px;min-height:170px;border-radius:20px;border:3px solid var(--c,var(--line));background:color-mix(in srgb,var(--c,var(--line)) 12%,var(--surface));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-family:var(--f-display);font-size:26px;font-weight:600}
+.whocard .avatar{width:72px;height:72px;font-size:32px;background:var(--c,var(--muted))}
+.whocard:hover{box-shadow:0 8px 20px rgba(0,0,0,.1)}
+.screen .sws{grid-template-columns:repeat(3,72px);gap:14px}
+.screen .sw{width:72px;height:72px}
+.map{list-style:none;margin:0;padding:0;display:flex;gap:0;direction:rtl}
+.map li{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:92px;position:relative;color:var(--muted);font-size:16px}
+.map li:not(:last-child)::after{content:"";position:absolute;top:13px;inset-inline-start:calc(50% + 16px);width:calc(100% - 32px);border-top:3px dashed var(--line)}
+.map li.done:not(:last-child)::after{border-color:var(--accent)}
+.map .dot{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);background:var(--surface);display:grid;place-items:center;color:#fff}
+.map .dot svg{width:15px;height:15px;stroke-width:3}
+.map li.done .dot{background:var(--accent);border-color:var(--accent)}
+.map li.now{color:var(--ink);font-weight:600}
+.map li.now .dot{border:8px solid var(--accent)}
+.here{font-size:12px;font-weight:700;background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px}
+
+/* parent gate */
+.scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--surface);border-radius:20px;padding:26px;max-width:400px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center;position:relative}
+.modal h2{margin:0;font-family:var(--f-display)}
+.modal p{margin:0;color:var(--muted)}
+.modal .en{direction:ltr;font-size:22px;color:var(--ink);font-weight:600}
+.modal .disp{direction:ltr;font-family:var(--f-display);font-size:34px;font-weight:600;min-height:56px;border:3px solid var(--ink);border-radius:12px;display:grid;place-items:center}
+.modal .x{position:absolute;top:10px;inset-inline-end:10px;width:44px;height:44px;border-radius:12px;border:0;background:transparent;display:grid;place-items:center}
+.modal .x svg{width:22px;height:22px}
+
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.tools{position:static}.cols{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="bar" id="bar"></header>
+<div id="screen" hidden></div>
+<div class="layout" id="layout" hidden>
+  <section class="card main" id="main" aria-live="polite"></section>
+  <aside class="tools" aria-label="כלים">
+    <div class="toolbox" id="kp"></div>
+    <div class="toolbox">
+      <button class="scrbtn" id="scrToggle" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>טיוטה</button>
+      <div class="scr" id="scr" hidden>
+        <canvas id="cv" width="480" height="440" aria-label="טיוטה לציור עם העכבר"></canvas>
+        <div class="row"><button id="pen" aria-pressed="true">עט</button><button id="eraser" aria-pressed="false">מחק</button><button id="clear">לנקות</button></div>
+      </div>
+    </div>
+  </aside>
+</div>
+<div id="overlay"></div>
+
+<script>
+/* ---------- data ---------- */
+const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
+const ITEMS=[
+  {phase:'הסבר', type:'simple', a:4, b:3, ans:7, sticks:[4,3],
+    intro:'יש 4 מקלות ועוד 3 מקלות. כמה מקלות יש?', hints:['ספרי את כל המקלות בקופסה, למעלה ולמטה.','אפשר לספור מ-4 הלאה: 5, 6, 7.']},
+  {phase:'הסבר', type:'simple', a:40, b:30, ans:70, sticks:[4,3],
+    intro:'כל מקל הוא 10. כמה זה 40 + 30?', hints:['4 + 3 = 7. אז 4 עשרות ועוד 3 עשרות הם 7 עשרות.','7 עשרות זה 70.']},
+  {phase:'הסבר', type:'explore', a:573, b:340},
+  {phase:'שאלות', mode:'ביחד', type:'sheet', a:432, b:251},
+  {phase:'שאלות', mode:'ביחד', type:'sheet', a:253, b:172},
+  {phase:'שאלות', mode:'לבד', type:'solo', a:361, b:214},
+  {phase:'שאלות', mode:'לבד', type:'solo', a:476, b:152},
+  {phase:'שאלות', mode:'לבד', type:'solo', a:285, b:143}
+];
+const STOPS=['הסבר','ביחד','לבד','סיכום'];
+const TRANSITIONS={3:{title:'סיימת את ההסבר!', text:'עכשיו פותרות ביחד, עמודה אחרי עמודה.', stop:1}, 5:{title:'עכשיו לבד!', text:'אם צריך, הכפתור "רמז" מחזיר את הטבלה.', stop:2}};
+const ICON={
+  speaker:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
+  palette:'<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/></svg>',
+  lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  bulb:'<svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  close:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+const PLACE={h:'מאות',t:'עשרות',o:'אחדות'};
+const digits=n=>({h:Math.floor(n/100),t:Math.floor(n/10)%10,o:n%10});
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const L=x=>`<span class="ltr">${x}</span>`;
+
+/* ---------- state (prototype: kids and choices remembered in this browser) ---------- */
+let KIDS=[{id:'a',name:'מאיה',color:null,timer:false},{id:'b',name:'נועה',color:null,timer:false}];
+try{ const k=JSON.parse(localStorage.getItem('combo:kids')||'null'); if(k) KIDS=k; }catch(e){}
+const saveKids=()=>{ try{ localStorage.setItem('combo:kids',JSON.stringify(KIDS)); }catch(e){} };
+const S={screen:'who', kid:null, i:0, input:'', wrong:0, note:null, toast:null, locked:false, W:null, ex:0,
+  pop:false, gate:null, timeMs:0, tickFrom:null};
+const kid=()=>KIDS.find(k=>k.id===S.kid);
+const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
+function applyAccent(){ document.documentElement.style.setProperty('--accent', accentOf(kid())); }
+
+/* ---------- voice ---------- */
+let VOICE=null;
+function pickVoice(){ try{ const he=speechSynthesis.getVoices().filter(v=>/^he|^iw/i.test(v.lang)); const s=v=>(/premium/i.test(v.name)?4:0)+(/enhanced/i.test(v.name)?3:0); VOICE=he.sort((a,b)=>s(b)-s(a))[0]||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){}
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+
+/* ---------- timer: opt-in, whole lesson, minutes only, pauses when the window is hidden ---------- */
+function timerRun(on){ if(on && S.tickFrom==null) S.tickFrom=Date.now(); if(!on && S.tickFrom!=null){ S.timeMs+=Date.now()-S.tickFrom; S.tickFrom=null; } }
+const minutes=()=>Math.floor((S.timeMs+(S.tickFrom!=null?Date.now()-S.tickFrom:0))/60000);
+document.addEventListener('visibilitychange',()=>timerRun(!document.hidden && S.screen==='lesson'));
+setInterval(()=>{ if(kid()?.timer && S.screen==='lesson') renderBar(); },20000);
+
+/* ---------- worksheet model (math teacher's flow: every column is written as its value) ---------- */
+function makeW(a,b,cols){
+  const da=digits(a), db=digits(b), hs=da.h+db.h, ts=da.t+db.t, os=da.o+db.o;
+  const W={a,b,da,db,hs,ts,os,H:hs*100,T:ts*10,O:os,sum:a+b,carry:ts>=10,cols,
+    lab:{h:`${da.h*100} + ${db.h*100} =`, t:`${da.t*10} + ${db.t*10} =`, o:`${da.o} + ${db.o} =`},
+    ans:{h:hs*100,t:ts*10,o:os,sum:a+b}, val:{h:'',t:'',o:'',sum:''}, done:{}, wrong:{h:0,t:0,o:0,sum:0},
+    frame:false, traded:false, finished:false};
+  W.cur = cols ? 'h' : 'sum';
+  return W;
+}
+const colsDone=W=>['h','t','o'].every(k=>W.done[k]);
+function nextField(W){ const k=['h','t','o'].find(k=>!W.done[k]); W.cur = W.cols && k ? k : 'sum'; }
+function taskFor(W){
+  if(W.finished) return '';
+  const c=W.cur;
+  if(c==='h') return `מתחילות מה<span class="ch">מאות</span>. כמה זה ${L(W.lab.h.replace(' =',''))}?`;
+  if(c==='t') return `עכשיו ה<span class="ct">עשרות</span>. כמה זה ${L(W.lab.t.replace(' =',''))}?`;
+  if(c==='o') return `וה<span class="co">אחדות</span>. כמה זה ${L(W.lab.o.replace(' =',''))}?`;
+  if(W.cols) return `מחברות את החלקים: ${L(`${W.H} + ${W.T} + ${W.O}`)}`;
+  return `כמה זה ${L(`${W.a} + ${W.b}`)}?`;
+}
+function hintFor(W,k,x){
+  const n=W.wrong[k];
+  if(k==='h'){
+    if(x===W.hs) return `נכון, ${W.hs} ריבועים! וכל ריבוע הוא 100. כמה שווים ${W.hs} ריבועים?`;
+    return n===1 ? `קודם בלי האפסים: כמה זה ${L(`${W.da.h} + ${W.db.h}`)}?` : `${W.hs} ריבועים, וכל ריבוע הוא 100. כמה זה?`;
+  }
+  if(k==='t'){
+    if(x===W.ts) return `נכון, יש ${W.ts} מקלות! אבל כל מקל שווה 10. כמה שווים ${W.ts} מקלות?`;
+    if(x===W.ts*100) return `זה יותר מדי. 10 מקלות הם 100, לא 1000. כמה שווים ${W.ts} מקלות?`;
+    if(n===1) return `קודם בלי האפסים: כמה זה ${L(`${W.da.t} + ${W.db.t}`)}?`;
+    if(W.carry){ W.frame=true; return `${W.ts} מקלות, וכל מקל הוא 10. במסגרת יש 100, ומחוצה לה עוד ${W.ts-10} מקלות. כמה זה 100 ועוד ${(W.ts-10)*10}?`; }
+    return `${W.ts} מקלות, וכל מקל הוא 10. כמה זה?`;
+  }
+  if(k==='o') return n===1 ? `ספרי את הנקודות: ${W.da.o} ועוד ${W.db.o}.` : `${L(`${W.da.o} + ${W.db.o}`)}. אפשר לספור מ-${W.da.o} הלאה.`;
+  // the sum
+  if(W.carry && x===W.sum-100) return `כמעט! בתוך ה-${W.T} יש עוד מאה אחת. איפה היא?`;
+  if(W.carry && x===+`${W.hs}${W.ts}${W.os}`) return `כתבת את החלקים אחד אחרי השני. אבל ${W.ts} עשרות זה ${W.T}. נסי ${L(`${W.H} + ${W.T}`)}.`;
+  if(!W.cols){
+    if([10,100].includes(Math.abs(x-W.sum))) return 'קרוב! בדקי שוב מקום אחד: המאות או העשרות.';
+    return 'בואי נפרק. לחצי על "רמז" כדי לראות את הטבלה.';
+  }
+  if(n===1) return W.carry ? `קודם ${L(`${W.H} + ${W.T}`)}. כמה מאות מסתתרות ב-${W.T}?` : `קודם ${L(`${W.H} + ${W.T}`)}, ואז עוד ${W.O}.`;
+  return W.carry ? `כמו להחליף 10 מטבעות של 10 בשטר של 100: ${L(`${W.H} + 100 = ${W.H+100}`)}, ועוד ${W.T-100}.` : `${L(`${W.H} + ${W.T} = ${W.H+W.T}`)}. ועוד ${W.O}?`;
+}
+function finishW(W){
+  W.finished=true; S.locked=true;
+  if(W.carry && W.cols){ W.traded=true;
+    S.note={ok:true, text:`נכון! המאה שהייתה בתוך העשרות עברה למאות. ${W.hs+1} מאות, ${W.ts-10} עשרות ו-${W.os} אחדות: ${W.sum}.`}; }
+  else S.note={ok:true, text:`נכון! ${L(`${W.a} + ${W.b} = ${W.sum}`)}.`};
+}
+function checkW(x){
+  const W=S.W, k=W.cur;
+  if(x===W.ans[k]){
+    W.done[k]=true; W.val[k]=String(x); S.note=null;
+    if(k==='t' && W.carry) W.frame=true;
+    if(k==='sum'){ finishW(W); render(); return; }
+    nextField(W);
+    const msg = k==='t' && W.carry ? `נכון, ${W.T}! עשרה מקלות הם מאה שלמה.` : 'נכון!';
+    toast(msg, k); return;
+  }
+  W.wrong[k]++; W.val[k]='';
+  const mode=ITEMS[S.i].mode;
+  if(mode==='לבד' && !W.cols && W.wrong.sum>=2){ W.cols=true; nextField(W); S.note={text:'פתחתי לך את הטבלה. פותרות עמודה אחרי עמודה.'}; render(); return; }
+  if(W.wrong[k]>=3){
+    W.done[k]=true; W.val[k]=String(W.ans[k]);
+    if(k==='t' && W.carry) W.frame=true;
+    if(k==='sum'){ finishW(W); S.note={ok:false, text:`התשובה היא ${W.sum}. ${S.note.text}`}; render(); return; }
+    S.note={text:`התשובה היא ${W.ans[k]}. בואי נמשיך.`}; nextField(W); render(); return;
+  }
+  S.note={text:hintFor(W,k,x)}; render();
+}
+
+/* ---------- rendering ---------- */
+const blocks=(n,c,extra='')=>Array.from({length:n},()=>`<span class="${c} ${extra}"></span>`).join('');
+function box(val,state,act,v,big){
+  const cls=`box ${big?'big':''} ${state}`;
+  if(state==='done') return `<span class="${cls}">${val}</span>`;
+  if(state==='wait') return `<span class="${cls}" aria-label="עוד לא">?</span>`;
+  return `<button class="${cls}" data-act="${act}" ${v?`data-v="${v}"`:''} aria-label="קופסת תשובה">${val||''}</button>`;
+}
+const toastAt=w=>S.toast&&S.toast.at===w?`<span class="toast" role="status">${S.toast.text}</span>`:'';
+function progLine(withHint){
+  const it=ITEMS[S.i], list=ITEMS.filter(x=>x.phase===it.phase), n=list.indexOf(it)+1;
+  const label = it.phase==='הסבר' ? `<b>הסבר</b> · ${n} מתוך ${list.length}` : `<b>שאלות</b> · שאלה ${n} מתוך ${list.length}${it.mode?` · ${it.mode}`:''}`;
+  return `<div class="prog"><p>${label}</p>${withHint?`<button class="hintbtn" data-act="hint">${ICON.bulb}רמז</button>`:''}</div>`;
+}
+function taskLine(html){ return `<div class="task"><button class="say" data-act="say" aria-label="להקריא">${ICON.speaker}</button><p>${html}</p></div>`; }
+const noteBlock=()=>S.note?`<div class="note ${S.note.ok?'ok':''}" role="status">${S.note.text}</div>`:'';
+
+function colsHtml(W, explore){
+  const col=k=>{
+    let pics;
+    if(k==='h'){
+      pics = W.traded ? `<div class="blocks">${blocks(W.hs,'hb')}${blocks(1,'hb','arrived')}</div>`
+                      : `<div class="blocks">${blocks(W.da.h,'hb')}</div><div class="blocks">${blocks(W.db.h,'hb')}</div>`;
+    } else if(k==='t'){
+      if(W.traded) pics=`<div class="blocks">${blocks(W.ts-10,'tb')}</div>`;
+      else if(W.frame) pics=`<div class="blocks"><span class="bundle">${blocks(10,'tb')}</span>${blocks(W.ts-10,'tb')}</div>`;
+      else pics=`<div class="blocks">${blocks(W.da.t,'tb')}</div><div class="blocks">${blocks(W.db.t,'tb')}</div>`;
+    } else pics=`<div class="blocks">${blocks(W.da.o,'ob')}</div><div class="blocks">${blocks(W.db.o,'ob')}</div>`;
+    let fld;
+    if(explore) fld = `<div class="explore-val ltr">${W.done[k]?`${W.lab[k]} ${W.ans[k]}`:W.lab[k].replace(' =','')}</div>`;
+    else fld = `<div class="fld"><span class="ltr">${W.lab[k]}</span><span class="slot">${box(W.val[k], W.done[k]?'done':(W.cur===k?'on':''), 'pick', k)}${toastAt(k)}</span></div>`;
+    const on = !explore && !W.finished && W.cur===k ? 'on' : (explore && S.exFocus===k ? 'on':'');
+    return `<div class="col c-${k} ${on}"><span class="col-title">${W.done[k]?ICON.check.replace('<svg','<svg class="ok"'):''}${PLACE[k]}</span>${pics}${fld}</div>`;
+  };
+  return `<div class="cols">${col('h')}${col('t')}${col('o')}</div>`;
+}
+function vSimple(it){
+  const st=S.locked?'done':'on';
+  return `${taskLine(it.intro)}
+    <div class="tray"><div class="row">${blocks(it.sticks[0],'tb')}</div><div class="row">${blocks(it.sticks[1],'tb')}</div></div>
+    <div class="anchor ltr"><span>${it.a} + ${it.b} =</span><span class="slot">${box(S.locked?it.ans:S.input, st, 'noop', null, true)}${toastAt('main')}</span></div>
+    ${progLine(false)}${noteBlock()}`;
+}
+const EX_STEPS=[
+  {say:'זה התרגיל. נחבר כל סוג בנפרד: מאות, עשרות, אחדות.', done:[], focus:null},
+  {say:`מאות: ${L('500 + 300 = 800')}.`, done:['h'], focus:'h'},
+  {say:`עשרות: ${L('70 + 40 = 110')}. עשרה מקלות הם מאה שלמה, הנה היא במסגרת.`, done:['h','t'], focus:'t', frame:true},
+  {say:`אחדות: ${L('3 + 0 = 3')}.`, done:['h','t','o'], focus:'o', frame:true},
+  {say:`מחברות: ${L('800 + 110 + 3 = 913')}. המאה שבתוך העשרות עוברת למאות: 9 מאות, עשרת אחת ו-3 אחדות.`, done:['h','t','o'], focus:null, traded:true}
+];
+function vExplore(){
+  const W=makeW(573,340,true), st=EX_STEPS[S.ex];
+  st.done.forEach(k=>W.done[k]=true); W.frame=!!st.frame; W.traded=!!st.traded; S.exFocus=st.focus;
+  return `${taskLine(st.say)}
+    <div class="anchor ltr sm"><span>573 + 340 =</span>${box(S.ex===4?'913':'', S.ex===4?'done':'wait')}</div>
+    ${progLine(false)}
+    ${colsHtml(W,true)}
+    <div class="actions">${S.ex>0?'<button class="btn" data-act="exBack">אחורה</button>':''}<button class="btn primary" data-act="exNext">${S.ex<4?'הלאה':'הבנתי, ממשיכות'}</button></div>`;
+}
+function vSheet(it){
+  const W=S.W;
+  const anchorState = W.done.sum ? 'done' : (W.cur==='sum' ? 'on' : (W.cols && !colsDone(W) && it.mode==='ביחד' ? 'wait' : ''));
+  const parts = W.cols && colsDone(W) && !W.finished ? `<div class="parts ltr"><span class="h">${W.H}</span> + <span class="t">${W.T}</span> + <span class="o">${W.O}</span></div>` : '';
+  return `${taskLine(W.finished ? 'יופי! ככה מחברים מספרים גדולים בראש.' : taskFor(W))}
+    <div class="anchor ltr ${W.cols?'sm':''}"><span>${W.a} + ${W.b} =</span><span class="slot">${box(W.val.sum, anchorState, 'pick', 'sum', true)}${toastAt('sum')}</span></div>
+    ${parts}
+    ${progLine(it.mode==='לבד' && !W.cols && !W.finished)}
+    ${noteBlock()}
+    ${W.cols?colsHtml(W,false):''}
+    ${W.finished?'<div class="actions"><button class="btn primary" data-act="next">לתרגיל הבא</button></div>':''}`;
+}
+function keypad(){
+  const it=ITEMS[S.i];
+  if(S.screen!=='lesson' || it.type==='explore') return `<p class="kbd">כאן תופיע המקלדת כשיש מה לכתוב.</p>`;
+  const d=[7,8,9,4,5,6,1,2,3].map(n=>`<button class="key" data-act="key" data-v="${n}">${n}</button>`).join('');
+  return `<div class="pad">${d}<button class="key" data-act="del" aria-label="מחיקה">⌫</button><button class="key" data-act="key" data-v="0">0</button><button class="key ok" data-act="check">בדיקה</button></div>
+    <p class="kbd">אפשר גם להקליד במקלדת וללחוץ Enter</p>`;
+}
+function renderBar(){
+  const k=kid(), bar=document.getElementById('bar');
+  if(!k){ bar.innerHTML=`<span class="lesson-name" style="text-align:start;font-weight:600;color:var(--ink)">מתמטיקידס</span><button class="lock" data-act="gate" aria-label="מסך הורה">${ICON.lock}</button>`; return; }
+  const sws=COLORS.map(c=>`<button class="sw" style="--c:${c.c}" data-act="color" data-v="${c.id}" aria-label="צבע ${c.name}" aria-pressed="${k.color===c.id}">${k.color===c.id?ICON.check:''}</button>`).join('');
+  bar.innerHTML=`<button class="chip" data-act="pop" aria-expanded="${S.pop}"><span class="avatar">${esc(k.name[0])}</span>${esc(k.name)}${ICON.palette}</button>
+    <span class="lesson-name">חיבור בראש</span>
+    ${k.timer && S.screen==='lesson'?`<span class="timer" aria-label="זמן בשיעור">⏱ ${minutes()} דק'</span>`:''}
+    <button class="lock" data-act="gate" aria-label="מסך הורה">${ICON.lock}</button>
+    ${S.pop?`<div class="pop" role="dialog" aria-label="ההגדרות שלי">
+      <div><h3>מי לומדת?</h3><div class="kids">${KIDS.map(x=>`<button class="kidbtn" style="--accent:${accentOf(x)}" data-act="switch" data-v="${x.id}" aria-pressed="${x.id===k.id}"><span class="avatar">${esc(x.name[0])}</span>${esc(x.name)}</button>`).join('')}</div></div>
+      <div><h3>הצבע שלי</h3><div class="sws">${sws}</div></div>
+      <button class="toggle" data-act="timer" aria-pressed="${k.timer}"><span class="switch"></span><span>להראות לי כמה זמן עבר</span></button>
+    </div>`:''}`;
+}
+function vScreen(){
+  if(S.screen==='who') return `<div class="card"><h1>מי לומדת היום?</h1><div class="who">${KIDS.map(k=>`<button class="whocard" style="--c:${k.color?accentOf(k):'var(--line)'}" data-act="pickKid" data-v="${k.id}"><span class="avatar">${esc(k.name[0])}</span>${esc(k.name)}</button>`).join('')}</div></div>`;
+  if(S.screen==='color'){ const k=kid(); return `<div class="card"><h1>שלום ${esc(k.name)}! איזה צבע את רוצה?</h1><p>אפשר להחליף אותו מתי שרוצים, למעלה ליד השם שלך.</p>
+    <div class="sws">${COLORS.map(c=>`<button class="sw" style="--c:${c.c}" data-act="firstColor" data-v="${c.id}" aria-label="צבע ${c.name}"></button>`).join('')}</div></div>`; }
+  if(S.screen==='trans'){ const t=TRANSITIONS[S.i]; return `<div class="card"><h1>${t.title}</h1>${mapHtml(t.stop)}<p>${t.text}</p><button class="btn primary" data-act="go">ממשיכות</button></div>`; }
+  if(S.screen==='done'){ const k=kid(); return `<div class="card"><h1>סיימנו את השיעור!</h1>${mapHtml(3)}
+    <p>במקום תרגיל אחד גדול, שלושה תרגילים קטנים: מאות, עשרות, אחדות. ואז מחברים.</p>
+    ${k.timer?`<p>השיעור לקח לך ${minutes()<=1?'דקה אחת':minutes()+' דקות'}.</p>`:''}
+    <button class="btn primary" data-act="again">עוד פעם מההתחלה</button></div>`; }
+  return '';
+}
+function mapHtml(now){
+  return `<ol class="map" aria-label="מפת השיעור">${STOPS.map((s,i)=>`<li class="${i<now?'done':i===now?'now':''}"><span class="dot">${i<now?ICON.check:''}</span><span>${s}</span>${i===now?'<span class="here">את כאן</span>':''}</li>`).join('')}</ol>`;
+}
+/* parent gate: a number written in English words, answered in digits */
+const ONES=['','one','two','three','four','five','six','seven','eight','nine'], TENSW=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function newGate(){ const t=2+Math.floor(Math.random()*8), o=1+Math.floor(Math.random()*9); return {n:t*10+o, words:`${TENSW[t]}-${ONES[o]}`, input:'', msg:'', open:false}; }
+function renderOverlay(){
+  const g=S.gate, ov=document.getElementById('overlay');
+  if(!g){ ov.innerHTML=''; return; }
+  if(g.open){ ov.innerHTML=`<div class="scrim"><div class="modal" role="dialog" aria-label="מסך הורה"><h2>מסך הורה</h2><p>בגרסת הניסיון הזו מסך ההורה לא מחובר. בגרסה האמיתית ייפתח כאן מסך ההורה הקיים.</p><button class="btn primary" data-act="gateClose">חזרה</button></div></div>`; return; }
+  ov.innerHTML=`<div class="scrim"><div class="modal" role="dialog" aria-label="שאלה להורים">
+    <button class="x" data-act="gateClose" aria-label="סגירה">${ICON.close}</button>
+    <h2>שאלה להורים</h2><p>Type the number in digits:</p><p class="en">${g.words}</p>
+    <div class="disp">${g.input||'&nbsp;'}</div>${g.msg?`<p>${g.msg}</p>`:''}
+    <div class="pad">${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="key" data-act="gateKey" data-v="${n}">${n}</button>`).join('')}<button class="key" data-act="gateDel" aria-label="מחיקה">⌫</button><button class="key" data-act="gateKey" data-v="0">0</button><button class="key ok" data-act="gateCheck">אישור</button></div>
+  </div></div>`;
+}
+function render(){
+  applyAccent(); renderBar(); renderOverlay();
+  const lesson=S.screen==='lesson';
+  document.getElementById('layout').hidden=!lesson;
+  document.getElementById('screen').hidden=lesson;
+  document.getElementById('screen').className='screen';
+  if(!lesson){ document.getElementById('screen').innerHTML=vScreen(); return; }
+  const it=ITEMS[S.i];
+  document.getElementById('main').innerHTML = it.type==='simple'?vSimple(it):it.type==='explore'?vExplore():vSheet(it);
+  document.getElementById('kp').innerHTML=keypad();
+}
+
+/* ---------- flow ---------- */
+function toast(text, at, then){
+  const id={}; S.toast={text,at,id}; render();
+  setTimeout(()=>{ if(S.toast?.id===id){ S.toast=null; then?.(); render(); } },1800);
+}
+function startItem(){
+  const it=ITEMS[S.i]; S.input=''; S.wrong=0; S.note=null; S.locked=false; S.ex=0;
+  S.W = it.type==='sheet' ? makeW(it.a,it.b,true) : it.type==='solo' ? makeW(it.a,it.b,false) : null;
+  clearScratch();
+}
+function advance(){
+  if(S.i>=ITEMS.length-1){ S.screen='done'; timerRun(false); return; }
+  S.i++; startItem();
+  if(TRANSITIONS[S.i]){ S.screen='trans'; timerRun(false); }
+}
+function checkSimple(){
+  const it=ITEMS[S.i]; if(!S.input) return; const x=+S.input;
+  if(x===it.ans){ S.locked=true; S.note=null; toast(`נכון! ${L(`${it.a} + ${it.b} = ${it.ans}`)}`,'main',advance); return; }
+  S.input=''; S.wrong++;
+  if(S.wrong>=3){ S.locked=true; S.note={text:`התשובה היא ${it.ans}. ${it.hints[1]}`}; render(); setTimeout(()=>{ advance(); render(); },2800); return; }
+  S.note={text:it.hints[S.wrong-1]}; render();
+}
+const A={
+  pickKid(v){ S.kid=v; S.pop=false; const k=kid(); S.screen = k.color ? 'lesson' : 'color'; if(S.screen==='lesson'){ S.i=0; startItem(); timerRun(true); } },
+  firstColor(v){ kid().color=v; saveKids(); S.screen='lesson'; S.i=0; S.timeMs=0; startItem(); timerRun(true); },
+  pop(){ S.pop=!S.pop; },
+  color(v){ kid().color=v; saveKids(); },
+  timer(){ const k=kid(); k.timer=!k.timer; saveKids(); },
+  switch(v){ if(v===S.kid){ S.pop=false; return; } S.pop=false; timerRun(false); S.timeMs=0; S.kid=v; const k=kid(); if(!k.color){ S.screen='color'; } else { S.screen='lesson'; S.i=0; startItem(); timerRun(true); } },
+  say(){ const p=document.querySelector('.task p'); if(p) speak(p.textContent); return false; },
+  hint(){ const W=S.W; if(!W||W.cols) return; W.cols=true; nextField(W); S.note=null; },
+  exNext(){ if(S.ex<4) S.ex++; else advance(); },
+  exBack(){ if(S.ex>0) S.ex--; },
+  go(){ S.screen='lesson'; timerRun(true); },
+  next(){ advance(); },
+  again(){ S.i=0; S.timeMs=0; startItem(); S.screen='lesson'; timerRun(true); },
+  noop(){},
+  pick(v){ const W=S.W; if(!W||W.finished||W.done[v]) return; if(v==='sum' && W.cols && !colsDone(W) && ITEMS[S.i].mode==='ביחד') return; W.cur=v; },
+  key(v){ if(S.locked) return; if(S.W){ const k=S.W.cur; if(S.W.val[k].length<4) S.W.val[k]+=v; } else if(S.input.length<4) S.input+=v; },
+  del(){ if(S.W){ const k=S.W.cur; S.W.val[k]=S.W.val[k].slice(0,-1); } else S.input=S.input.slice(0,-1); },
+  check(){ if(S.locked||S.toast?.at==='main') return false; const it=ITEMS[S.i];
+    if(it.type==='simple'){ checkSimple(); return false; }
+    if(S.W && !S.W.finished){ const v=S.W.val[S.W.cur]; if(!v) return; checkW(+v); return false; } },
+  gate(){ S.pop=false; S.gate=newGate(); },
+  gateClose(){ S.gate=null; },
+  gateKey(v){ if(S.gate.input.length<3) S.gate.input+=v; S.gate.msg=''; },
+  gateDel(){ S.gate.input=S.gate.input.slice(0,-1); },
+  gateCheck(){ const g=S.gate; if(+g.input===g.n) g.open=true; else { S.gate=newGate(); S.gate.msg='לא מתאים. הנה מספר אחר.'; } }
+};
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');
+  if(!t){ if(S.pop && !e.target.closest('.pop')){ S.pop=false; render(); } return; }
+  const r=A[t.dataset.act]?.(t.dataset.v);
+  if(r!==false) render();
+});
+document.addEventListener('keydown',e=>{
+  if(S.gate && !S.gate.open){
+    if(/^[0-9]$/.test(e.key)) A.gateKey(e.key); else if(e.key==='Backspace') A.gateDel(); else if(e.key==='Enter') A.gateCheck(); else if(e.key==='Escape') A.gateClose(); else return;
+    e.preventDefault(); render(); return;
+  }
+  if(e.key==='Escape' && (S.pop||S.gate)){ S.pop=false; S.gate=null; render(); return; }
+  if(S.screen!=='lesson' || S.gate) return;
+  const it=ITEMS[S.i];
+  if(e.key==='Enter'){
+    if(it.type==='explore'){ A.exNext(); render(); e.preventDefault(); return; }
+    if(S.W?.finished){ A.next(); render(); e.preventDefault(); return; }
+    e.preventDefault(); if(A.check()!==false) render(); return;
+  }
+  if(it.type==='explore') return;
+  if(/^[0-9]$/.test(e.key)) A.key(e.key); else if(e.key==='Backspace') A.del(); else return;
+  e.preventDefault(); render();
+});
+
+/* ---------- scratchpad: drawing only, kept outside the re-rendered area so drawings survive ---------- */
+const cv=document.getElementById('cv'), cx=cv.getContext('2d'); let drawing=false, erasing=false;
+function clearScratch(){ cx.clearRect(0,0,cv.width,cv.height); }
+function pos(e){ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]; }
+cv.addEventListener('pointerdown',e=>{ drawing=true; cv.setPointerCapture(e.pointerId); const [x,y]=pos(e); cx.beginPath(); cx.moveTo(x,y); });
+cv.addEventListener('pointermove',e=>{ if(!drawing) return; const [x,y]=pos(e);
+  cx.globalCompositeOperation=erasing?'destination-out':'source-over'; cx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent'); cx.lineWidth=erasing?28:5; cx.lineCap='round'; cx.lineJoin='round';
+  cx.lineTo(x,y); cx.stroke(); });
+cv.addEventListener('pointerup',()=>{ drawing=false; });
+document.getElementById('scrToggle').addEventListener('click',e=>{ const s=document.getElementById('scr'), open=s.hidden; s.hidden=!open; e.currentTarget.setAttribute('aria-expanded',open); });
+document.getElementById('pen').addEventListener('click',()=>{ erasing=false; document.getElementById('pen').setAttribute('aria-pressed','true'); document.getElementById('eraser').setAttribute('aria-pressed','false'); });
+document.getElementById('eraser').addEventListener('click',()=>{ erasing=true; document.getElementById('pen').setAttribute('aria-pressed','false'); document.getElementById('eraser').setAttribute('aria-pressed','true'); });
+document.getElementById('clear').addEventListener('click',clearScratch);
+
+render();
+</script>
+</body>
+</html>
