@@ -234,13 +234,52 @@ td input.flag{border-color:var(--margin);background:var(--hint-bg)}
   <div class="sheet"><div class="row"><div class="spinner"></div><p class="lead">פותחת את המחברת…</p></div></div>
 </div>
 
+<style>
+.act.main{grid-column:1/-1;flex-direction:row;align-items:center;gap:16px;min-height:96px;padding:18px 22px}
+.act.main .ic{width:52px;height:52px;border-radius:14px;background:var(--accent);color:#fff}
+.act.main .ic svg{width:28px;height:28px}
+.act.main b{font-size:22px}
+.or-pick{font-size:15px;color:var(--muted);grid-column:1/-1;margin-top:4px}
+.acts .act:not(.main){min-height:auto;padding:12px 16px}
+.say.slow{width:auto;height:46px;border-radius:999px;padding-inline:14px 16px;display:inline-flex;gap:6px;font-size:16px}
+.pat{color:var(--accent);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px}
+.phon{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.phon-g{border-radius:14px;background:var(--soft);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.phon-g .pt{font-family:var(--f-en);font-weight:700;font-size:26px;color:var(--accent);direction:ltr;text-align:left}
+.phon-g .ws{display:flex;flex-wrap:wrap;gap:6px;direction:ltr}
+.phon-g .ws button{font-family:var(--f-en);font-size:20px;font-weight:700;border:0;background:var(--surface);border-radius:10px;padding:2px 12px;min-height:40px}
+.pairs{display:flex;flex-wrap:wrap;gap:10px;direction:ltr}
+.pairs span{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-en);font-weight:700;font-size:22px;background:var(--soft);border-radius:12px;padding:4px 10px}
+.pairs button{font:inherit;border:0;background:var(--surface);border-radius:8px;padding:0 10px;min-height:40px}
+.intro-he{font-size:clamp(26px,4vw,32px);font-weight:600}
+.retry{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+.feedback{overflow-wrap:anywhere}
+.mine{color:var(--muted);font-size:16px}
+.fixed{background:var(--good-soft)!important;color:var(--good)}
+.mykid{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:15px;color:var(--muted)}
+.mykid .sw{width:30px;height:30px}
+.mykid .sw svg{width:14px;height:14px}
+.story-wrap{position:relative}
+.story .mk{background:var(--hl);color:inherit;border-radius:4px;padding:0 3px;cursor:pointer;border:0;font:inherit;line-height:1.3}
+.pop{position:absolute;z-index:5;background:var(--ink);color:var(--surface);border-radius:12px;padding:6px 12px;font-size:18px;white-space:nowrap;transform:translate(-50%,-100%);pointer-events:none}
+.pop .en{font-weight:700}
+.sq{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--soft)}
+.sq .opts{max-width:none}
+.sq .note{font-size:16px}
+.gen-tag{font-size:12px;color:var(--muted);border:1px dashed var(--muted);border-radius:6px;padding:0 6px;white-space:nowrap}
+td input.gen{border-style:dashed}
+.quiz-list{display:flex;flex-direction:column;gap:6px;font-size:16px}
+.quiz-list div{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:6px 10px}
+.quiz-list .en{flex:1;text-align:left}
+.grammar-card{padding:18px;border-radius:16px;background:var(--hint-bg);display:flex;flex-direction:column;gap:8px;width:100%;max-width:620px}
+.grammar-card .ex{font-family:var(--f-en);direction:ltr;text-align:left;font-size:21px}
+</style>
 <script>
 /* ---------- icons ---------- */
 const I = {
   speak:'<svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
   slow:'<svg viewBox="0 0 24 24"><path d="M4 16c0-4 3.5-7 8-7s8 3 8 7z"/><path d="M20 16h1.5M2.5 16H4M8 9.5 9.5 16M16 9.5 14.5 16"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
-  home:'<svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>',
   parent:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="10" r="2.2"/><path d="M15.5 14.5c3 0 5.5 2.2 5.5 5.5"/></svg>',
   check:'<svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>',
   star:'<svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1L3.2 9.4l6.1-.8z"/></svg>',
@@ -250,6 +289,7 @@ const I = {
   order:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="7" height="5" rx="1.5"/><rect x="14" y="5" width="7" height="5" rx="1.5"/><rect x="3" y="14" width="18" height="5" rx="1.5"/></svg>',
   book:'<svg viewBox="0 0 24 24"><path d="M4 5c3-1.5 5.5-1.5 8 0v15c-2.5-1.5-5-1.5-8 0z"/><path d="M12 5c2.5-1.5 5-1.5 8 0v15c-3-1.5-5.5-1.5-8 0"/></svg>',
   rule:'<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+  ear:'<svg viewBox="0 0 24 24"><path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-6 0"/><path d="M10 9a2 2 0 0 1 4 0"/></svg>',
   plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
   save:'<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>',
@@ -259,12 +299,13 @@ const I = {
   bulb:'<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>'
 };
 const COLORS = ['grape','sea','coral','leaf','rose','blue'];
-const INTERVALS = [0,0,1,3,7,14]; // days until a word comes back, by box 1-5
-const SESSION_SIZE = 10;
+const INTERVALS = [0,1,1,3,7,14]; // days until a word comes back, by box 1-5
+const SESSION_SIZE = 8, NEW_PER_DAY = 4, AUTO_NEXT_MS = 1900;
 
 /* ---------- helpers ---------- */
 const app = document.getElementById('app');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const reEsc = s => String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const fmtDay = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const today = () => fmtDay(new Date());
 const addDays = (day,n) => { const d = new Date(day+'T12:00:00'); d.setDate(d.getDate()+n); return fmtDay(d); };
@@ -274,7 +315,28 @@ const wkey = en => (String(en).trim().toLowerCase().replace(/[^a-z0-9' -]/g,'').
 const norm = s => String(s||'').toLowerCase().replace(/[’`]/g,"'").replace(/[.,!?;:"]/g,'').replace(/\s+/g,' ').trim();
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const heDate = day => { if(!day) return ''; const [y,m,d] = day.split('-'); return `${+d}.${+m}`; };
-function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2600); }
+const plural = (n, one, many) => n===1 ? one : `${n} ${many}`;
+const HEB = /[֐-׿]/;
+// English runs inside Hebrew text are isolated, so they read left to right
+const mixed = t => String(t ?? '').split(/([A-Za-z\/][A-Za-z0-9'’\/ ,.!?:\-]*[A-Za-z0-9.!?'’\/]|[A-Za-z])/).map((part,k)=> k%2 ? `<span class="en">${esc(part)}</span>` : esc(part)).join('');
+function toast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+/* the letters of a phonics pattern inside a word, e.g. "u_e" in "cube" -> c[u]b[e] */
+function patSpans(word, pattern){
+  if(!pattern) return null;
+  const w = word.toLowerCase();
+  if(pattern.includes('_')){
+    const [a,b] = pattern.split('_');
+    for(let i=0;i<w.length;i++) if(w.startsWith(a,i) && w.startsWith(b, i+a.length+1)) return [[i,i+a.length],[i+a.length+1,i+a.length+1+b.length]];
+    return null;
+  }
+  const i = w.indexOf(pattern); return i<0 ? null : [[i,i+pattern.length]];
+}
+function markPat(word, pattern){
+  const sp = patSpans(word, pattern); if(!sp) return esc(word);
+  let out='', last=0; for(const [a,b] of sp){ out += esc(word.slice(last,a)) + `<span class="pat">${esc(word.slice(a,b))}</span>`; last=b; }
+  return out + esc(word.slice(last));
+}
 
 /* ---------- speech (English voice from the computer) ---------- */
 let enVoice = null;
@@ -296,6 +358,7 @@ function speak(text, slow){
   }catch(e){}
 }
 const canSpeak = 'speechSynthesis' in window;
+const sayBtns = txt => canSpeak ? `<button class="say" data-say="${esc(txt)}" aria-label="להשמיע">${I.speak}</button><button class="say slow" data-sayslow="${esc(txt)}">${I.slow}לאט</button>` : '';
 
 /* ---------- four-line ruling measured from the real font ---------- */
 function measureRuling(){
@@ -308,8 +371,7 @@ function measureRuling(){
     const xh = c.measureText('x').actualBoundingBoxAscent;
     const cap = c.measureText('H').actualBoundingBoxAscent;
     const desc = c.measureText('g').actualBoundingBoxDescent;
-    const L = 1.9*100;
-    const base = (L-(A+D))/2 + A;
+    const base = (190-(A+D))/2 + A;
     const r = document.documentElement.style;
     r.setProperty('--r-top', ((base-cap)/100).toFixed(3));
     r.setProperty('--r-x', ((base-xh)/100).toFixed(3));
@@ -325,21 +387,29 @@ const S = {
   loaded:{family:false,lessons:false,progress:false},
   kidId:null, view:'loading', lessonId:null,
   session:null, story:{}, add:null, parentOk:false,
-  sample:null, canImages:false, mode:'local'
+  sample:null, canImages:false, mode:'local', timer:null
 };
 const kid = () => S.family?.kids?.find(k=>k.id===S.kidId) || null;
 const kidLessons = id => S.lessons.filter(l => (l.kids||[]).includes(id));
 const prog = id => S.progress[id] || {words:{}, stars:0, streak:0, lastDay:''};
-function kidWords(id, lessons){
+const lessonById = id => S.lessons.find(x=>x.id===id);
+
+/* every practicable item of some lessons: vocabulary words and phonics words */
+function entriesOf(lessons){
   const seen = new Map();
-  for(const l of (lessons||kidLessons(id))) for(const w of (l.words||[])){
-    if(!w.en) continue; const k = wkey(w.en);
-    if(!seen.has(k)) seen.set(k, {...w, key:k, lessonId:l.id});
+  for(const l of lessons){
+    for(const w of (l.words||[])){ if(!w.en) continue; const key = wkey(w.en); if(!seen.has(key)) seen.set(key, {...w, key, lessonId:l.id}); }
+    for(const g of (l.phonics||[])) for(const w of (g.words||[])){
+      if(!w.en) continue; const key = 'ph_'+wkey(w.en);
+      if(!seen.has(key)) seen.set(key, {...w, key, ph:true, pattern:g.pattern, lessonId:l.id});
+    }
+    for(const [a,b] of (l.pairs||[])) for(const [x,y] of [[a,b],[b,a]]){ const e = seen.get('ph_'+wkey(x)); if(e) e.pair = y; }
   }
   return [...seen.values()];
 }
+const kidEntries = id => entriesOf(kidLessons(id));
 function sentencesOf(lessons){
-  const out=[]; for(const l of lessons) for(const s of (l.sentences||[])) if(s.en && s.en.split(' ').length>=3 && s.en.split(' ').length<=10) out.push(s);
+  const out=[]; for(const l of lessons) for(const s of (l.sentences||[])){ const n = (s.en||'').trim().split(/\s+/).length; if(n>=3 && n<=10) out.push(s); }
   return out;
 }
 
@@ -384,7 +454,7 @@ const Store = {
 };
 
 /* ---------- routing ---------- */
-const PASSIVE = new Set(['loading','home','kid','lesson','parent','setup-view']);
+const PASSIVE = new Set(['loading','home','kid','lesson','parent']);
 function boot(){
   if(!(S.loaded.family && S.loaded.lessons && S.loaded.progress)) return;
   if(S.view==='loading'){
@@ -396,7 +466,7 @@ function boot(){
   }
   if(PASSIVE.has(S.view)) render();
 }
-function go(view, extra){ Object.assign(S, extra||{}, {view}); try{ speechSynthesis.cancel(); }catch(e){} render(); window.scrollTo(0,0); }
+function go(view, extra){ clearTimeout(S.timer); Object.assign(S, extra||{}, {view}); try{ speechSynthesis.cancel(); }catch(e){} render(); window.scrollTo(0,0); }
 function render(){
   const k = kid();
   document.documentElement.className = 'c-' + (k?.color || 'grape');
@@ -411,7 +481,7 @@ function topBar({back, backTo}={}){
   return `<div class="top">
     ${back ? `<button class="icon-btn" data-go="${backTo}" aria-label="חזרה">${I.back}</button>` : ''}
     <div class="logo"><span class="logo-mark" aria-hidden="true">Aa</span>מחברת אנגלית</div>
-    ${k ? `<button class="chip" data-go="home" aria-label="להחליף ילדה"><span class="avatar">${esc(k.name.slice(0,1))}</span>${esc(k.name)}</button>` : ''}
+    ${k ? `<button class="chip" data-go="home" title="להחליף ילדה"><span class="avatar">${esc(k.name.slice(0,1))}</span>${esc(k.name)}</button>` : ''}
     <button class="icon-btn" data-act="parent" aria-label="אזור ההורים" title="אזור ההורים">${I.parent}</button>
   </div>`;
 }
@@ -437,128 +507,177 @@ function vSetup(){
   </div>`;
 }
 
-/* ---------- home: choose who is learning ---------- */
+/* ---------- home: choose who is learning (no numbers here, so the sisters aren't compared) ---------- */
 function vHome(){
   const kids = S.family?.kids || [];
   return `${topBar()}
   <div class="sheet paper">
     <h1>מי לומדת עכשיו?</h1>
-    <div class="kids">${kids.map(k=>{
-      const p=prog(k.id); const n=kidLessons(k.id).length;
-      return `<button class="kid-card c-${k.color}" data-kid="${k.id}"><span class="avatar">${esc(k.name.slice(0,1))}</span><span><b>${esc(k.name)}</b><span>${n? `${n} שיעורים` : 'עוד אין שיעורים'}${p.streak>1?` · ${p.streak} ימים ברצף`:''}</span></span></button>`;
-    }).join('')}</div>
+    <div class="kids">${kids.map(k=>`<button class="kid-card c-${k.color}" data-kid="${k.id}"><span class="avatar">${esc(k.name.slice(0,1))}</span><span><b>${esc(k.name)}</b><span>המחברת של ${esc(k.name)}</span></span></button>`).join('')}</div>
   </div>`;
 }
 
-/* ---------- kid home ---------- */
-function dueWords(kidId){
-  const p = prog(kidId), t = today();
-  return kidWords(kidId).filter(w => { const s=p.words?.[w.key]; return !s || (s.due||'') <= t; })
-    .sort((a,b)=>{ const sa=p.words?.[a.key], sb=p.words?.[b.key]; return (sa?1:0)-(sb?1:0) || (sa?.b||0)-(sb?.b||0); });
+/* ---------- spaced repetition: what is waiting today ---------- */
+function dueEntries(kidId){
+  const p = prog(kidId), t = today(), all = kidEntries(kidId);
+  const st = e => p.words?.[e.key];
+  const due = all.filter(e => st(e) && (st(e).due||'') <= t).sort((a,b)=>(st(a).b||0)-(st(b).b||0));
+  const fresh = all.filter(e => !st(e));
+  return due.concat(fresh.slice(0, NEW_PER_DAY)).slice(0, SESSION_SIZE);
 }
 function vKid(){
   const k = kid(); if(!k) return vHome();
-  const ls = kidLessons(k.id), p = prog(k.id), due = dueWords(k.id), all = kidWords(k.id);
-  const learned = all.filter(w => (p.words?.[w.key]?.b||0) >= 4).length;
+  const ls = kidLessons(k.id), p = prog(k.id), due = dueEntries(k.id), all = kidEntries(k.id);
+  const known = all.filter(w => (p.words?.[w.key]?.b||0) >= 4).length;
   return `${topBar()}
   <div class="sheet paper">
-    <h1>שלום ${esc(k.name)}</h1>
+    <div class="row"><h1 style="margin-inline-end:auto">שלום ${esc(k.name)}</h1>
+      <div class="mykid"><span>הצבע שלי</span><div class="sws">${COLORS.map(c=>`<button class="sw c-${c}" data-mycolor="${c}" aria-pressed="${k.color===c}" aria-label="${c}">${k.color===c?I.check:''}</button>`).join('')}</div></div></div>
     ${ls.length ? `
     <div class="today">
       <div class="txt">
-        ${due.length ? `<b>התרגול של היום</b><span class="muted">${Math.min(due.length,SESSION_SIZE)} מילים מחכות לך</span>` : `<b>כל המילים של היום חזרו</b><span class="muted">אפשר לבחור שיעור ולתרגל עוד</span>`}
+        ${due.length ? `<b>התרגול של היום</b><span class="muted">${due.length===1?'מילה אחת מחכה לך':`${due.length} מילים מחכות לך`}</span>` : `<b>סיימת את המילים של היום</b><span class="muted">מחר יחכו לך מילים חדשות. אפשר גם לבחור שיעור ולתרגל.</span>`}
       </div>
       ${due.length ? `<button class="btn primary" data-act="daily">להתחיל</button>` : ''}
     </div>
-    <div class="meta"><span>מילים שאת כבר יודעת: <strong>${learned}</strong> מתוך <strong>${all.length}</strong></span><span>כוכבים: <strong>${p.stars||0}</strong></span>${p.streak?`<span>ימים ברצף: <strong>${p.streak}</strong></span>`:''}</div>
+    <div class="meta">${known?`<span>מילים שאת כבר מכירה טוב: <strong>${known}</strong></span>`:''}${p.stars?`<span>כוכבים: <strong>${p.stars}</strong></span>`:''}${(p.streak||0)>1?`<span>${p.streak} ימים ברצף</span>`:''}</div>
     <h2>השיעורים שלי</h2>
-    <div class="lessons">${ls.map(l=>`<button class="lesson-row" data-lesson="${l.id}">
-      <span class="t"><b>${esc(l.title||'שיעור')}</b><small>${(l.words||[]).length} מילים${l.date?` · <span class="date-tag">${heDate(l.date)}</span>`:''}</small></span>
-      <span class="prev">${esc((l.words||[]).slice(0,4).map(w=>w.en).join(', '))}</span>
-    </button>`).join('')}</div>`
-    : `<div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא מוסיפה שיעור מההערות של המורה, והוא יופיע כאן.</p><button class="btn primary" data-act="parent">${I.plus} הוספת שיעור</button></div>`}
+    <div class="lessons">${ls.map(l=>{
+      const n = (l.words||[]).length, ph = (l.phonics||[]).reduce((s,g)=>s+(g.words||[]).length,0);
+      const what = [n?plural(n,'מילה אחת','מילים'):'', ph?`${ph} מילים לקריאה`:''].filter(Boolean).join(' · ');
+      const prev = (l.words||[]).slice(0,4).map(w=>w.en).concat((l.phonics||[]).map(g=>g.pattern)).slice(0,5).join(', ');
+      return `<button class="lesson-row" data-lesson="${l.id}">
+      <span class="t"><b>${mixed(l.title||'שיעור')}</b><small>${what}${l.date?` · <span class="date-tag">${heDate(l.date)}</span>`:''}</small></span>
+      <span class="prev">${esc(prev)}</span></button>`;}).join('')}</div>`
+    : `<div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
   </div>`;
 }
 
 /* ---------- lesson page ---------- */
+function hasQuiz(l){ return (l.quiz||[]).length>0 || (!!S.sample && (l.grammar||[]).length>0); }
 function vLesson(){
-  const k = kid(), l = S.lessons.find(x=>x.id===S.lessonId); if(!l||!k) return vKid();
-  const p = prog(k.id), words = l.words||[], sents = sentencesOf([l]);
-  const boxDots = key => { const b = p.words?.[key]?.b||0; return `<span class="box-dots" aria-label="שלב ${b} מתוך 5">${[1,2,3,4,5].map(i=>`<i class="${i<=b?'on':''}"></i>`).join('')}</span>`; };
+  const k = kid(), l = lessonById(S.lessonId); if(!l||!k) return vKid();
+  const p = prog(k.id), words = l.words||[], sents = sentencesOf([l]), phon = l.phonics||[];
+  const boxDots = key => { const b = p.words?.[key]?.b||0; return `<span class="box-dots" aria-label="כמה המילה מוכרת: ${b} מתוך 5">${[1,2,3,4,5].map(i=>`<i class="${i<=b?'on':''}"></i>`).join('')}</span>`; };
   const acts = [
     {id:'mix', ic:I.mix, t:'תרגול מעורב', d:'קצת מכל דבר. כדאי להתחיל מכאן.', main:true},
-    {id:'flash', ic:I.cards, t:'כרטיסיות', d:'רואות מילה, נזכרות, הופכות.'},
-    {id:'spell', ic:I.pen, t:'הכתבה', d:'שומעות מילה וכותבות אותה.', need: canSpeak},
+    {id:'phonics', ic:I.ear, t:'קוראות צלילים', d:'קוראות בקול ומקשיבות.', need: phon.length>0},
+    {id:'flash', ic:I.cards, t:'כרטיסיות', d:'רואות מילה ונזכרות.', need: words.length>0},
+    {id:'spell', ic:I.pen, t:'הכתבה', d:'שומעות מילה וכותבות.', need: canSpeak && words.length>0},
     {id:'order', ic:I.order, t:'בונות משפט', d:'מסדרות מילים למשפט.', need: sents.length>0},
-    {id:'story', ic:I.book, t:'סיפור עם המילים', d:'Claude כותב סיפור קצר עם המילים שלך.', need: !!S.sample && words.length>=3},
-    {id:'grammar', ic:I.rule, t:'תרגול דקדוק', d:'שאלות קצרות על מה שלמדת.', need: !!S.sample && (l.grammar||[]).length>0},
+    {id:'grammar', ic:I.rule, t:'תרגול דקדוק', d:'שאלות קצרות על הכלל.', need: hasQuiz(l)},
+    {id:'story', ic:I.book, t:'סיפור עם המילים שלך', d:'סיפור קצר ושאלות עליו.', need: !!S.sample && words.length>=3},
   ].filter(a=>a.need!==false);
+  const [main, ...rest] = acts;
   return `${topBar({back:true, backTo:'kid'})}
   <div class="sheet paper">
-    <div class="stack" style="gap:4px"><h1>${esc(l.title||'שיעור')}</h1>${l.date?`<span class="date-tag">${heDate(l.date)}</span>`:''}</div>
-    <div class="acts">${acts.map(a=>`<button class="act ${a.main?'main':''}" data-play="${a.id}"><span class="ic">${a.ic}</span><b>${a.t}</b><small>${a.d}</small></button>`).join('')}</div>
-    <h2>המילים של השיעור</h2>
-    <p class="muted" style="font-size:16px">לחצי על מילה כדי לשמוע אותה. הנקודות מראות כמה היא כבר מוכרת לך.</p>
-    <div class="wordlist">${words.map(w=>`<button class="wl" data-say="${esc(w.en)}"><span class="he">${esc(w.he)}</span><span class="en">${esc(w.en)}</span>${boxDots(wkey(w.en))}${canSpeak?I.speak:''}</button>`).join('')}</div>
-    ${(l.grammar||[]).length?`<h2>מה למדנו בדקדוק</h2>${l.grammar.map(g=>`<div class="grammar"><h3>${esc(g.title)}</h3><p>${esc(g.explain)}</p>${(g.examples||[]).map(e=>`<div class="ex">${esc(e)}</div>`).join('')}</div>`).join('')}`:''}
-    ${l.homework?`<div class="notice"><b>משימה מהמורה:</b> ${esc(l.homework)}</div>`:''}
+    <div class="stack" style="gap:4px"><h1>${mixed(l.title||'שיעור')}</h1>${l.date?`<span class="date-tag">${heDate(l.date)}</span>`:''}</div>
+    <div class="acts">
+      <button class="act main" data-play="${main.id}"><span class="ic">${main.ic}</span><span class="stack" style="gap:2px"><b>${main.t}</b><small>${main.d}</small></span></button>
+      ${rest.length?`<div class="or-pick">או לבחור:</div>`:''}
+      ${rest.map(a=>`<button class="act" data-play="${a.id}"><span class="ic">${a.ic}</span><b>${a.t}</b><small>${a.d}</small></button>`).join('')}
+    </div>
+    ${phon.length?`<h2>צלילים</h2>${l.tip?`<p>${mixed(l.tip)}</p>`:''}
+      <div class="phon">${phon.map(g=>`<div class="phon-g"><div class="pt">${esc(g.pattern.replace('_','…'))}</div><div class="ws">${(g.words||[]).map(w=>`<button data-say="${esc(w.en)}">${markPat(w.en,g.pattern)}</button>`).join('')}</div></div>`).join('')}</div>
+      ${(l.pairs||[]).length?`<h3>זוגות: מקשיבות להבדל</h3><div class="pairs">${l.pairs.map(([a,b])=>`<span><button data-say="${esc(a)}">${esc(a)}</button>→<button data-say="${esc(b)}">${esc(b)}</button></span>`).join('')}</div>`:''}`:''}
+    ${words.length?`<h2>המילים של השיעור</h2>
+    <p class="muted" style="font-size:16px">לחצי על מילה כדי לשמוע אותה. הנקודות: כמה את מכירה אותה.</p>
+    <div class="wordlist">${words.map(w=>`<button class="wl" data-say="${esc(w.en)}"><span class="he">${esc(w.he)}</span><span class="en">${esc(w.en)}</span>${boxDots(wkey(w.en))}${canSpeak?I.speak:''}</button>`).join('')}</div>`:''}
+    ${(l.grammar||[]).length?`<h2>מה למדנו בדקדוק</h2>${l.grammar.map(g=>`<div class="grammar"><h3>${mixed(g.title)}</h3><p>${mixed(g.explain)}</p>${(g.examples||[]).map(e=>`<div class="ex">${esc(e)}</div>`).join('')}</div>`).join('')}`:''}
+    ${l.homework?`<div class="notice"><b>משימה מהמורה:</b> ${mixed(l.homework)}</div>`:''}
   </div>`;
 }
 
 /* ---------- building a practice session ---------- */
-function buildItems(mode, lessons, words){
-  const k = kid(), p = prog(k.id);
-  const pool = kidWords(k.id);
-  const items = [];
-  const sents = shuffle(sentencesOf(lessons));
-  const withExample = w => w.example && new RegExp('\\b'+w.en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(w.example);
-  if(mode==='flash') return shuffle(words).map(w=>({type:'flash', w}));
-  if(mode==='spell') return shuffle(words).slice(0,SESSION_SIZE).map(w=>({type:'spell', w}));
-  if(mode==='order') return sents.slice(0,6).map(s=>({type:'order', s}));
-  for(const w of shuffle(words).slice(0,SESSION_SIZE)){
-    const b = p.words?.[w.key||wkey(w.en)]?.b || 0;
-    // new or shaky words: recognise first. Known words: recall and write.
-    const easy = ['choose','rev'].concat(canSpeak?['listen']:[]);
-    const hard = (canSpeak?['spell']:['rev']).concat(withExample(w)?['blank','blank']:['spell']);
-    let type = pick(b>=2 ? hard : easy);
-    if((type==='choose'||type==='rev'||type==='listen') && pool.length<3) type = canSpeak ? 'spell' : 'flash';
-    items.push({type, w});
+const fillPatterns = () => [...new Set(kidEntries(kid().id).filter(x=>x.ph && !x.pattern.includes('_')).map(x=>x.pattern))];
+const withExample = w => !w.ph && w.example && new RegExp('\\b'+reEsc(w.en)+'\\b','i').test(w.example);
+function typeFor(e, b, vocabCount){
+  if(e.ph){
+    const canFill = !e.pattern?.includes('_') && patSpans(e.en, e.pattern) && fillPatterns().length>=2;
+    if(b<2) return pick(canSpeak ? ['read','hear'] : ['read']);
+    return pick(['read', canSpeak?'hear':'read', canFill?'phfill':'read']);
   }
-  if(mode==='mix' && sents.length) items.splice(Math.min(items.length,5), 0, {type:'order', s:sents[0]});
+  if(vocabCount<4) return 'flash';
+  if(b<2) return pick(['choose','rev'].concat(canSpeak?['listen']:[]));
+  const hard = (canSpeak?['spell']:[]).concat(withExample(e)?['blank']:[]);
+  return hard.length ? pick(hard) : 'rev';
+}
+function buildItems(mode, lessons, entries){
+  const k = kid(), p = prog(k.id);
+  const vocabCount = kidEntries(k.id).filter(e=>!e.ph).length;
+  const box = e => p.words?.[e.key]?.b || 0;
+  const sents = shuffle(sentencesOf(lessons));
+  const vocab = entries.filter(e=>!e.ph), phon = entries.filter(e=>e.ph);
+  if(mode==='flash') return shuffle(vocab).map(w=>({type:'flash', w}));
+  if(mode==='spell') return shuffle(vocab.filter(e=>box(e)>=2)).slice(0,SESSION_SIZE).map(w=>({type:'spell', w}));
+  if(mode==='order') return sents.slice(0,6).map(s=>({type:'order', s}));
+  // a lesson round: words she already met first, then at most a few new ones, so a round stays short
+  const limitNew = list => { const met = shuffle(list.filter(e=>p.words?.[e.key])), fresh = shuffle(list.filter(e=>!p.words?.[e.key])).slice(0, NEW_PER_DAY+1); return shuffle(met.slice(0, SESSION_SIZE-fresh.length).concat(fresh)); };
+  let pool = mode==='daily' ? entries : limitNew(mode==='phonics' ? phon : entries);
+  // a word met for the first time gets an introduction card; the question on it comes a little later
+  const items = [], later = [];
+  for(const e of pool){
+    if(!p.words?.[e.key]){ items.push({type:'intro', w:e}); later.push({type:typeFor(e,0,vocabCount), w:e}); }
+    else items.push({type:typeFor(e, box(e), vocabCount), w:e});
+    if(later.length && items.length>=2 && items[items.length-1].type!=='intro') items.push(later.shift());
+  }
+  items.push(...later);
+  if(mode!=='phonics' && sents.length) items.splice(Math.min(items.length,5), 0, {type:'order', s:sents[0]});
   return items;
 }
 function startSession(mode, opts={}){
   const k = kid(); if(!k) return;
-  let lessons, words;
-  if(mode==='daily'){ lessons = kidLessons(k.id); words = dueWords(k.id).slice(0,SESSION_SIZE); }
-  else { const l = S.lessons.find(x=>x.id===S.lessonId); lessons=[l]; words = (l.words||[]).filter(w=>w.en).map(w=>({...w,key:wkey(w.en)})); }
-  const items = opts.items || buildItems(mode==='daily'?'mix':mode, lessons, words);
-  if(!items.length){ toast('אין כאן עדיין מה לתרגל'); return; }
-  S.session = { mode, items, i:0, right:0, firstTry:0, review:new Set(), requeued:new Set(), prog: structuredClone(prog(k.id)), answered:false, back: mode==='daily'?'kid':'lesson', grammar:!!opts.grammar };
+  let lessons, entries;
+  if(mode==='daily'){ lessons = kidLessons(k.id); entries = dueEntries(k.id); }
+  else { const l = lessonById(S.lessonId); lessons=[l]; entries = entriesOf([l]); }
+  const items = opts.items || buildItems(mode, lessons, entries);
+  if(!items.length){
+    toast(mode==='spell' ? 'קודם נכיר את המילים בתרגול המעורב, ואחר כך נכתוב אותן.' : 'אין כאן עדיין מה לתרגל');
+    return;
+  }
+  S.session = { mode, items, i:0, base: items.filter(x=>x.type!=='explain').length, right:0, firstTry:0, done:0,
+    review:new Set(), fixed:new Set(), requeued:new Set(), prog: structuredClone(prog(k.id)), answered:false,
+    back: opts.back || (mode==='daily'?'kid':'lesson'), quiz:!!opts.quiz, token: uid() };
   S.session.prog.words = S.session.prog.words || {};
   go('play');
 }
 function grade(item, ok, {hinted}={}){
-  const s = S.session; if(s.answered) return; s.answered = true;
+  const s = S.session; if(s.answered) return; s.answered = true; s.done++;
   if(item.w){
-    const key = item.w.key || wkey(item.w.en);
-    const st = s.prog.words[key] || {b:0, r:0, w:0};
-    if(ok && !hinted){ st.b = Math.min((st.b||0)+1, 5); st.r=(st.r||0)+1; }
-    else if(!ok){ st.b = 1; st.w=(st.w||0)+1; s.review.add(item.w.en); }
-    st.due = addDays(today(), INTERVALS[st.b||1]); st.last = today();
+    const key = item.w.key || wkey(item.w.en), t = today();
+    const st = {...(s.prog.words[key] || {b:0, r:0, w:0})};
+    if(ok){
+      st.r = (st.r||0)+1;
+      // a box goes up at most once a day, and not on the second chance at the end of a round
+      if(!hinted && !item.again && st.up !== t){ st.b = Math.min((st.b||0)+1, 5); st.up = t; st.due = addDays(t, INTERVALS[st.b]); }
+      else if(!st.due || st.due <= t) st.due = addDays(t, 1);
+      if(item.again) s.fixed.add(item.w.en);
+    } else {
+      st.w = (st.w||0)+1; st.b = (st.b||0)>=3 ? 2 : 1; st.due = addDays(t, 1);
+      s.review.add(item.w.en); s.fixed.delete(item.w.en);
+    }
+    st.last = t;
     s.prog.words[key] = st;
-    // a word she missed comes back once at the end, in an easier form
-    if(!ok && !s.requeued.has(key) && s.mode!=='flash'){ s.requeued.add(key); s.items.push({type: canSpeak?'listen':'choose', w:item.w, again:true}); }
+    if(!ok && !s.requeued.has(key)){
+      s.requeued.add(key);
+      const easy = item.w.ph ? (canSpeak?'hear':'read') : s.mode==='flash' ? 'flash' : (canSpeak?'listen':'choose');
+      s.items.push({type: easy, w:item.w, again:true});
+      item.willReturn = true;
+    }
   }
   if(ok){ s.right++; if(!hinted) s.firstTry++; }
 }
 function nextItem(){
+  clearTimeout(S.timer);
   const s = S.session; s.i++; s.answered=false;
-  if(s.i >= s.items.length) return finishSession();
+  if(s.i >= s.items.length) return finishSession(true);
   render(); window.scrollTo(0,0);
 }
-async function finishSession(){
+async function finishSession(complete){
+  clearTimeout(S.timer);
   const s = S.session, k = kid();
+  s.complete = complete;
+  if(!s.done){ go(s.back); return; }
   const p = s.prog, t = today();
   p.stars = (p.stars||0) + s.firstTry;
   if(p.lastDay !== t){ p.streak = (p.lastDay === addDays(t,-1)) ? (p.streak||0)+1 : 1; p.lastDay = t; }
@@ -567,117 +686,216 @@ async function finishSession(){
 }
 
 /* ---------- practice screens ---------- */
-const KIND = {choose:'מה הפירוש?', rev:'איך אומרים באנגלית?', listen:'מה שמעת?', spell:'הכתבה', blank:'השלמת משפט', order:'בונות משפט', flash:'כרטיסיות', mcq:'דקדוק'};
-function optionsFor(w, field){
-  const k = kid(); const pool = kidWords(k.id).filter(x=>wkey(x.en)!==wkey(w.en) && x[field] && norm(x[field])!==norm(w[field]));
+function optionsFor(w, field, {differentPos}={}){
+  const k = kid();
+  let pool = kidEntries(k.id).filter(x=>!x.ph && x.key!==w.key && x[field] && norm(x[field])!==norm(w[field]));
+  // in a gap sentence another word of the same kind could also fit, so prefer a different kind of word
+  if(differentPos && w.pos && w.pos!=='op'){ const other = pool.filter(x=>x.pos && x.pos!==w.pos); if(other.length>=3) pool = other; }
   return shuffle([w[field], ...shuffle(pool).slice(0,3).map(x=>x[field])]);
 }
+function phOptions(w){
+  const k = kid();
+  if(w.pair) return shuffle([w.en, w.pair]);
+  const pool = kidEntries(k.id).filter(x=>x.ph && x.key!==w.key && x.pattern!==w.pattern);
+  return shuffle([w.en, ...shuffle(pool).slice(0,2).map(x=>x.en)]);
+}
+const optBtns = (opts, en) => `<div class="opts">${opts.map((o,i)=>`<button class="opt ${en?'en-opt':''}" data-opt="${i}"><span class="k">${i+1}</span>${esc(o)}</button>`).join('')}</div>`;
 function vPlay(){
   const s = S.session, it = s.items[s.i];
-  const total = s.items.length, n = s.i+1;
-  const sayBtns = txt => canSpeak ? `<button class="say" data-say="${esc(txt)}" aria-label="להשמיע">${I.speak}</button><button class="say slow" data-sayslow="${esc(txt)}" aria-label="להשמיע לאט">${I.slow}</button>` : '';
   let body = '';
-  if(it.type==='choose'){
+  if(it.type==='intro'){
+    const w = it.w;
+    body = `<p class="task">${w.ph?'מילה חדשה לקריאה':'מילה חדשה'}</p>
+      <div class="prompt"><div class="ruled word-big">${w.ph?markPat(w.en,w.pattern):esc(w.en)}</div><div class="row">${sayBtns(w.en)}</div>
+      ${w.he?`<div class="intro-he">${esc(w.he)}</div>`:''}${w.example?`<div class="en muted" style="font-size:20px">${esc(w.example)}</div>`:''}</div>
+      <div class="ctrl"><button class="btn primary" data-act="next" id="nextBtn">שמעתי, אפשר להמשיך</button></div>`;
+  } else if(it.type==='choose'){
     it.opts = it.opts || optionsFor(it.w,'he');
     body = `<p class="task">מה הפירוש של המילה?</p>
-      <div class="prompt"><div class="ruled word-big">${esc(it.w.en)}</div></div>
-      <div class="answer-area"><div class="opts">${it.opts.map((o,i)=>`<button class="opt" data-opt="${i}"><span class="k">${i+1}</span>${esc(o)}</button>`).join('')}</div><div id="fb"></div></div>`;
+      <div class="prompt"><div class="ruled word-big">${esc(it.w.en)}</div><div class="row">${sayBtns(it.w.en)}</div></div>
+      <div class="answer-area">${optBtns(it.opts)}<div id="fb"></div></div>`;
   } else if(it.type==='rev'){
     it.opts = it.opts || optionsFor(it.w,'en');
     body = `<p class="task">איך אומרים באנגלית?</p>
       <div class="prompt"><div class="he-big">${esc(it.w.he)}</div></div>
-      <div class="answer-area"><div class="opts">${it.opts.map((o,i)=>`<button class="opt en-opt" data-opt="${i}"><span class="k">${i+1}</span>${esc(o)}</button>`).join('')}</div><div id="fb"></div></div>`;
-  } else if(it.type==='listen'){
-    it.opts = it.opts || optionsFor(it.w,'en');
+      <div class="answer-area">${optBtns(it.opts,true)}<div id="fb"></div></div>`;
+  } else if(it.type==='listen' || it.type==='hear'){
+    it.opts = it.opts || (it.w.ph ? phOptions(it.w) : optionsFor(it.w,'en'));
     body = `<p class="task">הקשיבי ובחרי את המילה ששמעת</p>
       <div class="prompt"><div class="row">${sayBtns(it.w.en)}</div></div>
-      <div class="answer-area"><div class="opts">${it.opts.map((o,i)=>`<button class="opt en-opt" data-opt="${i}"><span class="k">${i+1}</span>${esc(o)}</button>`).join('')}</div><div id="fb"></div></div>`;
+      <div class="answer-area">${optBtns(it.opts,true)}<div id="fb"></div></div>`;
+  } else if(it.type==='read'){
+    body = `<p class="task">${it.heard?'קראת כמו שזה נשמע?':'קראי את המילה בקול, ואחר כך הקשיבי'}</p>
+      <div class="prompt"><div class="ruled word-big">${markPat(it.w.en, it.w.pattern)}</div></div>
+      <div class="answer-area"><div class="ctrl">
+        ${it.heard ? `<button class="btn primary" data-act="readok">קראתי נכון</button><button class="btn" data-act="readno">עוד לא, שתחזור אליי</button>${canSpeak?`<button class="btn" data-say="${esc(it.w.en)}">${I.speak} שוב</button>`:''}`
+          : `<button class="btn primary" data-act="readcheck">${I.speak} קראתי, להקשיב</button>`}
+      </div><div id="fb"></div></div>`;
+  } else if(it.type==='phfill'){
+    const [[a,b]] = patSpans(it.w.en, it.w.pattern);
+    it.opts = it.opts || shuffle([it.w.pattern, ...shuffle([...new Set(kidEntries(kid().id).filter(x=>x.ph && !x.pattern.includes('_') && x.pattern!==it.w.pattern).map(x=>x.pattern))]).slice(0,2)]);
+    body = `<p class="task">אילו אותיות חסרות?</p>
+      <div class="prompt"><div class="ruled word-big">${esc(it.w.en.slice(0,a))}<span class="gap" id="gap">&nbsp;</span>${esc(it.w.en.slice(b))}</div><div class="row">${sayBtns(it.w.en)}</div></div>
+      <div class="answer-area">${optBtns(it.opts,true)}<div id="fb"></div></div>`;
   } else if(it.type==='spell'){
     body = `<p class="task">הקשיבי וכתבי את המילה באנגלית</p>
       <div class="prompt"><div class="row">${sayBtns(it.w.en)}</div><div class="muted" style="font-size:18px">${esc(it.w.he)}</div></div>
       <div class="answer-area">
-        <input class="spell" id="spell" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="המילה באנגלית">
+        <input class="spell" id="spell" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="המילה באנגלית">
         <div class="ctrl"><button class="btn primary" data-act="check">לבדוק</button><button class="btn" data-act="hint">${I.bulb} אות אחת</button></div>
         <div id="fb"></div></div>`;
   } else if(it.type==='blank'){
-    const re = new RegExp('\\b'+it.w.en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
-    const parts = it.w.example.split(re);
-    it.opts = it.opts || optionsFor(it.w,'en');
+    const parts = it.w.example.split(new RegExp('\\b'+reEsc(it.w.en)+'\\b','i'));
+    it.opts = it.opts || optionsFor(it.w,'en',{differentPos:true});
     body = `<p class="task">איזו מילה חסרה במשפט?</p>
       <div class="prompt"><div class="sentence">${esc(parts[0])}<span class="gap" id="gap">&nbsp;</span>${esc(parts.slice(1).join(it.w.en))}</div></div>
-      <div class="answer-area"><div class="opts">${it.opts.map((o,i)=>`<button class="opt en-opt" data-opt="${i}"><span class="k">${i+1}</span>${esc(o)}</button>`).join('')}</div><div id="fb"></div></div>`;
+      <div class="answer-area">${optBtns(it.opts,true)}<div id="fb"></div></div>`;
   } else if(it.type==='order'){
-    const toks = it.s.en.trim().split(/\s+/);
-    if(!it.tiles){ let sh; let tries=0; do{ sh = shuffle(toks.map((t,i)=>({t,i}))); tries++; }while(toks.length>1 && tries<8 && sh.every((x,j)=>x.i===j)); it.tiles = sh; it.built=[]; }
+    if(!it.tiles){
+      const proper = new Set(S.lessons.flatMap(l=>(l.words||[]).map(w=>w.en)).filter(x=>/^[A-Z]/.test(x)).map(x=>x.toLowerCase()));
+      const toks = it.s.en.trim().replace(/[.!?]+$/,'').split(/\s+/);
+      // no free clues: the first word loses its capital (unless it is I or a name) and the full stop goes
+      if(toks[0] && toks[0]!=='I' && !proper.has(toks[0].toLowerCase())) toks[0] = toks[0].toLowerCase();
+      let sh, tries=0; do{ sh = shuffle(toks.map((t,i)=>({t,i}))); tries++; }while(toks.length>1 && tries<8 && sh.every((x,j)=>x.i===j));
+      it.tiles = sh; it.built=[];
+    }
     body = `<p class="task">סדרי את המילים למשפט</p>
       ${it.s.he?`<div class="prompt"><div class="muted" style="font-size:19px">${esc(it.s.he)}</div></div>`:''}
       <div class="answer-area">
         <div class="tiles built" id="built">${it.built.map((ti,j)=>`<button class="tile" data-unb="${j}">${esc(it.tiles[ti].t)}</button>`).join('')}</div>
         <div class="tiles">${it.tiles.map((x,j)=> it.built.includes(j)?'':`<button class="tile" data-tile="${j}">${esc(x.t)}</button>`).join('')}</div>
-        <div class="ctrl"><button class="btn primary" data-act="checkorder" ${it.built.length===it.tiles.length?'':'disabled'}>לבדוק</button>${canSpeak?`<button class="btn" data-say="${esc(it.s.en)}">${I.speak} להשמיע את המשפט</button>`:''}</div>
+        <div class="ctrl"><button class="btn primary" data-act="checkorder" ${it.built.length===it.tiles.length?'':'disabled'}>לבדוק</button></div>
         <div id="fb"></div></div>`;
   } else if(it.type==='flash'){
     body = `<p class="task">${it.flipped?'ידעת?':'נסי להיזכר מה הפירוש, ואז הפכי את הכרטיס'}</p>
       <div class="answer-area">
-        <button class="flash" data-act="flip" ${it.flipped?'disabled':''}>
+        <button class="flash" id="card" data-act="flip" ${it.flipped?'disabled':''}>
           <div class="ruled word-big">${esc(it.w.en)}</div>
-          ${it.flipped?`<div class="he-big">${esc(it.w.he)}</div>${it.w.example?`<div class="en muted" style="font-size:19px">${esc(it.w.example)}</div>`:''}`:'<small>לחצי כדי להפוך</small>'}
+          ${it.flipped?`<div class="he-big">${esc(it.w.he)}</div>${it.w.example?`<div class="en muted" style="font-size:19px">${esc(it.w.example)}</div>`:''}`:'<small>לחצי, או Enter, כדי להפוך</small>'}
         </button>
-        <div class="ctrl">${it.flipped?`<button class="btn primary" data-act="knew">ידעתי</button><button class="btn" data-act="notyet">עוד לא, שתחזור אליי</button>`:''}${canSpeak?`<button class="btn" data-say="${esc(it.w.en)}">${I.speak} להשמיע</button>`:''}</div>
+        <div class="ctrl">${it.flipped?`<button class="btn primary" data-act="knew" id="knewBtn">ידעתי</button><button class="btn" data-act="notyet">עוד לא, שתחזור אליי</button>`:''}${canSpeak?`<button class="btn" data-say="${esc(it.w.en)}">${I.speak} להשמיע</button>`:''}</div>
       </div>`;
+  } else if(it.type==='explain'){
+    body = `<p class="task">לפני השאלות: הכלל</p>
+      <div class="answer-area">${it.grammar.map(g=>`<div class="grammar-card"><h3>${mixed(g.title)}</h3><p>${mixed(g.explain)}</p>${(g.examples||[]).map(e=>`<div class="ex">${esc(e)}</div>`).join('')}</div>`).join('')}
+      <div class="ctrl"><button class="btn primary" data-act="next" id="nextBtn">לשאלה הראשונה</button></div></div>`;
   } else if(it.type==='mcq'){
-    body = `<p class="task">${esc(it.q.prompt||'בחרי את התשובה הנכונה')}</p>
-      <div class="prompt"><div class="sentence">${esc(it.q.q).replace(/_{2,}/g,'<span class="gap">&nbsp;</span>')}</div></div>
-      <div class="answer-area"><div class="opts">${it.q.options.map((o,i)=>`<button class="opt en-opt" data-opt="${i}"><span class="k">${i+1}</span>${esc(o)}</button>`).join('')}</div><div id="fb"></div></div>`;
+    body = `<p class="task">${mixed(it.q.prompt||'בחרי את התשובה שמתאימה')}</p>
+      ${it.q.q?`<div class="prompt"><div class="sentence">${esc(it.q.q).replace(/_{2,}/g,'<span class="gap" id="gap">&nbsp;</span>')}</div></div>`:''}
+      <div class="answer-area">${optBtns(it.q.options,true)}<div id="fb"></div></div>`;
   }
-  return `<div class="top"><button class="icon-btn" data-act="quit" aria-label="לצאת מהתרגול">${I.x}</button><div class="logo" style="font-size:18px">${it.again?'עוד פעם, בדרך אחרת':KIND[it.type]}</div></div>
+  // progress counts the planned items only: a second chance does not push the end further away
+  const counted = s.items.slice(0, s.i+1).filter(x=>!x.again && x.type!=='explain').length;
+  const unit = s.quiz ? 'שאלה' : 'צעד';
+  const prog = it.again ? `<span>עוד פעם, בדרך אחרת</span>` : it.type==='explain' ? '' : `<span>${unit} ${counted} מתוך ${s.base}</span>`;
+  return `<div class="top"><button class="icon-btn" data-act="quit" aria-label="לצאת מהתרגול">${I.x}</button></div>
   <div class="sheet">
     ${body}
-    <div class="progress"><div class="bar"><i style="width:${Math.round((n-1)/total*100)}%"></i></div><span>${it.type==='order'?'משפט':it.type==='mcq'?'שאלה':'מילה'} ${n} מתוך ${total}</span></div>
+    <div class="progress"><div class="bar"><i style="width:${Math.round(Math.max(0,Math.min(counted-(it.again?0:1), s.base))/s.base*100)}%"></i></div>${prog}</div>
   </div>`;
 }
 after.play = () => {
   const it = S.session.items[S.session.i];
   if(it.type==='spell'){ document.getElementById('spell')?.focus(); setTimeout(()=>speak(it.w.en),250); }
-  if(it.type==='listen') setTimeout(()=>speak(it.w.en),250);
+  if(['listen','hear','choose','intro','phfill'].includes(it.type)) setTimeout(()=>speak(it.w.en),250);
+  if(it.type==='flash' && !it.flipped) document.getElementById('card')?.focus();
+  if(it.type==='flash' && it.flipped) document.getElementById('knewBtn')?.focus();
+  if(it.type==='intro' || it.type==='explain') document.getElementById('nextBtn')?.focus();
+};
+const nextLabel = () => {
+  const s = S.session; const nx = s.items[s.i+1];
+  if(!nx) return 'לסיום';
+  return nx.type==='order' ? 'למשפט הבא' : nx.type==='mcq' ? 'לשאלה הבאה' : 'למילה הבאה';
 };
 function showFeedback(ok, html, auto){
   const fb = document.getElementById('fb'); if(!fb) return;
+  clearTimeout(S.timer);
   if(ok){
-    fb.innerHTML = `<div class="feedback good">${I.check}<span>${html||'נכון'}</span></div>`;
-    if(auto) setTimeout(()=>{ if(S.view==='play') nextItem(); }, 1100);
+    fb.innerHTML = `<div class="feedback good">${I.check}<span>${html}</span></div>`;
+    if(auto){ const tok = S.session.token, i = S.session.i; S.timer = setTimeout(()=>{ if(S.view==='play' && S.session.token===tok && S.session.i===i) nextItem(); }, AUTO_NEXT_MS); }
     else fb.insertAdjacentHTML('beforeend', `<div class="ctrl" style="margin-top:10px"><button class="btn primary" data-act="next" id="nextBtn">${nextLabel()}</button></div>`);
   } else {
     fb.innerHTML = `<div class="feedback next">${html}<div class="ctrl" style="justify-content:flex-start;margin-top:6px"><button class="btn primary" data-act="next" id="nextBtn">${nextLabel()}</button></div></div>`;
   }
   document.getElementById('nextBtn')?.focus();
 }
-const nextLabel = () => S.session.i+1 >= S.session.items.length ? 'לסיום' : (S.session.items[S.session.i+1]?.type==='order' ? 'למשפט הבא' : 'לשאלה הבאה');
+const comesBack = it => it.willReturn ? `<span class="mine">היא תחזור אלייך עוד מעט.</span>` : `<span class="mine">היא תחזור אלייך מחר.</span>`;
 function answerOption(idx){
   const s = S.session, it = s.items[s.i]; if(s.answered) return;
-  const right = it.type==='choose' ? it.w.he : it.type==='mcq' ? it.q.options[it.q.answer] : it.w.en;
-  const chosen = it.type==='mcq' ? it.q.options[idx] : it.opts[idx];
-  const ok = norm(chosen) === norm(right);
-  document.querySelectorAll('.opt').forEach((b,i)=>{ b.disabled=true; const val = it.type==='mcq'?it.q.options[i]:it.opts[i]; if(norm(val)===norm(right)) b.classList.add('right'); else if(i===idx) b.classList.add('picked'); });
-  if(it.type==='blank'){ const g=document.getElementById('gap'); if(g){ g.textContent=it.w.en; g.classList.add('en'); } }
-  if(it.type==='mcq'){ if(ok){ s.right++; s.firstTry++; } s.answered=true;
-    showFeedback(ok, ok ? (it.q.explain? esc(it.q.explain):'נכון') : `<span>התשובה היא <span class="en">${esc(right)}</span></span>${it.q.explain?`<span>${esc(it.q.explain)}</span>`:''}`, false); return; }
+  const opts = it.type==='mcq' ? it.q.options : it.opts;
+  const right = it.type==='choose' ? it.w.he : it.type==='mcq' ? it.q.options[it.q.answer] : it.type==='phfill' ? it.w.pattern : it.w.en;
+  const ok = norm(opts[idx]) === norm(right);
+  document.querySelectorAll('.opt').forEach((b,i)=>{ b.disabled=true; if(norm(opts[i])===norm(right)) b.classList.add('right'); else if(i===idx) b.classList.add('picked'); });
+  const g = document.getElementById('gap');
+  if(g && it.type==='blank'){ g.textContent=it.w.en; g.classList.add('en'); }
+  if(g && it.type==='phfill'){ g.outerHTML = `<span class="pat">${esc(it.w.pattern)}</span>`; }
+  if(g && it.type==='mcq'){ g.textContent = right; }
+  if(it.type==='mcq'){
+    s.answered=true; s.done++; if(ok){ s.right++; s.firstTry++; }
+    const ex = it.q.explain ? mixed(it.q.explain) : '';
+    showFeedback(ok, ok ? (ex || 'נכון') : `<span>התשובה מסומנת בירוק: <span class="en">${esc(right)}</span></span>${ex?`<span>${ex}</span>`:''}`, false);
+    return;
+  }
   grade(it, ok);
-  if(canSpeak && (it.type!=='choose' || ok)) speak(it.type==='blank' ? it.w.example : it.w.en);
-  if(ok) showFeedback(true, it.type==='blank' ? 'נכון. המשפט שלם.' : `נכון. <span class="en">${esc(it.w.en)}</span> = ${esc(it.w.he)}`, true);
-  else showFeedback(false, `<span>המילה המסומנת בירוק היא התשובה:</span><span><span class="en">${esc(it.w.en)}</span> = ${esc(it.w.he)}</span><span class="muted" style="font-size:16px">היא תחזור אלייך עוד מעט.</span>`);
+  if(canSpeak) speak(it.type==='blank' ? it.w.example : it.w.en);
+  const pair = it.w.he ? `<span class="en">${esc(it.w.en)}</span> זה ${esc(it.w.he)}` : `<span class="en">${esc(it.w.en)}</span>`;
+  if(ok) showFeedback(true, it.type==='blank' ? 'נכון. המשפט שלם.' : `נכון. ${pair}`, true);
+  else showFeedback(false, `<span>התשובה מסומנת בירוק.</span><span>${pair}</span>${comesBack(it)}`);
+}
+
+/* spelling: line the two words up, so a missing letter is shown as one missing letter */
+function alignWords(typed, target){
+  const a = typed.toLowerCase(), b = target.toLowerCase(), n=a.length, m=b.length;
+  const L = Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) L[i][j] = a[i]===b[j] ? L[i+1][j+1]+1 : Math.max(L[i+1][j], L[i][j+1]);
+  const hit = new Array(m).fill(false); let i=0,j=0;
+  while(i<n && j<m){ if(a[i]===b[j]){ hit[j]=true; i++; j++; } else if(L[i+1][j]>=L[i][j+1]) i++; else j++; }
+  return hit;
+}
+function spellTip(typed, target, hit){
+  const t = target.toLowerCase(), miss = [...t].map((c,i)=>hit[i]?null:{c,i}).filter(Boolean);
+  if(!miss.length) return '';
+  for(const {c,i} of miss) if((t[i-1]===c || t[i+1]===c) && /[a-z]/.test(c)) return `במילה הזאת יש שתי <span class="en">${c}</span> צמודות.`;
+  if(t.endsWith('e') && miss.some(x=>x.i===t.length-1)) return `בסוף המילה יש <span class="en">e</span> שלא שומעים.`;
+  if(miss.every(x=>'aeiouy'.includes(x.c))) return 'באנגלית כותבים גם את התנועות.';
+  if(/^(kn|wr)/.test(t) && miss.some(x=>x.i===0)) return `את האות הראשונה כותבים, אבל לא שומעים.`;
+  if(t.includes('th') && miss.some(x=>t.slice(x.i-1,x.i+1)==='th'||t.slice(x.i,x.i+2)==='th')) return `את הצליל הזה כותבים בשתי אותיות: <span class="en">th</span>.`;
+  return '';
 }
 function checkSpell(){
-  const s = S.session, it = s.items[s.i]; if(s.answered) return;
+  const s = S.session, it = s.items[s.i];
   const inp = document.getElementById('spell'); const val = inp.value;
   if(!val.trim()){ inp.focus(); return; }
-  const ok = norm(val) === norm(it.w.en);
-  grade(it, ok, {hinted: it.hinted});
-  inp.disabled = true;
-  if(ok){ speak(it.w.en); showFeedback(true, it.hinted ? 'כתבת את כל המילה' : `כתבת נכון: <span class="en">${esc(it.w.en)}</span>`, true); return; }
-  const target = it.w.en, typed = val.trim();
-  const letters = [...target].map((ch,i)=>`<span class="${(typed[i]||'').toLowerCase()===ch.toLowerCase()?'':'miss'}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join('');
-  showFeedback(false, `<span>ככה כותבים את המילה. האותיות בוורוד הן אלה ששווה לשים לב אליהן:</span><div class="letters">${letters}</div><span class="muted" style="font-size:16px">את כתבת: <span class="en">${esc(typed)}</span></span>`);
+  if(HEB.test(val)){ toast('המקלדת בעברית. צריך להחליף לאנגלית.'); inp.select(); return; }
+  const target = it.w.en, typed = val.trim().replace(/\s+/g,' ');
+  if(it.retry){
+    // the second try after a mistake: practice only, the box was already set
+    if(norm(typed)===norm(target)){ inp.disabled=true; speak(target); showFeedback(true, `עכשיו כתבת <span class="en">${esc(target)}</span>`, true); }
+    else { inp.value=''; inp.focus(); toast('הסתכלי שוב על המילה ונסי עוד פעם'); }
+    return;
+  }
+  if(s.answered) return;
+  const sameLetters = typed.toLowerCase().replace(/[^a-z' ]/g,'') === target.toLowerCase().replace(/[^a-z' ]/g,'');
+  if(sameLetters){
+    grade(it, true, {hinted: it.hinted});
+    inp.disabled = true; speak(target);
+    const capNote = typed !== target && /[A-Z]/.test(target) && typed.replace(/[^A-Za-z]/g,'') !== target.replace(/[^A-Za-z]/g,'')
+      ? ` כמעט מושלם: <span class="en">${esc(target)}</span> כותבים באות גדולה.` : '';
+    showFeedback(true, (it.hinted ? `השלמת את המילה: <span class="en">${esc(target)}</span>` : `כתבת נכון: <span class="en">${esc(target)}</span>`) + capNote, !capNote);
+    return;
+  }
+  grade(it, false);
+  const hit = alignWords(typed, target);
+  const letters = [...target].map((ch,i)=>`<span class="${hit[i]?'':'miss'}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join('');
+  const tip = spellTip(typed, target, hit);
+  it.retry = true;
+  const fb = document.getElementById('fb');
+  fb.innerHTML = `<div class="feedback next"><span>ככה כותבים את המילה.</span><div class="letters">${letters}</div>
+    <span>${tip || 'שימי לב לאותיות בוורוד.'}</span><span class="mine">מה שכתבת: <span class="en">${esc(typed)}</span></span></div>
+    <div class="retry"><span>עכשיו כתבי אותה בעצמך</span></div>`;
+  inp.value=''; inp.focus();
+  const ctrl = document.querySelector('.answer-area .ctrl');
+  if(ctrl) ctrl.innerHTML = `<button class="btn primary" data-act="check">לבדוק</button><button class="btn" data-act="next" id="nextBtn">${nextLabel()}</button>`;
 }
 function giveHint(){
   const it = S.session.items[S.session.i]; const inp = document.getElementById('spell'); if(!inp||S.session.answered) return;
@@ -689,106 +907,140 @@ function checkOrder(){
   const s = S.session, it = s.items[s.i]; if(s.answered) return;
   const built = it.built.map(j=>it.tiles[j].t).join(' ');
   const ok = norm(built) === norm(it.s.en);
-  s.answered = true; if(ok){ s.right++; s.firstTry++; }
+  s.answered = true; s.done++; if(ok){ s.right++; s.firstTry++; }
   document.querySelectorAll('.tile').forEach(b=>b.disabled=true);
   if(canSpeak) speak(it.s.en);
-  if(ok) showFeedback(true, 'בנית את המשפט', false);
-  else showFeedback(false, `<span>כך המשפט בנוי:</span><span class="en" style="font-size:22px">${esc(it.s.en)}</span><span class="muted" style="font-size:16px">את סידרת: <span class="en">${esc(built)}</span></span>`);
+  if(ok) showFeedback(true, `בנית את המשפט: <span class="en">${esc(it.s.en)}</span>`, false);
+  else showFeedback(false, `<span>הקשיבי למשפט:</span><span class="en" style="font-size:22px">${esc(it.s.en)}</span><span class="mine">הסידור שלך: <span class="en">${esc(built)}</span></span>`);
 }
 
 /* ---------- finish ---------- */
 function vFinish(){
-  const s = S.session, k = kid();
-  const n = s.firstTry;
+  const s = S.session, n = s.firstTry;
   const review = [...s.review];
+  let line;
+  if(s.quiz) line = s.complete ? `עברת על כל ${s.base} השאלות.${n?` ${n===1?'אחת מהן ידעת':`${n} מהן ידעת`} כבר בפעם הראשונה.`:''}` : 'עצרת באמצע. אפשר להמשיך בפעם אחרת.';
+  else {
+    line = !s.complete ? 'עצרת באמצע. מה שתרגלת נשמר.' : n===0 ? `תרגלת ${plural(s.done,'צעד אחד','צעדים')}.` : n===1 ? 'תשובה אחת מהניסיון הראשון.' : `${n} תשובות מהניסיון הראשון.`;
+    if(review.length) line += ' המילים האלה יחזרו אלייך מחר:';
+    else if(s.complete && s.items.some(x=>x.w)) line += ' כל המילים התקדמו.';
+  }
   return `${topBar()}
   <div class="sheet finish">
-    <h1>סיימת את התרגול</h1>
+    <h1>${s.complete?'סיימת את התרגול':'עצרנו כאן'}</h1>
     ${n?`<div class="stars" aria-label="${n} כוכבים">${Array.from({length:Math.min(n,15)},()=>I.star).join('')}</div>`:''}
-    <p class="lead">${s.grammar ? `ענית על ${s.right} שאלות מתוך ${s.items.length}.` : `${n} תשובות מהניסיון הראשון.`} ${review.length? 'המילים האלה יחזרו אלייך מחר:' : 'כל המילים עברו שלב.'}</p>
-    ${review.length?`<div class="review-list">${review.map(w=>`<span>${esc(w)}</span>`).join('')}</div>`:''}
+    <p class="lead">${line}</p>
+    ${review.length?`<div class="review-list">${review.map(w=>`<span class="${s.fixed.has(w)?'fixed':''}">${esc(w)}${s.fixed.has(w)?' · וכבר הצלחת':''}</span>`).join('')}</div>`:''}
     <div class="ctrl">
-      <button class="btn primary" data-go="${s.back}">${s.back==='kid'?'למחברת שלי':'לשיעור'}</button>
-      ${s.mode!=='daily' && !s.grammar ? `<button class="btn" data-play="${s.mode}">עוד סבב</button>`:''}
+      <button class="btn primary" data-go="${s.back}">${s.back==='kid'?'למחברת שלי':s.back==='story'?'לסיפור':'לשיעור'}</button>
+      ${s.mode!=='daily' && !s.quiz ? `<button class="btn" data-play="${s.mode}">לתרגל שוב</button>`:''}
     </div>
   </div>`;
 }
 
 /* ---------- story ---------- */
 function vStory(){
-  const l = S.lessons.find(x=>x.id===S.lessonId); const st = S.story[l.id];
+  const l = lessonById(S.lessonId); const st = S.story[l.id];
   let body;
-  if(!st || st.loading) body = `<div class="row"><div class="spinner"></div><p class="lead">Claude כותב לך סיפור עם המילים של השיעור…</p></div>`;
+  if(!st || st.loading) body = `<div class="row"><div class="spinner"></div><p class="lead">כותבת לך סיפור עם המילים של השיעור…</p></div>`;
   else if(st.error) body = `<p class="lead">${esc(st.error)}</p><div class="ctrl" style="justify-content:flex-start"><button class="btn primary" data-act="newstory">לנסות שוב</button></div>`;
   else {
     const words = (l.words||[]).filter(w=>w.en).sort((a,b)=>b.en.length-a.en.length);
     let html = esc(st.story);
     if(words.length){
-      const re = new RegExp('\\b('+words.map(w=>esc(w.en).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')(s|es|ed|ing)?\\b','gi');
-      html = html.replace(re, m => `<mark data-gl="${esc(m)}">${m}</mark>`);
+      const re = new RegExp('\\b('+words.map(w=>reEsc(esc(w.en))).join('|')+')(s|es|ed|ing)?\\b','gi');
+      html = html.replace(re, m => `<button class="mk" data-gl="${m}">${m}</button>`);
     }
     html = html.replace(/\n+/g,'</p><p>');
+    st.ans = st.ans || {};
     body = `<h2 class="en" style="text-align:left">${esc(st.title||'')}</h2>
       <div class="row">${canSpeak?`<button class="btn" data-say="${esc(st.story)}">${I.speak} להקריא לי</button><button class="btn" data-sayslow="${esc(st.story)}">${I.slow} לאט</button>`:''}</div>
-      <div class="story"><p>${html}</p></div>
-      <div class="gloss" id="gloss"><span class="muted">לחצי על מילה צהובה כדי לשמוע אותה ולראות מה היא אומרת.</span></div>
-      <div class="ctrl" style="justify-content:flex-start">${(st.questions||[]).length?`<button class="btn primary" data-act="storyq">לשאלות על הסיפור</button>`:''}<button class="btn" data-act="newstory">סיפור אחר</button></div>`;
+      <div class="story-wrap" id="storyWrap"><div class="story"><p>${html}</p></div><div class="pop" id="pop" hidden></div></div>
+      <p class="muted" style="font-size:16px">לחצי על מילה צהובה כדי לשמוע אותה ולראות את הפירוש.</p>
+      ${(st.questions||[]).length?`<h2>שאלות על הסיפור</h2>${st.questions.map((q,qi)=>{
+        const a = st.ans[qi];
+        return `<div class="sq"><b>${mixed(q.q)}</b><div class="opts">${q.options.map((o,oi)=>`<button class="opt en-opt ${a!=null&&oi===q.answer?'right':''} ${a===oi&&oi!==q.answer?'picked':''}" data-sq="${qi}:${oi}" ${a!=null?'disabled':''}>${esc(o)}</button>`).join('')}</div>
+          ${a!=null?`<div class="note">${a===q.answer?'נכון.':'התשובה מסומנת בירוק. אפשר לחפש אותה בסיפור.'}</div>`:''}</div>`;}).join('')}`:''}
+      <div class="ctrl" style="justify-content:flex-start"><button class="btn" data-act="newstory">סיפור אחר</button></div>`;
   }
   return `${topBar({back:true, backTo:'lesson'})}<div class="sheet paper">${body}</div>`;
 }
 async function makeStory(fresh){
-  const l = S.lessons.find(x=>x.id===S.lessonId);
+  const l = lessonById(S.lessonId);
   S.story[l.id] = {loading:true}; if(S.view==='story') render();
   const words = (l.words||[]).map(w=>w.en).filter(Boolean);
   const grammar = (l.grammar||[]).map(g=>g.title+': '+(g.examples||[]).join(' / ')).join('; ');
   const prompt = `Write a very short story in English for an Israeli girl aged 8-9 who is a beginner English learner (about CEFR pre-A1/A1).
-Use as many of these taught words as you can, each exactly as written: ${words.join(', ')}.
-${grammar?`The lesson also practised: ${grammar}. Use it naturally where it fits.`:''}
-Rules: 50-90 words. Short sentences (up to 9 words). Mostly present simple. Only very common words besides the taught words. A warm, funny, everyday plot with a girl or an animal. No names that are hard to read.
-Then write 3 multiple-choice comprehension questions in simple English, each with 3 short options.
+Taught words: ${words.join(', ')}. Choose the 5-8 most useful of them and use each at least once, exactly as written.
+${grammar?`The lesson practised: ${grammar}. Use this structure and its tense where it fits.`:'Use present simple.'}
+Rules: 40-70 words. Short sentences (up to 9 words). Besides the taught words, use only words from a first-year English list (I, you, is, big, happy, go, have, like...). A warm, funny, everyday plot with a girl or an animal. Names must be short and easy to read.
+Then write 3 comprehension questions IN HEBREW, feminine singular (for example "מה יש לחתול?"). Each answer must be stated word for word in one sentence of the story. The 3 options are short English words or phrases from the story; only one is correct.
+"glossary": story words that are not in the taught list and may be hard, with the most common Hebrew meaning a child knows, 1-3 words, no parentheses.
 Reply with JSON only:
-{"title":"...","story":"...","questions":[{"q":"...","options":["...","...","..."],"answer":0}],"glossary":[{"en":"word from the story that is not in the taught list and may be hard","he":"Hebrew translation"}]}`;
+{"title":"...","story":"...","questions":[{"q":"...","options":["...","...","..."],"answer":0}],"glossary":[{"en":"...","he":"..."}]}`;
   try{
     const r = await S.sample.json(prompt, {cache: !fresh, modelTier:'default'});
     if(!r?.story) throw {code:'empty'};
+    r.questions = (r.questions||[]).filter(q=>q.q && Array.isArray(q.options) && q.options[q.answer]!=null);
     S.story[l.id] = r;
   }catch(e){
-    S.story[l.id] = {error: e?.code==='rate_limited' ? 'יש עומס. כדאי לנסות שוב בעוד דקה.' : e?.code==='not_granted' ? 'כדי לכתוב סיפור צריך לאשר ל-Claude לעזור בדף הזה.' : 'הסיפור לא נכתב הפעם.'};
+    S.story[l.id] = {error: e?.code==='rate_limited' ? 'יש עומס. כדאי לנסות שוב בעוד דקה.' : e?.code==='not_granted' ? 'כדי לקבל סיפור, אמא צריכה לאשר משהו קטן. קראי לה.' : 'הסיפור עוד לא מוכן. אפשר לנסות שוב.'};
   }
   if(S.view==='story') render();
 }
-function lookupGloss(word){
-  const l = S.lessons.find(x=>x.id===S.lessonId); const st = S.story[l.id];
+function showGloss(btn){
+  const l = lessonById(S.lessonId); const st = S.story[l.id]; const word = btn.dataset.gl;
   const w = norm(word);
   const hit = (l.words||[]).find(x=>norm(x.en)===w || w.startsWith(norm(x.en))) || (st.glossary||[]).find(x=>norm(x.en)===w);
-  return hit ? hit.he : '';
+  speak(word);
+  const pop = document.getElementById('pop'), wrap = document.getElementById('storyWrap'); if(!pop||!wrap) return;
+  const r = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  pop.innerHTML = `<span class="en">${esc(word)}</span>${hit?.he?` זה ${esc(hit.he)}`:''}`;
+  pop.hidden = false;
+  const x = Math.min(Math.max(r.left - wr.left + r.width/2, 80), wr.width-80);
+  pop.style.left = x+'px'; pop.style.top = (r.top - wr.top - 6)+'px';
+  clearTimeout(showGloss.t); showGloss.t = setTimeout(()=>{ pop.hidden = true; }, 3500);
 }
 
-/* ---------- grammar quiz ---------- */
+/* ---------- grammar questions ---------- */
+function quizItems(l, qs){
+  const items = (l.grammar||[]).length ? [{type:'explain', grammar:l.grammar}] : [];
+  for(const q of qs){
+    const order = shuffle(q.options.map((o,i)=>i));
+    items.push({type:'mcq', q:{...q, options: order.map(i=>q.options[i]), answer: order.indexOf(q.answer)}});
+  }
+  return items;
+}
 async function makeGrammar(){
-  const l = S.lessons.find(x=>x.id===S.lessonId);
+  const l = lessonById(S.lessonId);
+  if((l.quiz||[]).length){ startSession('grammar', {quiz:true, items: quizItems(l, shuffle(l.quiz).slice(0,8))}); return; }
   app.innerHTML = `${topBar({back:true, backTo:'lesson'})}<div class="sheet"><div class="row"><div class="spinner"></div><p class="lead">מכינה שאלות דקדוק…</p></div></div>`;
-  const prompt = `Create 6 short grammar practice questions for an Israeli girl aged 8-9, beginner English (A1).
-The grammar points taught: ${(l.grammar||[]).map(g=>`${g.title} — ${g.explain} — examples: ${(g.examples||[]).join(' / ')}`).join(' | ')}.
-Use these vocabulary words where possible: ${(l.words||[]).map(w=>w.en).join(', ')}.
-Each question: one English sentence with a gap written as ___ , and 3 options (only one correct). Go from easy to a bit harder.
-"prompt" is a short Hebrew instruction in feminine singular (for example "בחרי את המילה החסרה").
-"explain" is ONE short Hebrew sentence (feminine singular, up to 12 words) that says why the answer is right, without the words "טעות" or "לא נכון".
-Reply with JSON only: {"questions":[{"prompt":"...","q":"She ___ a cat.","options":["have","has","having"],"answer":1,"explain":"..."}]}`;
   try{
-    const r = await S.sample.json(prompt, {modelTier:'default', cache:false});
-    const qs = (r?.questions||[]).filter(q=>q.q && Array.isArray(q.options) && q.options[q.answer]!=null);
+    const r = await S.sample.json(quizPrompt(l.grammar, (l.words||[]).map(w=>w.en)), {modelTier:'default', cache:false});
+    const qs = (r?.quiz||r?.questions||[]).filter(q=>Array.isArray(q.options) && q.options[q.answer]!=null);
     if(!qs.length) throw {};
-    S.view='lesson'; startSession('grammar', {grammar:true, items: qs.map(q=>({type:'mcq', q}))});
-  }catch(e){ toast(e?.code==='rate_limited'?'יש עומס. כדאי לנסות שוב בעוד דקה.':'השאלות לא הוכנו הפעם. אפשר לנסות שוב.'); go('lesson'); }
+    startSession('grammar', {quiz:true, items: quizItems(l, qs)});
+  }catch(e){ toast(e?.code==='rate_limited'?'יש עומס. כדאי לנסות שוב בעוד דקה.':'השאלות עוד לא מוכנות. אפשר לנסות שוב.'); go('lesson'); }
+}
+const QUIZ_RULES = `Each question: one short English sentence with the gap written as ___ , and 2-3 options. Exactly ONE option may be correct: the sentence must contain the clue that decides the answer (a visible subject, a name, a/an before a visible noun, "than" for comparatives). Before replying, check every wrong option: if it also makes a correct English sentence, replace it. Do not test he/she/it without a clear subject. Go from easy to a bit harder.
+"prompt": a Hebrew instruction, feminine singular, up to 6 words, one instruction (for example "בחרי את המילה החסרה").
+"explain": ONE Hebrew sentence, feminine singular, up to 10 words, pointing to the clue that leads to the answer (for example "אחרי She באה has"). English words stay in English letters. Never use "טעות", "לא נכון", "אופס", "פשוט", "קל", "מעולה", "כל הכבוד". No exclamation marks, parentheses or symbols (the text is read aloud). No grammar terms without an example.
+"answer" is the index of the correct option.`;
+function quizPrompt(grammar, words){
+  return `Create 6 grammar practice questions for an Israeli girl aged 8-9, beginner English (A1).
+Grammar taught: ${(grammar||[]).map(g=>`${g.title}: ${g.explain} Examples: ${(g.examples||[]).join(' / ')}`).join(' | ')}.
+Use these words where possible: ${words.join(', ')}.
+${QUIZ_RULES}
+Reply with JSON only: {"quiz":[{"prompt":"...","q":"She ___ got a kite.","options":["have","has"],"answer":1,"explain":"..."}]}`;
 }
 
 /* ---------- parent area ---------- */
 function gate(){
   const a = 12+Math.floor(Math.random()*20), b = 13+Math.floor(Math.random()*17);
   S.gateAns = a*b;
-  const d = document.createElement('div'); d.className='scrim';
-  d.innerHTML = `<div class="modal" role="dialog" aria-label="כניסה לאזור ההורים"><h2>אזור ההורים</h2><p class="muted">כדי להיכנס, כמה זה</p><p class="en" style="font-size:30px;font-weight:700">${a} × ${b}</p><input id="gate" inputmode="numeric" autocomplete="off" aria-label="התשובה"><div class="ctrl"><button class="btn primary" data-act="gateok">כניסה</button><button class="btn" data-act="gateno">ביטול</button></div></div>`;
+  document.querySelector('.scrim')?.remove();
+  const d = document.createElement('div'); d.className='scrim'; d.dataset.act='gateno';
+  d.innerHTML = `<div class="modal" role="dialog" aria-label="כניסה לאזור ההורים"><h2>אזור ההורים</h2><p class="muted">כדי להיכנס, מה התוצאה?</p><p class="en" style="font-size:30px;font-weight:700">${a} × ${b}</p><input id="gate" inputmode="numeric" autocomplete="off" aria-label="התוצאה"><div class="ctrl"><button class="btn primary" data-act="gateok">כניסה</button><button class="btn" data-act="gateno">ביטול</button></div></div>`;
   document.body.appendChild(d); d.querySelector('#gate').focus();
 }
 function vParent(){
@@ -796,20 +1048,21 @@ function vParent(){
   return `${topBar({back:true, backTo: S.kidId?'kid':'home'})}
   <div class="sheet">
     <div class="row"><h1 style="margin-inline-end:auto">אזור ההורים</h1><button class="btn primary" data-act="addlesson">${I.plus} הוספת שיעור</button></div>
-    ${S.mode!=='db'?`<div class="notice">הנתונים נשמרים רק בדפדפן הזה. בקישור של Claude הם יישמרו בענן, ואז יהיו זהים בכל מחשב.</div>`:''}
-    ${!S.sample?`<div class="notice">קריאת ההערות מתמונה, הסיפורים ותרגול הדקדוק עובדים רק כשפותחים את הקישור ב-Claude. כאן אפשר להזין מילים ידנית.</div>`:''}
+    ${S.mode!=='db'?`<div class="notice">הנתונים נשמרים רק בדפדפן הזה. כשפותחים את הקישור ב-Claude, הנתונים נשמרים שם ומופיעים בכל מחשב.</div>`:''}
+    ${!S.sample?`<div class="notice">קריאת ההערות מתמונה והסיפורים עובדים רק כשפותחים את הקישור ב-Claude. כאן אפשר להזין מילים ידנית.</div>`:''}
     <div class="p-grid">${kids.map(k=>{
-      const p = prog(k.id), all = kidWords(k.id);
+      const p = prog(k.id), all = kidEntries(k.id);
       const known = all.filter(w=>(p.words?.[w.key]?.b||0)>=4).length;
       const hard = all.map(w=>({w, s:p.words?.[w.key]})).filter(x=>x.s && (x.s.w||0)>0).sort((a,b)=>(b.s.w-(b.s.r||0)/2)-(a.s.w-(a.s.r||0)/2)).slice(0,6);
       return `<div class="p-card c-${k.color}"><h3><span class="avatar">${esc(k.name.slice(0,1))}</span>${esc(k.name)}</h3>
-        <div class="nums"><div><b>${all.length}</b><span>מילים בתוכנית</span></div><div><b>${known}</b><span>מילים מוכרות</span></div><div><b>${p.streak||0}</b><span>ימים ברצף</span></div></div>
+        <div class="nums"><div><b>${all.length}</b><span>מילים בתוכנית</span></div><div><b>${known}</b><span>מוכרות היטב</span></div><div><b>${p.streak||0}</b><span>ימים ברצף</span></div></div>
+        <div class="mine">"מוכרות היטב": נענו נכון בכמה ימים שונים.</div>
         <div>${p.lastDay?`תרגלה לאחרונה ב-${heDate(p.lastDay)}.`:'עוד לא תרגלה.'}</div>
         ${hard.length?`<div class="lbl">מילים שכדאי לחזור עליהן ביחד</div><div class="hard">${hard.map(x=>`<span>${esc(x.w.en)}</span>`).join('')}</div>`:''}
       </div>`;}).join('')}</div>
     <h2>שיעורים</h2>
     ${S.lessons.length ? `<div class="tbl-wrap"><table><thead><tr><th>שיעור</th><th>למי</th><th>מילים</th><th>תאריך</th><th></th></tr></thead><tbody>
-      ${S.lessons.map(l=>`<tr><td>${esc(l.title)}</td><td>${(l.kids||[]).map(id=>esc(kids.find(k=>k.id===id)?.name||'')).filter(Boolean).join(', ')}</td><td>${(l.words||[]).length}</td><td class="date-tag">${heDate(l.date)}</td>
+      ${S.lessons.map(l=>`<tr><td>${esc(l.title)}</td><td>${(l.kids||[]).map(id=>esc(kids.find(k=>k.id===id)?.name||'')).filter(Boolean).join(', ')}</td><td>${(l.words||[]).length + (l.phonics||[]).reduce((s,g)=>s+(g.words||[]).length,0)}</td><td class="date-tag">${heDate(l.date)}</td>
       <td style="white-space:nowrap"><button class="icon-btn" data-edit="${l.id}" aria-label="עריכה" title="עריכה">${I.edit}</button> <button class="icon-btn" data-del="${l.id}" aria-label="מחיקה" title="מחיקה">${I.trash}</button></td></tr>`).join('')}
     </tbody></table></div>` : `<div class="empty"><p>עוד אין שיעורים. מצלמים את ההערות של המורה ומוסיפים אותן כאן.</p></div>`}
     <div class="row"><button class="btn" data-act="editkids">${I.edit} שמות וצבעים</button></div>
@@ -817,10 +1070,12 @@ function vParent(){
 }
 
 /* ---------- add / edit a lesson ---------- */
+const LESSON_FIELDS = ['title','date','kids','words','sentences','grammar','phonics','pairs','tip','quiz','homework','createdAt'];
 function newAdd(l){
-  return l ? {step:'review', id:l.id, title:l.title||'', date:l.date||today(), kids:[...(l.kids||[])], words:(l.words||[]).map(w=>({...w})), sentences:(l.sentences||[]).map(s=>({...s})), grammar:(l.grammar||[]).map(g=>({...g})), homework:l.homework||'', createdAt:l.createdAt}
-           : {step:'input', id:uid(), title:'', date:today(), kids: S.kidId?[S.kidId]:(S.family?.kids||[]).map(k=>k.id), images:[], text:'', words:[], sentences:[], grammar:[], homework:''};
+  if(l){ const a = {step:'review', id:l.id}; for(const f of LESSON_FIELDS) a[f] = structuredClone(l[f] ?? (['words','sentences','grammar','phonics','pairs','quiz','kids'].includes(f)?[]:'')); return a; }
+  return {step:'input', id:uid(), title:'', date:today(), kids: S.kidId?[S.kidId]:(S.family?.kids||[]).map(k=>k.id), images:[], text:'', words:[], sentences:[], grammar:[], phonics:[], pairs:[], tip:'', quiz:[], homework:''};
 }
+const genTag = x => x.generated ? `<span class="gen-tag" title="Claude כתב את זה, זה לא מההערות">Claude</span>` : '';
 function vAdd(){
   const a = S.add, kids = S.family?.kids||[];
   const kidPick = `<div class="field"><span class="lbl">למי השיעור?</span><div class="kidpick">${kids.map(k=>`<label class="c-${k.color}"><input type="checkbox" data-akid="${k.id}" ${a.kids.includes(k.id)?'checked':''}>${esc(k.name)}</label>`).join('')}</div></div>`;
@@ -831,46 +1086,49 @@ function vAdd(){
     ${S.sample && S.canImages ? `<div class="drop" id="drop">
       <div class="ic" style="color:var(--accent)">${I.camera}</div>
       <b>תמונות של ההערות של המורה</b>
-      <span class="muted" style="font-size:16px">מחברת, לוח או דף עבודה. אפשר כמה תמונות.</span>
+      <span class="muted" style="font-size:16px">מחברת, לוח, דף עבודה או צילום מסך. אפשר כמה תמונות.</span>
       <label class="btn" for="files">בחירת תמונות</label><input type="file" id="files" accept="image/*" multiple hidden>
       <div class="thumbs">${a.images.map((im,i)=>`<figure><img src="${im.url}" alt=""><button data-rmimg="${i}" aria-label="להסיר תמונה">${I.x}</button></figure>`).join('')}</div>
     </div>`:''}
     <div class="field"><label for="atext">${S.sample?'או להדביק את הטקסט של ההערות':'מילים לשיעור: כל מילה בשורה, אנגלית ואז תרגום'}</label>
-      <textarea id="atext" placeholder="${S.sample?'למשל: apple - תפוח, banana - בננה. Grammar: he/she + s':'apple - תפוח\nbanana - בננה'}">${esc(a.text)}</textarea></div>
+      <textarea id="atext" placeholder="${S.sample?'אפשר להדביק כאן את ההודעה של המורה כמו שהיא':'apple - תפוח\nbanana - בננה'}">${esc(a.text)}</textarea></div>
     <div class="row">
       ${S.sample?`<button class="btn primary" data-act="extract">להכין תרגול מההערות</button>`:''}
-      <button class="btn ${S.sample?'':'primary'}" data-act="manual">${S.sample?'הזנה ידנית':'המשך'}</button>
+      <button class="btn ${S.sample?'':'primary'}" data-act="manual">${S.sample?'הזנה ידנית':'לבדיקה ושמירה'}</button>
     </div>
   </div>`;
-  if(a.step==='extracting') return `${topBar()}<div class="sheet"><div class="row"><div class="spinner"></div><p class="lead">Claude קורא את ההערות ומוציא מהן מילים, משפטים ודקדוק…</p></div></div>`;
+  if(a.step==='extracting') return `${topBar()}<div class="sheet"><div class="row"><div class="spinner"></div><p class="lead">Claude קורא את ההערות ומוציא מהן מילים, צלילים, משפטים ודקדוק…</p></div></div>`;
+  const gens = a.words.some(w=>w.generated) || a.sentences.some(s=>s.generated);
   return `${topBar({back:true, backTo:'parent'})}
   <div class="sheet">
     <h1>${S.lessons.some(l=>l.id===a.id)?'עריכת שיעור':'בדיקה לפני שמירה'}</h1>
-    ${a.words.some(w=>w.unsure)?`<div class="notice">שורות מסומנות בצהוב: Claude לא היה בטוח מה כתוב. כדאי לבדוק אותן מול ההערות.</div>`:''}
+    ${a.words.some(w=>w.unsure)?`<div class="notice">מילים מסומנות בצהוב: Claude לא היה בטוח איך הן כתובות. כדאי לבדוק אותן מול ההערות.</div>`:''}
+    ${gens?`<div class="notice">מה שמסומן בתווית Claude לא היה בהערות, Claude כתב אותו. כדאי לעבור עליו.</div>`:''}
     <div class="row" style="align-items:flex-end">
       <div class="field" style="flex:1;min-width:200px"><label for="atitle">שם השיעור</label><input type="text" id="atitle" value="${esc(a.title)}"></div>
       <div class="field"><label for="adate">תאריך</label><input type="date" id="adate" value="${esc(a.date)}" style="min-height:48px;border-radius:12px;border:2px solid var(--line);background:var(--surface);padding:6px 10px"></div>
     </div>
     ${kidPick}
+    ${a.phonics.length?`<h2>צלילים</h2><div class="phon">${a.phonics.map((g,i)=>`<div class="phon-g"><div class="row"><div class="pt" style="flex:1">${esc(g.pattern)}</div><button class="icon-btn" data-rmph="${i}" aria-label="למחוק">${I.trash}</button></div><div class="ws">${(g.words||[]).map(w=>`<button data-say="${esc(w.en)}">${markPat(w.en,g.pattern)}</button>`).join('')}</div></div>`).join('')}</div>`:''}
     <h2>מילים</h2>
     <div class="tbl-wrap"><table><thead><tr><th>English</th><th>עברית</th><th>משפט לדוגמה</th><th></th></tr></thead><tbody>
-      ${a.words.map((w,i)=>`<tr><td><input class="en ${w.unsure?'flag':''}" data-w="${i}" data-f="en" value="${esc(w.en)}" aria-label="מילה באנגלית"></td><td><input data-w="${i}" data-f="he" value="${esc(w.he)}" aria-label="תרגום"></td><td><input class="en" data-w="${i}" data-f="example" value="${esc(w.example)}" aria-label="משפט לדוגמה"></td><td><button class="icon-btn" data-rmw="${i}" aria-label="למחוק מילה">${I.trash}</button></td></tr>`).join('')}
+      ${a.words.map((w,i)=>`<tr><td><input class="en ${w.unsure?'flag':''}" data-w="${i}" data-f="en" value="${esc(w.en)}" aria-label="מילה באנגלית"></td><td><input data-w="${i}" data-f="he" value="${esc(w.he)}" aria-label="תרגום"></td><td><input class="en ${w.exampleGenerated?'gen':''}" data-w="${i}" data-f="example" value="${esc(w.example)}" aria-label="משפט לדוגמה"></td><td style="white-space:nowrap">${genTag(w)}<button class="icon-btn" data-rmw="${i}" aria-label="למחוק מילה">${I.trash}</button></td></tr>`).join('')}
     </tbody></table></div>
     <div><button class="btn small" data-act="addw">${I.plus} עוד מילה</button></div>
     <h2>משפטים לתרגול</h2>
     <div class="tbl-wrap"><table><thead><tr><th>English</th><th>עברית</th><th></th></tr></thead><tbody>
-      ${a.sentences.map((s,i)=>`<tr><td><input class="en" data-s="${i}" data-f="en" value="${esc(s.en)}" aria-label="משפט"></td><td><input data-s="${i}" data-f="he" value="${esc(s.he)}" aria-label="תרגום"></td><td><button class="icon-btn" data-rms="${i}" aria-label="למחוק משפט">${I.trash}</button></td></tr>`).join('')}
+      ${a.sentences.map((s,i)=>`<tr><td><input class="en ${s.generated?'gen':''}" data-s="${i}" data-f="en" value="${esc(s.en)}" aria-label="משפט"></td><td><input data-s="${i}" data-f="he" value="${esc(s.he)}" aria-label="תרגום"></td><td style="white-space:nowrap">${genTag(s)}<button class="icon-btn" data-rms="${i}" aria-label="למחוק משפט">${I.trash}</button></td></tr>`).join('')}
     </tbody></table></div>
     <div><button class="btn small" data-act="adds">${I.plus} עוד משפט</button></div>
-    ${a.grammar.length?`<h2>דקדוק</h2>${a.grammar.map((g,i)=>`<div class="grammar"><div class="row"><h3 style="flex:1">${esc(g.title)}</h3><button class="icon-btn" data-rmg="${i}" aria-label="למחוק">${I.trash}</button></div><p>${esc(g.explain)}</p>${(g.examples||[]).map(e=>`<div class="ex">${esc(e)}</div>`).join('')}</div>`).join('')}`:''}
+    ${a.grammar.length?`<h2>דקדוק</h2>${a.grammar.map((g,i)=>`<div class="grammar"><div class="row"><h3 style="flex:1">${esc(g.title)}</h3><button class="icon-btn" data-rmg="${i}" aria-label="למחוק">${I.trash}</button></div><p>${mixed(g.explain)}</p>${(g.examples||[]).map(e=>`<div class="ex">${esc(e)}</div>`).join('')}</div>`).join('')}`:''}
+    ${a.quiz.length?`<h2>שאלות דקדוק</h2><div class="quiz-list">${a.quiz.map((q,i)=>`<div><span class="en">${esc(q.q||q.options.join(' / '))}</span><b class="en">${esc(q.options[q.answer])}</b><button class="icon-btn" data-rmq="${i}" aria-label="למחוק שאלה">${I.trash}</button></div>`).join('')}</div>`:''}
     <div class="field"><label for="ahw">משימה מהמורה (לא חובה)</label><input type="text" id="ahw" value="${esc(a.homework)}"></div>
     <div class="row"><button class="btn primary" data-act="savelesson">${I.save} שמירת השיעור</button><button class="btn" data-go="parent">ביטול</button></div>
   </div>`;
 }
 after.add = () => {
   const drop = document.getElementById('drop'); if(!drop) return;
-  const files = document.getElementById('files');
-  files?.addEventListener('change', e => addImages(e.target.files));
+  document.getElementById('files')?.addEventListener('change', e => addImages(e.target.files));
   drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('over'); });
   drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
   drop.addEventListener('drop', e=>{ e.preventDefault(); drop.classList.remove('over'); addImages(e.dataTransfer.files); });
@@ -900,35 +1158,43 @@ function syncAddInputs(){
   const ti = document.getElementById('atitle'); if(ti) a.title = ti.value;
   const d = document.getElementById('adate'); if(d) a.date = d.value;
   const hw = document.getElementById('ahw'); if(hw) a.homework = hw.value;
-  document.querySelectorAll('[data-w]').forEach(i=>{ const w=a.words[+i.dataset.w]; if(w){ w[i.dataset.f]=i.value; if(i.dataset.f==='en') delete w.unsure; } });
+  document.querySelectorAll('[data-w]').forEach(i=>{ const w=a.words[+i.dataset.w]; if(w && w[i.dataset.f]!==i.value){ w[i.dataset.f]=i.value; if(i.dataset.f==='en') delete w.unsure; } });
   document.querySelectorAll('[data-s]').forEach(i=>{ const s=a.sentences[+i.dataset.s]; if(s) s[i.dataset.f]=i.value; });
-  a.kids = [...document.querySelectorAll('[data-akid]')].filter(c=>c.checked).map(c=>c.dataset.akid);
+  const boxes = document.querySelectorAll('[data-akid]'); if(boxes.length) a.kids = [...boxes].filter(c=>c.checked).map(c=>c.dataset.akid);
 }
 async function extract(){
   syncAddInputs();
   const a = S.add;
   if(!a.images.length && !a.text.trim()){ toast('צריך תמונה או טקסט של ההערות'); return; }
   a.step='extracting'; render();
-  const prompt = `You help an Israeli parent turn an English teacher's lesson notes into practice material for her daughters, aged 8 and 9, who are beginner English learners and native Hebrew speakers.
-${a.images.length?`The ${a.images.length} attached image(s) are photos of the teacher's notes (handwriting, a notebook, a whiteboard or a worksheet). They may mix Hebrew and English.`:''}
-${a.text.trim()?`Notes typed by the parent:\n"""${a.text.trim()}"""`:''}
+  const prompt = `You help an Israeli parent turn an English teacher's lesson notes into practice material for her daughters, aged 8 and 9, who are beginner English learners and native Hebrew speakers. The notes are often a long, friendly message: ignore the praise and keep only what was taught.
+${a.images.length?`The ${a.images.length} attached image(s) are the teacher's notes (a message, handwriting, a notebook, a whiteboard or a worksheet). They may mix Hebrew and English.`:''}
+${a.text.trim()?`Notes pasted by the parent:\n"""${a.text.trim()}"""`:''}
 Extract only what is actually in the notes. Do not add vocabulary the teacher did not teach.
 - title: a short Hebrew title for the lesson topic (2-4 words).
-- words: every vocabulary item. "en" exactly as taught (lowercase unless a proper noun or "I"); "he" the Hebrew translation (use the teacher's if written, otherwise the most natural one for a child); "example" one short, simple English sentence of up to 8 words that contains "en" exactly as written (use the teacher's sentence if there is one); "unsure": true only if you could not read the word clearly.
-- sentences: up to 8 complete English sentences from the notes worth practising (3-10 words each), with "he" translation. If there are none, write 3-5 simple ones that use the taught words and grammar.
-- grammar: grammar points taught. "title" in Hebrew (short), "explain" 1-2 very simple Hebrew sentences for a child, "examples" 2-3 English examples.
+- words: vocabulary items to learn by meaning. "en" exactly as taught (lowercase unless a proper noun or "I"). Keep multi-word phrases as ONE item exactly as written (e.g. "brush my teeth", "far from"); never split a phrase. Function words (a, an, the, am, is, are, he, she) belong in grammar, not in words, unless the teacher listed them as vocabulary. "he": the Hebrew meaning (the teacher's if written, else the most natural one for a child, 1-3 words, no parentheses). "pos": noun / verb / adjective / phrase / other. "example": one short simple English sentence of up to 8 words that contains "en" exactly as written, and gives a clue that fits ONLY this word and none of the other words in the list (e.g. "A banana is long and yellow.", not "I like bananas."); use the teacher's sentence if it works. "exampleGenerated": true if you wrote the example. "unsure": true only if you could not read the word clearly.
+- phonics: if the notes teach letter sounds, spelling patterns or word families (e.g. "or", "ur", "air", magic e "u_e", short "u"), list each pattern with its example words: [{"pattern":"ur","words":[{"en":"nurse","he":"אחות"}]}]. Write a split pattern with an underscore ("u_e"). Words of a phonics list go here, not in words.
+- pairs: word pairs the teacher contrasts (e.g. [["cub","cube"],["tub","tube"]]), else [].
+- tip: if there is phonics, one short Hebrew sentence for a child explaining the sound rule, else "".
+- sentences: up to 8 complete English sentences from the notes worth practising (3-10 words each), with "he" translation. If there are fewer than 3, add simple ones that use the taught words and grammar and mark them "generated": true.
+- grammar: grammar points taught. "title" a short Hebrew title, "explain" 1-2 very short Hebrew sentences for an 8-year-old, up to 10 words each, feminine singular, showing the rule through an English example in English letters rather than grammar terms; no "פשוט" or "קל", no parentheses. "examples": 2-3 English examples (the teacher's if given).
+- quiz: if there is grammar, 6 questions on it. ${QUIZ_RULES}
 - homework: any instruction, page number or due date in the notes, in Hebrew, else "".
-Reply with JSON only: {"title":"","words":[{"en":"","he":"","example":"","unsure":false}],"sentences":[{"en":"","he":""}],"grammar":[{"title":"","explain":"","examples":[""]}],"homework":""}`;
+Reply with JSON only: {"title":"","words":[{"en":"","he":"","pos":"","example":"","exampleGenerated":false,"unsure":false}],"phonics":[],"pairs":[],"tip":"","sentences":[{"en":"","he":"","generated":false}],"grammar":[{"title":"","explain":"","examples":[""]}],"quiz":[{"prompt":"","q":"","options":["",""],"answer":0,"explain":""}],"homework":""}`;
   try{
     const opts = {modelTier:'complex', cache:false};
     if(a.images.length) opts.images = a.images.map(i=>i.blob);
     const r = await S.sample.json(prompt, opts);
     a.title = a.title || r.title || '';
-    a.words = (r.words||[]).filter(w=>w.en).map(w=>({en:String(w.en).trim(), he:w.he||'', example:w.example||'', ...(w.unsure?{unsure:true}:{})}));
-    a.sentences = (r.sentences||[]).filter(s=>s.en);
+    a.words = (r.words||[]).filter(w=>w.en).map(w=>({en:String(w.en).trim(), he:w.he||'', pos:w.pos||'', example:w.example||'', ...(w.exampleGenerated?{exampleGenerated:true}:{}), ...(w.unsure?{unsure:true}:{})}));
+    a.phonics = (r.phonics||[]).filter(g=>g.pattern && (g.words||[]).length).map(g=>({pattern:String(g.pattern).toLowerCase(), words:g.words.filter(w=>w.en).map(w=>({en:String(w.en).trim(), he:w.he||''}))}));
+    a.pairs = (r.pairs||[]).filter(p=>Array.isArray(p) && p.length===2);
+    a.tip = r.tip||'';
+    a.sentences = (r.sentences||[]).filter(s=>s.en).map(s=>({en:s.en, he:s.he||'', ...(s.generated?{generated:true}:{})}));
     a.grammar = (r.grammar||[]).filter(g=>g.title);
+    a.quiz = (r.quiz||[]).filter(q=>Array.isArray(q.options) && q.options[q.answer]!=null);
     a.homework = r.homework||'';
-    if(!a.words.length) toast('לא נמצאו מילים. אפשר להוסיף ידנית.');
+    if(!a.words.length && !a.phonics.length) toast('לא נמצאו מילים. אפשר להוסיף ידנית.');
     a.step='review';
   }catch(e){
     a.step='input';
@@ -949,12 +1215,12 @@ function manual(){
 }
 async function saveLesson(){
   syncAddInputs(); const a = S.add;
-  const words = a.words.filter(w=>w.en.trim()).map(w=>({en:w.en.trim(), he:w.he.trim(), example:(w.example||'').trim()}));
-  if(!words.length){ toast('צריך לפחות מילה אחת'); return; }
+  const words = a.words.filter(w=>w.en.trim()).map(w=>({en:w.en.trim(), he:(w.he||'').trim(), example:(w.example||'').trim(), ...(w.pos?{pos:w.pos}:{})}));
+  if(!words.length && !a.phonics.length){ toast('צריך לפחות מילה אחת'); return; }
   if(!a.kids.length){ toast('צריך לבחור למי השיעור'); return; }
-  const lesson = {id:a.id, title:a.title.trim()||'שיעור', date:a.date||today(), kids:a.kids, words,
+  const lesson = {id:a.id, title:a.title.trim()||'שיעור', date:a.date||'', kids:a.kids, words,
     sentences:a.sentences.filter(s=>s.en?.trim()).map(s=>({en:s.en.trim(), he:(s.he||'').trim()})),
-    grammar:a.grammar, homework:a.homework.trim(), createdAt:a.createdAt||Date.now()};
+    grammar:a.grammar, phonics:a.phonics, pairs:a.pairs, tip:a.tip||'', quiz:a.quiz, homework:(a.homework||'').trim(), createdAt:a.createdAt||Date.now()};
   const btn = document.querySelector('[data-act="savelesson"]'); if(btn) btn.disabled = true;
   const ok = await Store.saveLesson(lesson);
   if(ok){ toast('השיעור נשמר'); S.add=null; go('parent'); } else if(btn) btn.disabled=false;
@@ -962,19 +1228,22 @@ async function saveLesson(){
 
 /* ---------- events ---------- */
 document.addEventListener('click', async e => {
-  const t = e.target.closest('button,[data-gl]'); if(!t) return;
+  const t = e.target.closest('button,[data-act]'); if(!t) return;
+  if(t.classList.contains('scrim') && e.target!==t) return;
   const d = t.dataset;
   if(d.say!==undefined){ speak(d.say); return; }
   if(d.sayslow!==undefined){ speak(d.sayslow, true); return; }
-  if(d.gl){ speak(d.gl); const he = lookupGloss(d.gl); const g=document.getElementById('gloss'); if(g) g.innerHTML = `<span class="en">${esc(d.gl)}</span>${he?` = ${esc(he)}`:''}`; return; }
+  if(d.gl){ showGloss(t); return; }
   if(d.go){ if(d.go==='home') S.kidId=null; go(d.go); return; }
   if(d.kid){ S.kidId=d.kid; try{ localStorage.setItem(LS+':kid', d.kid); }catch(_){} go('kid'); return; }
   if(d.lesson){ S.lessonId=d.lesson; go('lesson'); return; }
+  if(d.mycolor){ const f = structuredClone(S.family); const k = f.kids.find(x=>x.id===S.kidId); if(k && k.color!==d.mycolor){ k.color=d.mycolor; await Store.saveFamily(f); render(); } return; }
   if(d.play){
     if(d.play==='story'){ go('story'); if(!S.story[S.lessonId] || S.story[S.lessonId].error) makeStory(); return; }
     if(d.play==='grammar'){ makeGrammar(); return; }
     startSession(d.play); return;
   }
+  if(d.sq){ const [qi,oi] = d.sq.split(':').map(Number); const st = S.story[S.lessonId]; if(st.ans[qi]==null){ st.ans[qi]=oi; render(); } return; }
   if(d.opt!==undefined){ answerOption(+d.opt); return; }
   if(d.tile!==undefined){ const it=S.session.items[S.session.i]; if(!S.session.answered){ it.built.push(+d.tile); render(); } return; }
   if(d.unb!==undefined){ const it=S.session.items[S.session.i]; if(!S.session.answered){ it.built.splice(+d.unb,1); render(); } return; }
@@ -984,7 +1253,9 @@ document.addEventListener('click', async e => {
   if(d.rmw!==undefined){ syncAddInputs(); S.add.words.splice(+d.rmw,1); render(); return; }
   if(d.rms!==undefined){ syncAddInputs(); S.add.sentences.splice(+d.rms,1); render(); return; }
   if(d.rmg!==undefined){ syncAddInputs(); S.add.grammar.splice(+d.rmg,1); render(); return; }
-  if(d.edit){ S.add = newAdd(S.lessons.find(l=>l.id===d.edit)); go('add'); return; }
+  if(d.rmq!==undefined){ syncAddInputs(); S.add.quiz.splice(+d.rmq,1); render(); return; }
+  if(d.rmph!==undefined){ syncAddInputs(); S.add.phonics.splice(+d.rmph,1); render(); return; }
+  if(d.edit){ S.add = newAdd(lessonById(d.edit)); go('add'); return; }
   if(d.del){
     if(t.dataset.armed){ await Store.deleteLesson(d.del); toast('השיעור נמחק'); render(); }
     else { t.dataset.armed='1'; t.innerHTML='<span style="font-size:13px">למחוק?</span>'; t.style.width='auto'; t.style.paddingInline='10px'; setTimeout(()=>{ if(t.isConnected && S.view==='parent') render(); },3000); }
@@ -995,7 +1266,7 @@ document.addEventListener('click', async e => {
   switch(act){
     case 'daily': startSession('daily'); break;
     case 'parent': if(S.parentOk) go('parent'); else gate(); break;
-    case 'gateok': { const v = +document.getElementById('gate').value; if(v===S.gateAns){ S.parentOk=true; document.querySelector('.scrim')?.remove(); go(S.family?.kids?.length?'parent':'setup'); } else { document.getElementById('gate').value=''; toast('המספר לא מתאים. נסי שוב.'); } break; }
+    case 'gateok': { const v = +document.getElementById('gate').value; if(v===S.gateAns){ S.parentOk=true; document.querySelector('.scrim')?.remove(); go(S.family?.kids?.length?'parent':'setup'); } else { gate(); toast('זה לא המספר. הנה תרגיל אחר.'); } break; }
     case 'gateno': document.querySelector('.scrim')?.remove(); break;
     case 'kadd': syncSetup(); S.setupKids.push({id:uid(), name:'', color:COLORS.find(c=>!S.setupKids.some(k=>k.color===c))||'grape'}); render(); break;
     case 'ksave': {
@@ -1010,26 +1281,38 @@ document.addEventListener('click', async e => {
     case 'addw': syncAddInputs(); S.add.words.push({en:'',he:'',example:''}); render(); break;
     case 'adds': syncAddInputs(); S.add.sentences.push({en:'',he:''}); render(); break;
     case 'savelesson': saveLesson(); break;
-    case 'quit': if(s && s.i>0 && !s.grammar){ finishSession(); } else go(s?.back||'kid'); break;
-    case 'next': nextItem(); break;
+    case 'quit': if(s && s.done>0) finishSession(false); else go(s?.back||'kid'); break;
+    case 'next': if(it && it.type==='intro'){ markSeen(it.w); } if(it && it.type==='spell' && !s.answered) grade(it,false); nextItem(); break;
     case 'check': checkSpell(); break;
     case 'hint': giveHint(); break;
     case 'checkorder': checkOrder(); break;
     case 'flip': it.flipped=true; render(); if(canSpeak) speak(it.w.en); break;
     case 'knew': grade(it,true); nextItem(); break;
     case 'notyet': grade(it,false); nextItem(); break;
+    case 'readcheck': it.heard=true; speak(it.w.en); render(); break;
+    case 'readok': grade(it,true); nextItem(); break;
+    case 'readno': grade(it,false); nextItem(); break;
     case 'newstory': makeStory(true); break;
-    case 'storyq': { const st=S.story[S.lessonId]; startSession('story',{grammar:true, items: st.questions.map(q=>({type:'mcq', q:{...q, prompt:'בחרי את התשובה לפי הסיפור'}}))}); S.session.back='story'; break; }
   }
 });
+function markSeen(w){
+  const s = S.session; if(s.prog.words[w.key]) return;
+  s.prog.words[w.key] = {b:0, r:0, w:0, due: today(), last: today()};
+  s.done++;
+}
 function syncSetup(){ document.querySelectorAll('[data-kn]').forEach(i=>{ S.setupKids[+i.dataset.kn].name=i.value; }); }
 document.addEventListener('keydown', e => {
-  if(e.target.id==='gate' && e.key==='Enter'){ document.querySelector('[data-act="gateok"]')?.click(); return; }
+  if(document.querySelector('.scrim')){
+    if(e.key==='Escape') document.querySelector('.scrim')?.remove();
+    if(e.key==='Enter' && e.target.id==='gate') document.querySelector('[data-act="gateok"]')?.click();
+    return;
+  }
   if(S.view!=='play') return;
   const s = S.session, it = s.items[s.i];
   if(e.key==='Enter'){
-    if(s.answered){ const nb=document.getElementById('nextBtn'); if(nb && document.activeElement!==nb){ e.preventDefault(); nb.click(); } return; }
-    if(it.type==='spell'){ e.preventDefault(); checkSpell(); }
+    if(e.target.tagName==='BUTTON') return; // a focused button handles Enter itself
+    if(it.type==='spell' && e.target.id==='spell'){ e.preventDefault(); checkSpell(); return; }
+    if(s.answered){ e.preventDefault(); document.getElementById('nextBtn')?.click(); return; }
     if(it.type==='order' && it.built.length===it.tiles.length){ e.preventDefault(); checkOrder(); }
     return;
   }
