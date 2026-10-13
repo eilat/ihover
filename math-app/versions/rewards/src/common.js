@@ -1,0 +1,129 @@
+/* Shared art + logic for the three reward prototypes.
+   A character = an animal + one worn item per category. All parts share one geometry
+   (viewBox 0 0 200 240, head centre 100,100 r58, body centre 100,188), so every item fits every animal. */
+
+const ANIMALS = {
+  cat:   {name:'חתולה', fur:'#E8A25B', light:'#F7D9B5', dark:'#B86E2C'},
+  bunny: {name:'ארנבת', fur:'#E9E4E0', light:'#FFFFFF', dark:'#B9AEA8'},
+  fox:   {name:'שועלה', fur:'#E07B39', light:'#FFF4E8', dark:'#5A3420'},
+  bear:  {name:'דובה',  fur:'#A8754F', light:'#E6C7A6', dark:'#6E4A30'}
+};
+const ANIMAL_ORDER = ['cat','bunny','fox','bear'];
+
+function earsSvg(a, A){
+  if(a==='cat') return `<path d="M50 78 L58 26 L94 54 Z" fill="${A.fur}"/><path d="M150 78 L142 26 L106 54 Z" fill="${A.fur}"/><path d="M60 66 L63 40 L82 55 Z" fill="#F4A9B8"/><path d="M140 66 L137 40 L118 55 Z" fill="#F4A9B8"/>`;
+  if(a==='bunny') return `<ellipse cx="74" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(-10 74 30)"/><ellipse cx="126" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(10 126 30)"/><ellipse cx="74" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(-10 74 32)"/><ellipse cx="126" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(10 126 32)"/>`;
+  if(a==='fox') return `<path d="M46 84 L50 18 L96 52 Z" fill="${A.fur}"/><path d="M154 84 L150 18 L104 52 Z" fill="${A.fur}"/><path d="M50 30 L52 18 L64 28 Z M150 30 L148 18 L136 28 Z" fill="${A.dark}"/>`;
+  return `<circle cx="56" cy="56" r="22" fill="${A.fur}"/><circle cx="144" cy="56" r="22" fill="${A.fur}"/><circle cx="56" cy="56" r="11" fill="${A.light}"/><circle cx="144" cy="56" r="11" fill="${A.light}"/>`;
+}
+function faceSvg(a, A){
+  const muzzle = a==='fox' ? `<path d="M62 112 Q100 160 138 112 Q120 104 100 108 Q80 104 62 112Z" fill="${A.light}"/>`
+               : a==='bear' ? `<ellipse cx="100" cy="122" rx="26" ry="19" fill="${A.light}"/>`
+               : a==='cat' ? `<ellipse cx="100" cy="122" rx="22" ry="15" fill="${A.light}"/>` : '';
+  const whisk = a==='cat'||a==='bunny' ? `<path d="M70 120 L46 116 M70 126 L46 128 M130 120 L154 116 M130 126 L154 128" stroke="${A.dark}" stroke-width="2" stroke-linecap="round"/>` : '';
+  return `${muzzle}
+    <circle cx="78" cy="100" r="7" fill="#2A2225"/><circle cx="122" cy="100" r="7" fill="#2A2225"/>
+    <circle cx="80.5" cy="97.5" r="2.4" fill="#fff"/><circle cx="124.5" cy="97.5" r="2.4" fill="#fff"/>
+    <ellipse cx="66" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/><ellipse cx="134" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/>
+    <path d="M94 113 Q100 119 106 113 Q100 110 94 113Z" fill="${a==='bunny'?'#E58AA0':'#3B2A2A'}"/>
+    <path d="M100 118 L100 124 M92 126 Q100 132 108 126" stroke="#3B2A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>${whisk}`;
+}
+
+/* ---- items: [category, id, name, price, svg(A) or {back, front}] ---- */
+const CATS = [
+  {id:'outfit', name:'בגדים'}, {id:'hair', name:'תסרוקות'}, {id:'hat', name:'כובעים'},
+  {id:'glasses', name:'משקפיים'}, {id:'pet', name:'חיות מחמד'}, {id:'object', name:'חפצים'}
+];
+const ITEMS = [
+  // clothes (drawn on the body)
+  {cat:'outfit', id:'stripes', name:'חולצת פסים', price:4, svg:()=>`<path d="M52 170 Q100 150 148 170 L152 214 Q100 232 48 214Z" fill="#3E7BD8"/><path d="M50 182 Q100 166 150 182 M49 196 Q100 182 151 196 M49 210 Q100 198 151 210" stroke="#fff" stroke-width="6" fill="none"/>`},
+  {cat:'outfit', id:'dress', name:'שמלה', price:6, svg:()=>`<path d="M60 166 Q100 154 140 166 L146 186 L160 228 Q100 242 40 228 L54 186Z" fill="#E8577E"/><circle cx="80" cy="206" r="4" fill="#fff"/><circle cx="104" cy="214" r="4" fill="#fff"/><circle cx="126" cy="202" r="4" fill="#fff"/><circle cx="92" cy="186" r="4" fill="#fff"/><circle cx="118" cy="184" r="4" fill="#fff"/>`},
+  {cat:'outfit', id:'cape', name:'גלימה', price:8, svg:{back:()=>`<path d="M40 156 Q100 138 160 156 L176 236 Q100 226 24 236Z" fill="#7B4BC9"/>`, front:()=>`<path d="M66 156 L100 172 L134 156" stroke="#F2B21E" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="100" cy="172" r="7" fill="#F2B21E"/>`}},
+  {cat:'outfit', id:'overalls', name:'אוברול', price:5, svg:()=>`<path d="M58 186 L142 186 L150 224 Q100 238 50 224Z" fill="#2F9E8F"/><path d="M70 160 L74 190 M130 160 L126 190" stroke="#2F9E8F" stroke-width="9" stroke-linecap="round"/><rect x="86" y="194" width="28" height="18" rx="4" fill="#257E72"/>`},
+  // hair (on the head, between the ears)
+  {cat:'hair', id:'bangs', name:'פוני', price:3, svg:()=>`<path d="M54 82 Q60 40 100 40 Q140 40 146 82 Q132 64 120 74 Q110 58 100 72 Q88 58 80 74 Q68 62 54 82Z" fill="#4A2E22"/>`},
+  {cat:'hair', id:'curls', name:'תלתלים', price:4, svg:()=>`<g fill="#D9783A"><circle cx="70" cy="56" r="14"/><circle cx="88" cy="46" r="15"/><circle cx="108" cy="44" r="15"/><circle cx="126" cy="50" r="14"/><circle cx="138" cy="64" r="12"/><circle cx="60" cy="70" r="11"/></g>`},
+  {cat:'hair', id:'pony', name:'קוקו', price:5, svg:()=>`<path d="M60 70 Q70 42 100 42 Q130 42 140 70 Q120 56 100 58 Q80 56 60 70Z" fill="#2E2A33"/><path d="M150 70 Q186 76 178 130 Q170 110 154 100Z" fill="#2E2A33"/><circle cx="152" cy="74" r="7" fill="#E8457A"/>`},
+  {cat:'hair', id:'tuft', name:'ציצית', price:2, svg:()=>`<path d="M96 46 Q86 22 104 18 Q96 30 108 34 Q104 24 118 26 Q106 38 104 48Z" fill="#6B3E26"/>`},
+  // hats
+  {cat:'hat', id:'crown', name:'כתר', price:10, svg:()=>`<path d="M66 50 L72 18 L88 38 L100 12 L112 38 L128 18 L134 50Z" fill="#F2C230" stroke="#C99A12" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="36" r="5" fill="#E8457A"/><circle cx="80" cy="42" r="4" fill="#3E7BD8"/><circle cx="120" cy="42" r="4" fill="#3E7BD8"/>`},
+  {cat:'hat', id:'beanie', name:'כובע צמר', price:5, svg:()=>`<path d="M48 62 Q52 18 100 16 Q148 18 152 62Z" fill="#E05A47"/><rect x="44" y="56" width="112" height="16" rx="8" fill="#F5F0E6"/><circle cx="100" cy="12" r="11" fill="#F5F0E6"/>`},
+  {cat:'hat', id:'straw', name:'כובע קש', price:6, svg:()=>`<ellipse cx="100" cy="54" rx="80" ry="14" fill="#E8C66A"/><path d="M62 54 Q66 16 100 16 Q134 16 138 54Z" fill="#E8C66A"/><path d="M63 46 Q100 54 137 46 L138 54 Q100 60 62 54Z" fill="#3E9C6B"/>`},
+  {cat:'hat', id:'bow', name:'פפיון', price:3, svg:()=>`<path d="M118 48 L100 36 L102 62Z M118 48 L136 36 L134 62Z" fill="#E8457A"/><circle cx="118" cy="49" r="7" fill="#C72F63"/>`},
+  // glasses
+  {cat:'glasses', id:'round', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="4"><circle cx="78" cy="100" r="15"/><circle cx="122" cy="100" r="15"/><path d="M93 98 Q100 94 107 98"/></g>`},
+  {cat:'glasses', id:'hearts', name:'משקפי לב', price:6, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="3.5"><path d="M78 116 L62 100 Q58 86 70 86 Q76 86 78 92 Q80 86 86 86 Q98 86 94 100Z"/><path d="M122 116 L106 100 Q102 86 114 86 Q120 86 122 92 Q124 86 130 86 Q142 86 138 100Z"/></g><path d="M94 96 Q100 92 106 96" stroke="#D81B60" stroke-width="3" fill="none"/>`},
+  {cat:'glasses', id:'stars', name:'משקפי כוכב', price:7, svg:()=>{ const st=(x,y)=>`<path d="M${x} ${y-17} L${x+5} ${y-5} L${x+17} ${y-4} L${x+8} ${y+5} L${x+11} ${y+17} L${x} ${y+10} L${x-11} ${y+17} L${x-8} ${y+5} L${x-17} ${y-4} L${x-5} ${y-5}Z"/>`; return `<g fill="#FFD54F" fill-opacity=".7" stroke="#E0A800" stroke-width="3" stroke-linejoin="round">${st(78,100)}${st(122,100)}</g><path d="M94 98 Q100 94 106 98" stroke="#E0A800" stroke-width="3" fill="none"/>`; }},
+  {cat:'glasses', id:'shades', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="60" y="90" width="34" height="20" rx="8"/><rect x="106" y="90" width="34" height="20" rx="8"/></g><path d="M94 96 L106 96" stroke="#263238" stroke-width="4"/><path d="M66 95 L76 95" stroke="#fff" stroke-width="3" opacity=".6" stroke-linecap="round"/>`},
+  // pets (bottom corner)
+  {cat:'pet', id:'chick', name:'אפרוח', price:6, svg:()=>`<g transform="translate(0 0)"><ellipse cx="34" cy="222" rx="20" ry="16" fill="#FFD54F"/><circle cx="34" cy="198" r="13" fill="#FFD54F"/><circle cx="30" cy="196" r="2.4" fill="#2A2225"/><path d="M20 198 L13 201 L20 203Z" fill="#F59E0B"/><path d="M40 222 Q48 216 50 224" stroke="#F2B21E" stroke-width="3" fill="none"/></g>`},
+  {cat:'pet', id:'snail', name:'חילזון', price:5, svg:()=>`<path d="M8 234 Q40 238 64 232 Q60 222 50 224 L18 226Z" fill="#A5D6A7"/><circle cx="40" cy="214" r="18" fill="#C68B59"/><path d="M40 214 m-10 0 a10 10 0 1 1 10 10 a6 6 0 1 1 -6 -6" stroke="#8D5A35" stroke-width="3" fill="none"/><path d="M14 226 L8 210 M20 226 L18 210" stroke="#7CB342" stroke-width="3" stroke-linecap="round"/><circle cx="8" cy="208" r="3" fill="#2A2225"/><circle cx="18" cy="208" r="3" fill="#2A2225"/>`},
+  {cat:'pet', id:'puppy', name:'גור כלבים', price:9, svg:()=>`<ellipse cx="34" cy="222" rx="24" ry="15" fill="#D7B48A"/><circle cx="30" cy="198" r="16" fill="#D7B48A"/><ellipse cx="17" cy="198" rx="6" ry="12" fill="#8D6E4F"/><ellipse cx="43" cy="198" rx="6" ry="12" fill="#8D6E4F"/><circle cx="25" cy="196" r="2.6" fill="#2A2225"/><circle cx="35" cy="196" r="2.6" fill="#2A2225"/><ellipse cx="30" cy="204" rx="4" ry="3" fill="#2A2225"/><path d="M56 216 Q66 206 62 198" stroke="#D7B48A" stroke-width="5" fill="none" stroke-linecap="round"/>`},
+  {cat:'pet', id:'fish', name:'דג בצנצנת', price:7, svg:()=>`<path d="M14 196 Q10 236 36 238 Q62 236 58 196Z" fill="#B3E5FC" fill-opacity=".8" stroke="#81D4FA" stroke-width="3"/><rect x="12" y="190" width="48" height="8" rx="4" fill="#81D4FA"/><path d="M28 218 Q36 208 44 218 Q36 228 28 218Z M44 218 L52 212 L52 224Z" fill="#FF8A3D"/><circle cx="32" cy="216" r="1.8" fill="#2A2225"/>`},
+  // objects (held on the right)
+  {cat:'object', id:'balloon', name:'בלון', price:3, svg:()=>`<path d="M176 92 Q170 140 154 176" stroke="#555" stroke-width="2" fill="none"/><ellipse cx="178" cy="62" rx="20" ry="25" fill="#E8457A"/><path d="M172 87 L184 87 L178 94Z" fill="#E8457A"/><ellipse cx="171" cy="54" rx="5" ry="8" fill="#fff" opacity=".45"/>`},
+  {cat:'object', id:'wand', name:'שרביט קסמים', price:6, svg:()=>`<path d="M156 186 L182 126" stroke="#6D4C41" stroke-width="6" stroke-linecap="round"/><path d="M184 102 L189 115 L203 116 L192 124 L196 138 L184 130 L172 138 L176 124 L165 116 L179 115Z" fill="#FFD54F" stroke="#E0A800" stroke-width="2"/>`},
+  {cat:'object', id:'ball', name:'כדור', price:2, svg:()=>`<circle cx="174" cy="218" r="17" fill="#42A5F5"/><path d="M157 218 Q174 206 191 218 M174 201 Q166 218 174 235" stroke="#fff" stroke-width="4" fill="none"/>`},
+  {cat:'object', id:'flower', name:'פרח', price:4, svg:()=>`<path d="M162 186 L170 132" stroke="#43A047" stroke-width="5" stroke-linecap="round"/><g fill="#FF8AB3"><circle cx="170" cy="112" r="9"/><circle cx="184" cy="122" r="9"/><circle cx="180" cy="138" r="9"/><circle cx="162" cy="138" r="9"/><circle cx="157" cy="122" r="9"/></g><circle cx="170" cy="126" r="8" fill="#FFD54F"/>`}
+];
+const itemById = id => ITEMS.find(i=>i.id===id);
+const LAYER_ORDER = ['outfit','hair','hat','glasses','object','pet'];
+
+/* draw one character. worn = {cat: itemId}. preview = {cat: itemId} overrides (for "try on") */
+function drawChar(animal, worn={}, preview={}){
+  const A = ANIMALS[animal], w = {...worn, ...preview};
+  const it = c => w[c] ? itemById(w[c]) : null;
+  const part = (item, side) => !item ? '' : typeof item.svg === 'function' ? (side==='front' ? item.svg(A) : '') : (item.svg[side] ? item.svg[side](A) : '');
+  const out = it('outfit');
+  return `<svg viewBox="-6 -18 216 260" role="img" aria-label="${A.name}">
+    ${part(out,'back')}
+    <ellipse cx="100" cy="190" rx="54" ry="48" fill="${A.fur}"/>
+    <ellipse cx="100" cy="198" rx="32" ry="30" fill="${A.light}" opacity=".9"/>
+    ${part(out,'front')}
+    ${animal==='fox' ? `<path d="M144 206 Q186 190 182 156 Q170 176 150 186Z" fill="${A.fur}"/><path d="M178 160 Q184 168 181 176 Q174 170 170 168Z" fill="#fff"/>` : ''}
+    ${animal==='bunny' ? `<circle cx="150" cy="214" r="12" fill="#fff"/>` : ''}
+    ${earsSvg(animal, A)}
+    <circle cx="100" cy="100" r="58" fill="${A.fur}"/>
+    ${faceSvg(animal, A)}
+    ${part(it('hair'),'front')}${part(it('hat'),'front')}${part(it('glasses'),'front')}${part(it('object'),'front')}${part(it('pet'),'front')}
+  </svg>`;
+}
+
+/* ---- earning: a mini lesson of 5 mental-addition questions ---- */
+const QUESTIONS = [[300,400],[60,30],[432,251],[253,172],[50,70]];
+const STARS_PER = 3, LESSON_LEN = QUESTIONS.length;
+const HINTS = {
+  '300+400':'3 מאות ועוד 4 מאות. כמה מאות זה?',
+  '60+30':'6 עשרות ועוד 3 עשרות.',
+  '432+251':'מאות: 400 + 200. עשרות: 30 + 50. אחדות: 2 + 1.',
+  '253+172':'מאות: 200 + 100. עשרות: 50 + 70 = 120. אחדות: 3 + 2.',
+  '50+70':'5 + 7 = 12, אז 50 + 70 = 120.'
+};
+
+function loadState(key){
+  const fresh = {animal:'cat', animals:['cat'], items:[], worn:{}, stars:10, lessons:0, q:0, wrong:0, gifts:0};
+  try{ const s = JSON.parse(localStorage.getItem(key)||'null'); return s ? {...fresh, ...s} : fresh; }catch(e){ return fresh; }
+}
+function saveState(key, s){ try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){} }
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const L = x => `<span class="ltr">${x}</span>`;
+const STAR = '<svg viewBox="0 0 24 24" class="star" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
+let VOICE=null;
+function pickVoice(){ try{ const he=speechSynthesis.getVoices().filter(v=>/^he|^iw/i.test(v.lang)); const s=v=>(/premium/i.test(v.name)?4:0)+(/enhanced/i.test(v.name)?3:0); VOICE=he.sort((a,b)=>s(b)-s(a))[0]||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){}
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+
+/* answer a question; returns {ok, stars, lessonDone, unlocked} */
+function answer(S, value){
+  const [x,y] = QUESTIONS[S.q];
+  if(+value !== x+y){ S.wrong++; return {ok:false, hint: S.wrong>=2 ? HINTS[`${x}+${y}`] : 'עוד לא. נסי שוב, את יכולה.'}; }
+  S.stars += STARS_PER; S.wrong = 0; S.q++;
+  let lessonDone=false, unlocked=null;
+  if(S.q >= LESSON_LEN){
+    S.q = 0; S.lessons++; lessonDone = true;
+    const next = ANIMAL_ORDER.find(a => !S.animals.includes(a));
+    if(next){ S.animals.push(next); unlocked = next; }
+  }
+  return {ok:true, stars:STARS_PER, lessonDone, unlocked};
+}

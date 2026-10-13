@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מתמטיקידס · הבית של החיה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Heebo:wght@400;500;700&display=swap">
+<style>
+/* הבית של החיה: the character lives in a room. Coins buy pets and objects that fill the room,
+   and clothes for the character. New animals move in as friends. Signature: the room filling up. */
+:root{--bg:#E6F0EC;--surface:#fff;--ink:#17312B;--muted:#4E6560;--line:#C8D9D3;--accent:#0B7570;--coin:#D99A06;--coin-soft:#FFF1C7;--good:#1F7A4D;--good-soft:#DDF2E7;
+  --wall:#F3E9DD;--floor:#BFD6CB;--f-display:"Secular One","Heebo",system-ui,sans-serif;--f-body:"Heebo",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0F1A17;--surface:#172420;--ink:#E3F0EC;--muted:#93ABA4;--line:#2A3E38;--coin-soft:#3A3018;--good:#3FB37A;--good-soft:#1C3A2B;--wall:#2B3437;--floor:#33493F;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1A17;--surface:#172420;--ink:#E3F0EC;--muted:#93ABA4;--line:#2A3E38;--coin-soft:#3A3018;--good:#3FB37A;--good-soft:#1C3A2B;--wall:#2B3437;--floor:#33493F;color-scheme:dark}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer} button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+.coin{width:22px;height:22px;vertical-align:-5px}
+.wrap{max-width:1160px;margin:0 auto;padding:18px 16px 40px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.top h1{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0}
+.bank{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:22px;background:var(--coin-soft);padding:6px 16px;border-radius:999px}
+.room{border-radius:18px;overflow:hidden;border:1.5px solid var(--line);background:var(--wall)}
+.room svg.scene{display:block;width:100%;height:auto}
+.friend{cursor:pointer}
+.below{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px;align-items:start}
+.card{background:var(--surface);border-radius:18px;padding:18px;border:1.5px solid var(--line);min-width:0}
+h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px}
+.meta{color:var(--muted);font-size:14px;margin:0}
+.practice{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.practice .q{font-family:var(--f-display);font-size:34px;font-variant-numeric:tabular-nums}
+.practice input{font:inherit;font-family:var(--f-display);font-size:28px;width:130px;height:56px;text-align:center;border:3px solid var(--accent);border-radius:12px;background:var(--surface);color:var(--ink)}
+.btn{min-height:48px;padding:6px 20px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.msg{padding:8px 14px;border-radius:12px;background:var(--coin-soft);margin:10px 0 0}
+.msg.ok{background:var(--good-soft)}
+.say{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.say svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+.seg{display:flex;gap:6px;margin:10px 0}
+.seg button{flex:1;min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.it{border:2px solid var(--line);border-radius:14px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:14px;text-align:center;background:var(--surface)}
+.it svg{width:84px;height:100px}
+.it.on{border-color:var(--good);background:var(--good-soft)}
+.it .p{display:flex;align-items:center;gap:3px;font-weight:700}
+.it .p svg.coin{width:20px;height:20px}
+.it .btn{min-height:38px;padding:2px 10px;font-size:14px;width:100%}
+.need{font-size:12px;color:var(--muted)}
+.scrim{position:fixed;inset:0;background:rgba(10,20,15,.5);display:grid;place-items:center;z-index:9;padding:16px}
+.modal{background:var(--surface);border-radius:20px;padding:24px;max-width:420px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.modal svg{width:170px;height:204px}
+.placed{animation:drop .6s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes drop{from{transform:translateY(-40px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:900px){.below{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body><div class="wrap" id="app"></div>
+<script>
+/*COMMON*/
+const KEY='rw3'; const S=loadState(KEY); let shopTab='room', msg=null, modal=null, justPlaced=null;
+const SPEAK='<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg>';
+const COIN='<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#F2C230" stroke="#C99A12" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#C99A12" stroke-width="1.6"/></svg>';
+const ROOM_CATS=['pet','object'], WEAR_CATS=['outfit','hair','hat','glasses'];
+/* item art alone, cropped out of the character frame */
+const crop = id => { const i=itemById(id); const vb = i.cat==='pet' ? '0 180 72 62' : '140 20 70 222';
+  return `<svg viewBox="${vb}">${typeof i.svg==='function'?i.svg(ANIMALS[S.animal]):''}</svg>`; };
+const PET_SPOTS=[[60,300],[640,318],[170,336],[540,340]], OBJ_SPOTS=[[150,96],[600,90],[90,150],[690,140]];
+function scene(){
+  const owned = S.items.map(itemById);
+  const pets = owned.filter(i=>i.cat==='pet'), objs = owned.filter(i=>i.cat==='object');
+  const placeSvg=(i,[x,y],w,h,vb)=>`<svg class="${justPlaced===i.id?'placed':''}" x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${vb}">${i.svg(ANIMALS[S.animal])}</svg>`;
+  const friends = S.animals.filter(a=>a!==S.animal).map((a,k)=>`<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${[612,700,40][k]}" y="${[180,200,190][k]}" width="96" height="116" viewBox="-6 -18 216 260">${drawChar(a,{}).replace(/^<svg[^>]*>|<\/svg>$/g,'')}</svg></g>`).join('');
+  const main = drawChar(S.animal, Object.fromEntries(Object.entries(S.worn).filter(([c])=>WEAR_CATS.includes(c)))).replace(/^<svg[^>]*>|<\/svg>$/g,'');
+  return `<svg class="scene" viewBox="0 0 800 420" role="img" aria-label="החדר של ה${ANIMALS[S.animal].name}">
+    <rect width="800" height="300" fill="var(--wall)"/>
+    <path d="M0 300 H800 V420 H0Z" fill="var(--floor)"/>
+    <path d="M0 300 H800" stroke="rgba(0,0,0,.12)" stroke-width="4"/>
+    <path d="M0 340 H800 M0 382 H800" stroke="rgba(0,0,0,.06)" stroke-width="3"/>
+    <rect x="300" y="40" width="200" height="130" rx="10" fill="#BFE3F5" stroke="#fff" stroke-width="10"/>
+    <path d="M400 40 V170 M300 105 H500" stroke="#fff" stroke-width="6"/>
+    <circle cx="460" cy="78" r="16" fill="#FFE082"/>
+    <rect x="120" y="190" width="150" height="10" rx="4" fill="#A9825B"/><rect x="560" y="200" width="150" height="10" rx="4" fill="#A9825B"/>
+    <ellipse cx="400" cy="372" rx="190" ry="34" fill="color-mix(in srgb,var(--accent) 35%,#fff)" opacity=".8"/>
+    ${objs.map((i,k)=>placeSvg(i,OBJ_SPOTS[k%4],70,222*.62,'140 20 70 222')).join('')}
+    <svg x="300" y="110" width="200" height="240" viewBox="-6 -18 216 260">${main}</svg>
+    ${friends}
+    ${pets.map((i,k)=>`<ellipse cx="${PET_SPOTS[k%4][0]+45}" cy="${PET_SPOTS[k%4][1]+74}" rx="38" ry="7" fill="rgba(0,0,0,.14)"/>`+placeSvg(i,PET_SPOTS[k%4],90,78,'0 180 72 62')).join('')}
+    ${!owned.length?`<text x="400" y="404" text-anchor="middle" font-size="18" fill="var(--muted)" font-family="Heebo">החדר עוד ריק. אפשר לקנות חיות מחמד וחפצים.</text>`:''}
+  </svg>`;
+}
+function render(){
+  const [x,y]=QUESTIONS[S.q];
+  const cats = shopTab==='room' ? ROOM_CATS : WEAR_CATS;
+  const items = ITEMS.filter(i=>cats.includes(i.cat)).map(i=>{
+    const has=S.items.includes(i.id), on=S.worn[i.cat]===i.id, can=S.stars>=i.price, room=ROOM_CATS.includes(i.cat);
+    const art = room ? crop(i.id) : drawChar(S.animal,{},{[i.cat]:i.id});
+    let act;
+    if(has) act = room ? `<span class="need">בחדר</span>` : `<button class="btn ${on?'':'primary'}" data-act="wear" data-v="${i.id}">${on?'להוריד':'ללבוש'}</button>`;
+    else act = `<button class="btn primary" data-act="buy" data-v="${i.id}" ${can?'':'disabled'}>לקנות</button>${can?'':`<span class="need">עוד ${i.price-S.stars}</span>`}`;
+    return `<div class="it ${on?'on':''}">${art}<span>${i.name}</span>${has?'':`<span class="p">${COIN}${i.price}</span>`}${act}</div>`;
+  }).join('');
+  const locked = ANIMAL_ORDER.filter(a=>!S.animals.includes(a)).length;
+  document.getElementById('app').innerHTML=`
+  <div class="top"><h1>הבית של ה${ANIMALS[S.animal].name}</h1><div class="bank" aria-label="מטבעות">${COIN}<span class="ltr">${S.stars}</span></div></div>
+  <div class="room">${scene()}</div>
+  <p class="meta">${S.animals.length>1?'לחיצה על חברה בחדר מחליפה את החיה הראשית. ':''}${locked?`עוד ${locked} חיות יעברו לגור כאן, אחת אחרי כל שיעור.`:'כל החיות כבר גרות כאן!'}</p>
+  <div class="below">
+    <section class="card">
+      <h2>מרוויחות מטבעות</h2>
+      <p class="meta">תרגיל ${S.q+1} מתוך ${LESSON_LEN}. כל תרגיל שפותרים: ${STARS_PER} מטבעות, גם עם רמז.</p>
+      <div class="practice"><button class="say" data-act="say" aria-label="להקריא">${SPEAK}</button><span class="q ltr">${x} + ${y} =</span><input id="ans" inputmode="numeric" autocomplete="off" aria-label="התשובה"><button class="btn primary" data-act="check">בדיקה</button></div>
+      ${msg?`<p class="msg ${msg.ok?'ok':''}">${msg.text}</p>`:''}
+    </section>
+    <section class="card">
+      <h2>החנות</h2>
+      <div class="seg"><button data-act="shop" data-v="room" aria-pressed="${shopTab==='room'}">לחדר: חיות מחמד וחפצים</button><button data-act="shop" data-v="wear" aria-pressed="${shopTab==='wear'}">בגדים, תסרוקות, כובעים, משקפיים</button></div>
+      <div class="shop">${items}</div>
+    </section>
+  </div>
+  ${modal?`<div class="scrim"><div class="modal" role="dialog">${modal}<button class="btn primary" data-act="close">איזה כיף!</button></div></div>`:''}`;
+  const inp=document.getElementById('ans'); if(inp && !modal) inp.focus({preventScroll:true});
+  justPlaced=null;
+}
+function check(){
+  const v=document.getElementById('ans').value.trim(); if(!v) return;
+  const r=answer(S,v);
+  if(!r.ok){ msg={text:r.hint}; render(); return; }
+  msg={ok:true,text:`נכון! קיבלת ${STARS_PER} מטבעות.`};
+  if(r.lessonDone) modal = r.unlocked ? `<h2>סיימת שיעור!</h2>${drawChar(r.unlocked)}<p><b>${ANIMALS[r.unlocked].name}</b> עוברת לגור אצלך בחדר!</p>` : `<h2>סיימת שיעור!</h2>`;
+  saveState(KEY,S); render();
+}
+const A={
+  shop(v){ shopTab=v; },
+  buy(v){ const i=itemById(v); if(S.stars<i.price) return; S.stars-=i.price; S.items.push(v);
+    if(WEAR_CATS.includes(i.cat)) S.worn[i.cat]=v; else justPlaced=v;
+    msg={ok:true,text: ROOM_CATS.includes(i.cat) ? `${i.name}: עכשיו בחדר!` : `קנית ${i.name}!`}; saveState(KEY,S); },
+  wear(v){ const i=itemById(v); S.worn[i.cat] = S.worn[i.cat]===v ? undefined : v; saveState(KEY,S); },
+  animal(v){ S.animal=v; saveState(KEY,S); },
+  check(){ check(); return false; },
+  say(){ const [x,y]=QUESTIONS[S.q]; speak(`כמה זה ${x} ועוד ${y}?`); return false; },
+  close(){ modal=null; }
+};
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t||t.disabled) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.id==='ans'){ e.preventDefault(); check(); } if(e.key==='Escape' && modal){ modal=null; render(); } });
+render();
+</script></body></html>

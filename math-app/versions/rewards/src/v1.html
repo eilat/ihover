@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מתמטיקידס · ארון בגדים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Assistant:wght@400;600&display=swap">
+<style>
+/* ארון בגדים: the character stands on the right like a mirror; a wardrobe with category tabs on the left.
+   Signature: "למדוד" puts any item on the character before buying. */
+:root{--bg:#EEF1F4;--surface:#fff;--ink:#1E2633;--muted:#5A6577;--line:#D3DAE3;--accent:#7444C9;--gold:#E0A800;--gold-soft:#FFF4CC;--good:#1F7A4D;--good-soft:#DDF2E7;
+  --f-display:"Rubik",system-ui,sans-serif;--f-body:"Assistant","Rubik",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--gold-soft:#3D3420;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--gold-soft:#3D3420;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer} button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+.star{width:22px;height:22px;fill:var(--gold);vertical-align:-4px}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:380px minmax(0,1fr);gap:20px;align-items:start}
+.card{background:var(--surface);border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.06);min-width:0}
+h1,h2{font-family:var(--f-display);margin:0} h2{font-size:22px}
+.stage{position:sticky;top:16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.mirror{width:100%;aspect-ratio:216/260;max-height:440px;border-radius:14px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface) 70%);display:grid;place-items:center;position:relative}
+.mirror svg{width:100%;height:100%}
+.trying{position:absolute;top:10px;inset-inline-start:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;padding:2px 12px;border-radius:999px}
+.who{font-family:var(--f-display);font-size:24px;font-weight:600}
+.bank{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600;font-size:22px;background:var(--gold-soft);padding:6px 16px;border-radius:999px}
+.animals{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.an{width:76px;padding:4px;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:center;font-size:13px}
+.an svg{width:60px;height:72px}
+.an[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
+.an.locked{cursor:default;color:var(--muted)} .an.locked svg{filter:brightness(0);opacity:.18}
+.side{display:flex;flex-direction:column;gap:20px;min-width:0}
+/* practice */
+.practice{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.practice .q{font-family:var(--f-display);font-weight:600;font-size:34px;font-variant-numeric:tabular-nums}
+.practice input{font:inherit;font-family:var(--f-display);font-size:30px;width:140px;height:58px;text-align:center;border:3px solid var(--accent);border-radius:12px;background:var(--surface);color:var(--ink)}
+.btn{min-height:50px;padding:8px 22px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.meta{font-size:15px;color:var(--muted)}
+.msg{padding:10px 14px;border-radius:12px;background:var(--gold-soft);font-size:18px}
+.msg.ok{background:var(--good-soft)}
+.say{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.say svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+/* wardrobe */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+.tab{min-height:44px;padding:6px 16px;border-radius:999px;border:2px solid transparent;background:transparent;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--accent);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.item{border:2px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.item.on{border-color:var(--good);background:var(--good-soft)}
+.item .th{width:96px;height:116px}
+.item .th svg{width:100%;height:100%}
+.item b{font-size:16px}
+.price{display:flex;align-items:center;gap:4px;font-weight:600}
+.item .btn{min-height:40px;padding:4px 14px;font-size:15px;width:100%}
+.need{font-size:13px;color:var(--muted)}
+.scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:9;padding:16px}
+.modal{background:var(--surface);border-radius:20px;padding:26px;max-width:420px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.modal svg{width:180px;height:216px}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}.stage{position:static}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body><div class="wrap" id="app"></div>
+<script>
+/*COMMON*/
+const KEY='rw1'; const S=loadState(KEY); let tab='outfit', preview=null, msg=null, modal=null;
+const SPEAK='<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg>';
+function render(){
+  const owned=id=>S.items.includes(id), [x,y]=QUESTIONS[S.q];
+  const pv = preview ? {[itemById(preview).cat]:preview} : {};
+  const anim = ANIMAL_ORDER.map(a=>{ const has=S.animals.includes(a);
+    return `<button class="an ${has?'':'locked'}" ${has?`data-act="animal" data-v="${a}"`:'disabled'} aria-pressed="${S.animal===a}" aria-label="${ANIMALS[a].name}${has?'':' (נפתחת בשיעור הבא)'}">${drawChar(a)}<span>${has?ANIMALS[a].name:'עוד מעט'}</span></button>`; }).join('');
+  const items = ITEMS.filter(i=>i.cat===tab).map(i=>{
+    const on=S.worn[i.cat]===i.id, has=owned(i.id), can=S.stars>=i.price;
+    const thumb = drawChar(S.animal,{},{[i.cat]:i.id});
+    let actions;
+    if(has) actions=`<button class="btn ${on?'':'primary'}" data-act="wear" data-v="${i.id}">${on?'להוריד':'ללבוש'}</button>`;
+    else actions=`<button class="btn" data-act="try" data-v="${i.id}">${preview===i.id?'מודדת עכשיו':'למדוד'}</button>
+      <button class="btn primary" data-act="buy" data-v="${i.id}" ${can?'':'disabled'}>לקנות</button>${can?'':`<span class="need">עוד ${i.price-S.stars} כוכבים</span>`}`;
+    return `<div class="item ${on?'on':''}"><div class="th">${thumb}</div><b>${i.name}</b>${has?'<span class="meta">שלך</span>':`<span class="price">${STAR}${i.price}</span>`}${actions}</div>`;
+  }).join('');
+  document.getElementById('app').innerHTML=`
+  <section class="card stage" aria-label="הדמות שלי">
+    <div class="bank" aria-label="כוכבים">${STAR}<span class="ltr">${S.stars}</span></div>
+    <div class="mirror">${drawChar(S.animal,S.worn,pv)}${preview?'<span class="trying">מודדת</span>':''}</div>
+    <div class="who">${ANIMALS[S.animal].name}</div>
+    <div class="animals">${anim}</div>
+    <p class="meta">כל שיעור שמסיימים פותח חיה חדשה.</p>
+  </section>
+  <div class="side">
+    <section class="card">
+      <h2>מרוויחות כוכבים</h2>
+      <p class="meta">תרגיל ${S.q+1} מתוך ${LESSON_LEN}. כל תרגיל שפותרים: ${STARS_PER} כוכבים, גם עם רמז.</p>
+      <div class="practice"><button class="say" data-act="say" aria-label="להקריא">${SPEAK}</button><span class="q ltr">${x} + ${y} =</span><input id="ans" inputmode="numeric" autocomplete="off" aria-label="התשובה"><button class="btn primary" data-act="check">בדיקה</button></div>
+      ${msg?`<p class="msg ${msg.ok?'ok':''}">${msg.text}</p>`:''}
+    </section>
+    <section class="card">
+      <h2>הארון</h2>
+      <div class="tabs" role="tablist">${CATS.map(c=>`<button class="tab" role="tab" aria-selected="${tab===c.id}" data-act="tab" data-v="${c.id}">${c.name}</button>`).join('')}</div>
+      <div class="grid">${items}</div>
+    </section>
+  </div>
+  ${modal?`<div class="scrim"><div class="modal" role="dialog">${modal}<button class="btn primary" data-act="close">איזה כיף!</button></div></div>`:''}`;
+  const inp=document.getElementById('ans'); if(inp && !modal) inp.focus({preventScroll:true});
+}
+function check(){
+  const v=document.getElementById('ans').value.trim(); if(!v) return;
+  const r=answer(S,v);
+  if(!r.ok){ msg={text:r.hint}; render(); return; }
+  msg={ok:true,text:`נכון! קיבלת ${STARS_PER} כוכבים.`};
+  if(r.lessonDone) modal = r.unlocked ? `<h2>סיימת שיעור!</h2>${drawChar(r.unlocked)}<p>נפתחה לך חיה חדשה: <b>${ANIMALS[r.unlocked].name}</b>. אפשר לעבור אליה מתחת לדמות.</p>` : `<h2>סיימת שיעור!</h2><p>כבר פתחת את כל החיות. איזה יופי!</p>`;
+  saveState(KEY,S); render();
+}
+const A={
+  tab(v){ tab=v; },
+  try(v){ preview = preview===v ? null : v; },
+  buy(v){ const i=itemById(v); if(S.stars<i.price) return; S.stars-=i.price; S.items.push(v); S.worn[i.cat]=v; preview=null; msg={ok:true,text:`קנית: ${i.name}. עכשיו זה שלך!`}; saveState(KEY,S); },
+  wear(v){ const i=itemById(v); S.worn[i.cat] = S.worn[i.cat]===v ? undefined : v; saveState(KEY,S); },
+  animal(v){ S.animal=v; preview=null; saveState(KEY,S); },
+  check(){ check(); return false; },
+  say(){ const [x,y]=QUESTIONS[S.q]; speak(`כמה זה ${x} ועוד ${y}?`); return false; },
+  close(){ modal=null; }
+};
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t||t.disabled) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.id==='ans'){ e.preventDefault(); check(); } if(e.key==='Escape' && modal){ modal=null; render(); } });
+render();
+</script></body></html>
