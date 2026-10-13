@@ -3,30 +3,72 @@
    (viewBox 0 0 200 240, head centre 100,100 r58, body centre 100,188), so every item fits every animal. */
 
 const ANIMALS = {
-  cat:   {name:'חתולה', fur:'#E8A25B', light:'#F7D9B5', dark:'#B86E2C'},
-  bunny: {name:'ארנבת', fur:'#E9E4E0', light:'#FFFFFF', dark:'#B9AEA8'},
-  fox:   {name:'שועלה', fur:'#E07B39', light:'#FFF4E8', dark:'#5A3420'},
-  bear:  {name:'דובה',  fur:'#A8754F', light:'#E6C7A6', dark:'#6E4A30'}
+  cat:     {name:'חתולה',     fur:'#E8A25B', light:'#F7D9B5', dark:'#B86E2C'},
+  bunny:   {name:'ארנבת',     fur:'#E9E4E0', light:'#FFFFFF', dark:'#B9AEA8'},
+  fox:     {name:'שועלה',     fur:'#E07B39', light:'#FFF4E8', dark:'#5A3420'},
+  bear:    {name:'דובה',      fur:'#A8754F', light:'#E6C7A6', dark:'#6E4A30'},
+  panda:   {name:'פנדה',      fur:'#F6F5F1', light:'#FFFFFF', dark:'#2B2B2E', body:'#2B2B2E'},
+  owl:     {name:'ינשופה',    fur:'#9C7457', light:'#F1E4D1', dark:'#6B4A35'},
+  dino:    {name:'דינוזאורית', fur:'#6CC08B', light:'#DDF3C9', dark:'#3E8E5D'},
+  unicorn: {name:'חד־קרן',    fur:'#EFE2FA', light:'#FFFFFF', dark:'#C9B8DA'},
+  squirrel:{name:'סנאית',     fur:'#C8743A', light:'#F3D6B4', dark:'#8A4B1F'}
 };
-const ANIMAL_ORDER = ['cat','bunny','fox','bear'];
+const ANIMAL_ORDER = ['cat','bunny','fox','bear','panda','owl','dino','unicorn','squirrel'];
 
+/* parts drawn behind the body and head: tails, spikes, mane */
+function backSvg(a, A){
+  if(a==='squirrel') return `<path d="M140 226 Q206 222 196 150 Q190 104 150 96 Q176 120 168 150 Q160 182 132 196Z" fill="${A.fur}"/><path d="M150 210 Q192 200 186 154 Q182 126 160 112 Q174 136 168 160 Q162 186 142 200Z" fill="${A.light}" opacity=".55"/>`;
+  if(a==='dino') return `<path d="M140 214 Q196 214 204 176 Q184 196 148 192Z" fill="${A.fur}"/>
+    <g fill="${A.dark}"><path d="M70 50 L80 26 L90 46Z"/><path d="M90 44 L100 18 L110 44Z"/><path d="M110 46 L120 26 L130 50Z"/><path d="M130 56 L144 40 L146 64Z"/></g>`;
+  if(a==='unicorn') return `<path d="M128 52 Q170 60 166 110 Q176 140 156 162 Q150 128 136 104Z" fill="#C89BF0"/><path d="M134 66 Q160 80 156 116 Q164 136 150 150 Q146 120 136 100Z" fill="#7FC8F8"/><path d="M140 82 Q154 98 148 126" stroke="#FF9EC7" stroke-width="9" fill="none" stroke-linecap="round"/>`;
+  return '';
+}
 function earsSvg(a, A){
   if(a==='cat') return `<path d="M50 78 L58 26 L94 54 Z" fill="${A.fur}"/><path d="M150 78 L142 26 L106 54 Z" fill="${A.fur}"/><path d="M60 66 L63 40 L82 55 Z" fill="#F4A9B8"/><path d="M140 66 L137 40 L118 55 Z" fill="#F4A9B8"/>`;
   if(a==='bunny') return `<ellipse cx="74" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(-10 74 30)"/><ellipse cx="126" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(10 126 30)"/><ellipse cx="74" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(-10 74 32)"/><ellipse cx="126" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(10 126 32)"/>`;
   if(a==='fox') return `<path d="M46 84 L50 18 L96 52 Z" fill="${A.fur}"/><path d="M154 84 L150 18 L104 52 Z" fill="${A.fur}"/><path d="M50 30 L52 18 L64 28 Z M150 30 L148 18 L136 28 Z" fill="${A.dark}"/>`;
-  return `<circle cx="56" cy="56" r="22" fill="${A.fur}"/><circle cx="144" cy="56" r="22" fill="${A.fur}"/><circle cx="56" cy="56" r="11" fill="${A.light}"/><circle cx="144" cy="56" r="11" fill="${A.light}"/>`;
+  if(a==='bear') return `<circle cx="56" cy="56" r="22" fill="${A.fur}"/><circle cx="144" cy="56" r="22" fill="${A.fur}"/><circle cx="56" cy="56" r="11" fill="${A.light}"/><circle cx="144" cy="56" r="11" fill="${A.light}"/>`;
+  if(a==='panda') return `<circle cx="56" cy="54" r="21" fill="${A.dark}"/><circle cx="144" cy="54" r="21" fill="${A.dark}"/>`;
+  if(a==='owl') return `<path d="M52 70 L50 30 L82 52Z" fill="${A.dark}"/><path d="M148 70 L150 30 L118 52Z" fill="${A.dark}"/>`;
+  if(a==='unicorn') return `<path d="M56 70 L60 34 L86 54Z" fill="${A.fur}"/><path d="M144 70 L140 34 L114 54Z" fill="${A.fur}"/><path d="M63 62 L65 44 L78 55Z M137 62 L135 44 L122 55Z" fill="#F4B8D8"/>`;
+  if(a==='squirrel') return `<path d="M54 74 L58 30 L86 54Z" fill="${A.fur}"/><path d="M146 74 L142 30 L114 54Z" fill="${A.fur}"/><path d="M58 30 L52 18 M58 30 L62 16 M142 30 L148 18 M142 30 L138 16" stroke="${A.dark}" stroke-width="4" stroke-linecap="round"/>`;
+  return ''; // dino: no ears
 }
 function faceSvg(a, A){
+  const eyes = (r=7) => `<circle cx="78" cy="100" r="${r}" fill="#2A2225"/><circle cx="122" cy="100" r="${r}" fill="#2A2225"/><circle cx="${78+r*.35}" cy="${100-r*.35}" r="${r*.34}" fill="#fff"/><circle cx="${122+r*.35}" cy="${100-r*.35}" r="${r*.34}" fill="#fff"/>`;
+  const cheeks = `<ellipse cx="66" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/><ellipse cx="134" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/>`;
+  const mouth = `<path d="M100 118 L100 124 M92 126 Q100 132 108 126" stroke="#3B2A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  const nose = c => `<path d="M94 113 Q100 119 106 113 Q100 110 94 113Z" fill="${c}"/>`;
+  if(a==='owl') return `<circle cx="78" cy="98" r="19" fill="${A.light}"/><circle cx="122" cy="98" r="19" fill="${A.light}"/>${eyes(9)}
+    <path d="M92 112 L100 128 L108 112Z" fill="#F2A33A"/>${cheeks}`;
+  if(a==='panda') return `<ellipse cx="76" cy="102" rx="15" ry="12" fill="${A.dark}" transform="rotate(-25 76 102)"/><ellipse cx="124" cy="102" rx="15" ry="12" fill="${A.dark}" transform="rotate(25 124 102)"/>
+    <circle cx="78" cy="100" r="6" fill="#fff"/><circle cx="122" cy="100" r="6" fill="#fff"/><circle cx="78" cy="100" r="3.6" fill="#2A2225"/><circle cx="122" cy="100" r="3.6" fill="#2A2225"/>
+    ${cheeks}${nose('#2A2225')}${mouth}`;
+  if(a==='dino') return `<ellipse cx="100" cy="124" rx="30" ry="18" fill="${A.light}"/>${eyes(7)}${cheeks}
+    <circle cx="92" cy="116" r="2.4" fill="${A.dark}"/><circle cx="108" cy="116" r="2.4" fill="${A.dark}"/>
+    <path d="M86 128 Q100 138 114 128" stroke="#2F5D41" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
   const muzzle = a==='fox' ? `<path d="M62 112 Q100 160 138 112 Q120 104 100 108 Q80 104 62 112Z" fill="${A.light}"/>`
                : a==='bear' ? `<ellipse cx="100" cy="122" rx="26" ry="19" fill="${A.light}"/>`
+               : a==='squirrel' ? `<ellipse cx="100" cy="122" rx="24" ry="17" fill="${A.light}"/>`
                : a==='cat' ? `<ellipse cx="100" cy="122" rx="22" ry="15" fill="${A.light}"/>` : '';
   const whisk = a==='cat'||a==='bunny' ? `<path d="M70 120 L46 116 M70 126 L46 128 M130 120 L154 116 M130 126 L154 128" stroke="${A.dark}" stroke-width="2" stroke-linecap="round"/>` : '';
-  return `${muzzle}
-    <circle cx="78" cy="100" r="7" fill="#2A2225"/><circle cx="122" cy="100" r="7" fill="#2A2225"/>
-    <circle cx="80.5" cy="97.5" r="2.4" fill="#fff"/><circle cx="124.5" cy="97.5" r="2.4" fill="#fff"/>
-    <ellipse cx="66" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/><ellipse cx="134" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/>
-    <path d="M94 113 Q100 119 106 113 Q100 110 94 113Z" fill="${a==='bunny'?'#E58AA0':'#3B2A2A'}"/>
-    <path d="M100 118 L100 124 M92 126 Q100 132 108 126" stroke="#3B2A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>${whisk}`;
+  const teeth = a==='squirrel' ? `<rect x="96" y="127" width="8" height="7" rx="1.5" fill="#fff" stroke="#3B2A2A" stroke-width="1.2"/>` : '';
+  return `${muzzle}${eyes(7)}${cheeks}${nose(a==='bunny'||a==='unicorn'?'#E58AA0':'#3B2A2A')}${mouth}${teeth}${whisk}`;
+}
+/* parts drawn on top of the head: horn, forelock */
+function headExtrasSvg(a, A){
+  if(a==='unicorn') return `<path d="M100 8 L90 50 L110 50Z" fill="#F7C948" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/><path d="M92 40 L108 34 M94 28 L106 24" stroke="#E0A800" stroke-width="2.4"/>
+    <path d="M80 50 Q96 40 112 50 Q100 60 86 64Z" fill="#FF9EC7"/>`;
+  if(a==='owl') return `<path d="M62 76 Q78 68 92 78 M108 78 Q122 68 138 76" stroke="${A.dark}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  return '';
+}
+/* body details */
+function bodySvg(a, A){
+  const body=A.body||A.fur;
+  let s=`<ellipse cx="100" cy="190" rx="54" ry="48" fill="${body}"/><ellipse cx="100" cy="198" rx="32" ry="30" fill="${a==='panda'?'#F6F5F1':A.light}" opacity=".95"/>`;
+  if(a==='owl') s+=`<path d="M48 176 Q40 214 70 230 Q62 200 66 172Z M152 176 Q160 214 130 230 Q138 200 134 172Z" fill="${A.dark}"/><path d="M86 188 q4 4 8 0 M106 188 q4 4 8 0 M96 204 q4 4 8 0 M86 218 q4 4 8 0 M106 218 q4 4 8 0" stroke="${A.dark}" stroke-width="2" fill="none"/>`;
+  if(a==='dino') s+=`<g fill="${A.dark}" opacity=".5"><circle cx="64" cy="186" r="6"/><circle cx="140" cy="200" r="5"/><circle cx="132" cy="176" r="4"/></g>`;
+  return s;
 }
 
 /* ---- items: [category, id, name, price, svg(A) or {back, front}] ---- */
@@ -77,14 +119,15 @@ function drawChar(animal, worn={}, preview={}){
   const out = it('outfit');
   return `<svg viewBox="-6 -18 216 260" role="img" aria-label="${A.name}">
     ${part(out,'back')}
-    <ellipse cx="100" cy="190" rx="54" ry="48" fill="${A.fur}"/>
-    <ellipse cx="100" cy="198" rx="32" ry="30" fill="${A.light}" opacity=".9"/>
+    ${backSvg(animal, A)}
+    ${bodySvg(animal, A)}
     ${part(out,'front')}
     ${animal==='fox' ? `<path d="M144 206 Q186 190 182 156 Q170 176 150 186Z" fill="${A.fur}"/><path d="M178 160 Q184 168 181 176 Q174 170 170 168Z" fill="#fff"/>` : ''}
     ${animal==='bunny' ? `<circle cx="150" cy="214" r="12" fill="#fff"/>` : ''}
     ${earsSvg(animal, A)}
     <circle cx="100" cy="100" r="58" fill="${A.fur}"/>
     ${faceSvg(animal, A)}
+    ${headExtrasSvg(animal, A)}
     ${part(it('hair'),'front')}${part(it('hat'),'front')}${part(it('glasses'),'front')}${part(it('object'),'front')}${part(it('pet'),'front')}
   </svg>`;
 }

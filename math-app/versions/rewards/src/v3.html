@@ -65,12 +65,13 @@ const ROOM_CATS=['pet','object'], WEAR_CATS=['outfit','hair','hat','glasses'];
 /* item art alone, cropped out of the character frame */
 const crop = id => { const i=itemById(id); const vb = i.cat==='pet' ? '0 180 72 62' : '140 20 70 222';
   return `<svg viewBox="${vb}">${typeof i.svg==='function'?i.svg(ANIMALS[S.animal]):''}</svg>`; };
+const FRIEND_SPOTS=[[604,184,96],[700,196,90],[16,190,90],[112,204,80],[206,196,84],[520,236,74],[236,244,70],[650,252,70]];
 const PET_SPOTS=[[60,300],[640,318],[170,336],[540,340]], OBJ_SPOTS=[[150,96],[600,90],[90,150],[690,140]];
 function scene(){
   const owned = S.items.map(itemById);
   const pets = owned.filter(i=>i.cat==='pet'), objs = owned.filter(i=>i.cat==='object');
   const placeSvg=(i,[x,y],w,h,vb)=>`<svg class="${justPlaced===i.id?'placed':''}" x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${vb}">${i.svg(ANIMALS[S.animal])}</svg>`;
-  const friends = S.animals.filter(a=>a!==S.animal).map((a,k)=>`<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${[612,700,40][k]}" y="${[180,200,190][k]}" width="96" height="116" viewBox="-6 -18 216 260">${drawChar(a,{}).replace(/^<svg[^>]*>|<\/svg>$/g,'')}</svg></g>`).join('');
+  const friends = S.animals.filter(a=>a!==S.animal).map((a,k)=>`<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${FRIEND_SPOTS[k][0]}" y="${FRIEND_SPOTS[k][1]}" width="${FRIEND_SPOTS[k][2]}" height="${FRIEND_SPOTS[k][2]*1.2}" viewBox="-6 -18 216 260">${drawChar(a,{}).replace(/^<svg[^>]*>|<\/svg>$/g,'')}</svg></g>`).join('');
   const main = drawChar(S.animal, Object.fromEntries(Object.entries(S.worn).filter(([c])=>WEAR_CATS.includes(c)))).replace(/^<svg[^>]*>|<\/svg>$/g,'');
   return `<svg class="scene" viewBox="0 0 800 420" role="img" aria-label="החדר של ה${ANIMALS[S.animal].name}">
     <rect width="800" height="300" fill="var(--wall)"/>
