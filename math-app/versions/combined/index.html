@@ -9,7 +9,8 @@
 <style>
 /* Combined version: notebook look (v1) + sticks in a box (v2) + top bar instead of a side panel.
    One anchor per screen: the exercise with its answer box. Tools have fixed homes: speaker top-right of the task,
-   hint next to the progress line, keypad and scratchpad in a left column, timer (opt-in) in the top bar. */
+   progress strip on top of the card with a stopwatch the child starts and stops herself, hint under the exercise,
+   keypad and scratchpad in a left column. */
 :root{
   --bg:#EEF1F4; --surface:#FFFFFF; --ink:#1E2633; --muted:#5A6577; --line:#D3DAE3;
   --h:#2F5BD3; --h-soft:#DCE5FA; --t:#D9980A; --t-soft:#FCEFC9; --o:#23895A; --o-soft:#DCF1E5;
@@ -92,6 +93,19 @@ svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-lin
 @keyframes toast{0%{opacity:0;transform:translate(-50%,6px) scale(.9)}12%{opacity:1;transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0}}
 
 /* progress line + hint button */
+.strip{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:10px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.strip-l{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.strip .lbl{font-family:var(--f-display);font-size:20px;font-weight:600;color:var(--ink)}
+.strip .ph{font-size:15px;color:var(--muted)}
+.dots{display:flex;gap:7px;align-items:center;direction:rtl}
+.dots i{width:16px;height:16px;border-radius:50%;background:var(--line);display:block}
+.dots i.done{background:var(--accent)}
+.dots i.now{width:22px;height:22px;background:var(--surface);border:6px solid var(--accent)}
+.sw-btn{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-variant-numeric:tabular-nums;font-weight:600;font-size:16px}
+.sw-btn svg{width:20px;height:20px}
+.sw-btn.run{border-color:var(--accent);color:var(--accent)}
+.sw-btn.stopped{color:var(--good);border-color:var(--good);cursor:default}
+.hintrow{display:flex;justify-content:center}
 .prog{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:48px}
 .prog p{margin:0;font-size:16px;color:var(--muted);background:var(--surface);padding:0 6px;border-radius:6px}
 .prog b{color:var(--ink)}
@@ -222,6 +236,8 @@ const ICON={
   lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   bulb:'<svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
   check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  watch:'<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4M12 2v3"/></svg>',
+  pause:'<svg viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg>',
   close:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 const PLACE={h:'מאות',t:'עשרות',o:'אחדות'};
@@ -254,7 +270,7 @@ let KIDS=[{id:'a',name:'לילי',color:null,timer:false,face:'lili'},{id:'b',na
 try{ const k=JSON.parse(localStorage.getItem('combo:kids2')||'null'); if(k) KIDS=k; }catch(e){}
 const saveKids=()=>{ try{ localStorage.setItem('combo:kids2',JSON.stringify(KIDS)); }catch(e){} };
 const S={screen:'who', kid:null, i:0, input:'', wrong:0, note:null, toast:null, locked:false, W:null, ex:0,
-  pop:false, gate:null, exT:{ms:0,from:null,frozen:false}};
+  pop:false, gate:null, exT:{ms:0,from:null,frozen:false,running:false}};
 const kid=()=>KIDS.find(k=>k.id===S.kid);
 const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
 function applyAccent(){ document.documentElement.style.setProperty('--accent', accentOf(kid())); }
@@ -265,20 +281,20 @@ function pickVoice(){ try{ const he=speechSynthesis.getVoices().filter(v=>/^he|^
 try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){}
 function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
 
-/* ---------- timer: opt-in, per exercise. Runs only while an exercise is on screen and unsolved,
+/* ---------- stopwatch: per exercise, the child starts and stops it herself. Runs only while the exercise is on screen and unsolved,
    pauses when the window is hidden, and is never compared or shown to the parent. ---------- */
 const fmt=ms=>{ const s=Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
 const exMs=()=>S.exT.ms+(S.exT.from!=null?Date.now()-S.exT.from:0);
 function syncTimer(){
   const it=ITEMS[S.i];
-  const run=S.screen==='lesson' && !document.hidden && !S.exT.frozen && it && it.type!=='explore';
+  const run=S.exT.running && S.screen==='lesson' && !document.hidden && !S.exT.frozen && it && it.type!=='explore';
   if(run && S.exT.from==null) S.exT.from=Date.now();
   if(!run && S.exT.from!=null){ S.exT.ms+=Date.now()-S.exT.from; S.exT.from=null; }
 }
 function freezeTimer(){ S.exT.frozen=true; syncTimer(); }
-const timeTag=()=>kid()?.timer ? ` ⏱ ${fmt(exMs())}` : '';
+const timeTag=()=>exMs()>0 ? ` ⏱ ${fmt(exMs())}` : '';
 document.addEventListener('visibilitychange',syncTimer);
-setInterval(()=>{ const el=document.getElementById('tmr'); if(el) el.textContent=`⏱ ${fmt(exMs())}`; },1000);
+setInterval(()=>{ const el=document.getElementById('swt'); if(el && S.exT.running) el.textContent=fmt(exMs()); },500);
 
 /* ---------- worksheet model (math teacher's flow: every column is written as its value) ---------- */
 function makeW(a,b,cols){
@@ -362,10 +378,23 @@ function box(val,state,act,v,big){
   return `<button class="${cls}" data-act="${act}" ${v?`data-v="${v}"`:''} aria-label="קופסת תשובה">${val||''}</button>`;
 }
 const toastAt=w=>S.toast&&S.toast.at===w?`<span class="toast" role="status">${S.toast.text}</span>`:'';
+function strip(){
+  const it=ITEMS[S.i], list=ITEMS.filter(x=>x.phase===it.phase), n=list.indexOf(it)+1;
+  const dots=list.map((x,i)=>`<i class="${i<n-1?'done':i===n-1?'now':''}"></i>`).join('');
+  const lbl = it.phase==='הסבר' ? `הסבר ${n} מתוך ${list.length}` : `שאלה ${n} מתוך ${list.length}`;
+  const ph = it.mode ? (it.mode==='ביחד'?'פותרות ביחד':'לבד') : 'לומדות משהו חדש';
+  return `<div class="strip" role="group" aria-label="איפה אני בשיעור"><div class="strip-l"><span class="dots" aria-hidden="true">${dots}</span><span class="lbl">${lbl}</span><span class="ph">${ph}</span></div>${it.type==='explore'?'':swBtn()}</div>`;
+}
+function swBtn(){
+  const T=S.exT, ms=exMs();
+  if(T.frozen) return ms>0 ? `<span class="sw-btn stopped">${ICON.watch}<span>${fmt(ms)}</span></span>` : '';
+  if(T.running) return `<button class="sw-btn run" data-act="sw" aria-label="לעצור את הסטופר">${ICON.pause}<span id="swt">${fmt(ms)}</span></button>`;
+  return `<button class="sw-btn" data-act="sw" aria-label="${ms?'להמשיך את הסטופר':'להפעיל סטופר'}">${ICON.watch}<span id="swt">${ms?fmt(ms):'סטופר'}</span></button>`;
+}
 function progLine(withHint){
   const it=ITEMS[S.i], list=ITEMS.filter(x=>x.phase===it.phase), n=list.indexOf(it)+1;
   const label = it.phase==='הסבר' ? `<b>הסבר</b> · ${n} מתוך ${list.length}` : `<b>שאלות</b> · שאלה ${n} מתוך ${list.length}${it.mode?` · ${it.mode}`:''}`;
-  return `<div class="prog"><p>${label}</p>${withHint?`<button class="hintbtn" data-act="hint">${ICON.bulb}רמז</button>`:''}</div>`;
+  return withHint?`<div class="hintrow"><button class="hintbtn" data-act="hint">${ICON.bulb}רמז</button></div>`:'';
 }
 function taskLine(html){ return `<div class="task"><button class="say" data-act="say" aria-label="להקריא">${ICON.speaker}</button><p>${html}</p></div>`; }
 const noteBlock=()=>S.note?`<div class="note ${S.note.ok?'ok':''}" role="status">${S.note.text}</div>`:'';
@@ -391,7 +420,7 @@ function colsHtml(W, explore){
 }
 function vSimple(it){
   const st=S.locked?'done':'on';
-  return `${taskLine(it.intro)}
+  return `${strip()}${taskLine(it.intro)}
     <div class="tray"><div class="row">${blocks(it.sticks[0],'tb')}</div><div class="row">${blocks(it.sticks[1],'tb')}</div></div>
     <div class="anchor ltr"><span>${it.a} + ${it.b} =</span><span class="slot">${box(S.locked?it.ans:S.input, st, 'noop', null, true)}${toastAt('main')}</span></div>
     ${progLine(false)}${noteBlock()}`;
@@ -406,7 +435,7 @@ const EX_STEPS=[
 function vExplore(){
   const W=makeW(573,340,true), st=EX_STEPS[S.ex];
   st.done.forEach(k=>W.done[k]=true); W.frame=!!st.frame; W.traded=!!st.traded; S.exFocus=st.focus;
-  return `${taskLine(st.say)}
+  return `${strip()}${taskLine(st.say)}
     <div class="anchor ltr sm"><span>573 + 340 =</span>${box(S.ex===4?'913':'', S.ex===4?'done':'wait')}</div>
     ${progLine(false)}
     ${colsHtml(W,true)}
@@ -416,7 +445,7 @@ function vSheet(it){
   const W=S.W;
   const anchorState = W.done.sum ? 'done' : (W.cur==='sum' ? 'on' : (W.cols && !colsDone(W) && it.mode==='ביחד' ? 'wait' : ''));
   const parts = W.cols && colsDone(W) && !W.finished ? `<div class="parts ltr"><span class="h">${W.H}</span> + <span class="t">${W.T}</span> + <span class="o">${W.O}</span></div>` : '';
-  return `${taskLine(W.finished ? 'יופי! ככה מחברים מספרים גדולים בראש.' : taskFor(W))}
+  return `${strip()}${taskLine(W.finished ? 'יופי! ככה מחברים מספרים גדולים בראש.' : taskFor(W))}
     <div class="anchor ltr ${W.cols?'sm':''}"><span>${W.a} + ${W.b} =</span><span class="slot">${box(W.val.sum, anchorState, 'pick', 'sum', true)}${toastAt('sum')}</span></div>
     ${parts}
     ${progLine(it.mode==='לבד' && !W.cols && !W.finished)}
@@ -437,12 +466,10 @@ function renderBar(){
   const sws=COLORS.map(c=>`<button class="sw" style="--c:${c.c}" data-act="color" data-v="${c.id}" aria-label="צבע ${c.name}" aria-pressed="${k.color===c.id}">${k.color===c.id?ICON.check:''}</button>`).join('');
   bar.innerHTML=`<button class="chip" data-act="pop" aria-expanded="${S.pop}">${avatar(k)}${esc(k.name)}${ICON.palette}</button>
     <span class="lesson-name">חיבור בראש</span>
-    ${k.timer && S.screen==='lesson' && ITEMS[S.i].type!=='explore'?`<span class="timer" id="tmr" aria-label="זמן בתרגיל הזה">⏱ ${fmt(exMs())}</span>`:''}
     <button class="lock" data-act="gate" aria-label="מסך הורה">${ICON.lock}</button>
     ${S.pop?`<div class="pop" role="dialog" aria-label="ההגדרות שלי">
       <div><h3>מי לומדת?</h3><div class="kids">${KIDS.map(x=>`<button class="kidbtn" style="--accent:${accentOf(x)}" data-act="switch" data-v="${x.id}" aria-pressed="${x.id===k.id}">${avatar(x)}${esc(x.name)}</button>`).join('')}</div></div>
       <div><h3>הצבע שלי</h3><div class="sws">${sws}</div></div>
-      <button class="toggle" data-act="timer" aria-pressed="${k.timer}"><span class="switch"></span><span>להראות לי כמה זמן לוקח לי כל תרגיל</span></button>
     </div>`:''}`;
 }
 function vScreen(){
@@ -491,7 +518,7 @@ function toast(text, at, then){
   setTimeout(()=>{ if(S.toast?.id===id){ S.toast=null; then?.(); render(); } },1800);
 }
 function startItem(){
-  const it=ITEMS[S.i]; S.input=''; S.wrong=0; S.note=null; S.locked=false; S.ex=0; S.exT={ms:0,from:null,frozen:false};
+  const it=ITEMS[S.i]; S.input=''; S.wrong=0; S.note=null; S.locked=false; S.ex=0; S.exT={ms:0,from:null,frozen:false,running:false};
   S.W = it.type==='sheet' ? makeW(it.a,it.b,true) : it.type==='solo' ? makeW(it.a,it.b,false) : null;
   clearScratch();
 }
@@ -512,7 +539,7 @@ const A={
   firstColor(v){ kid().color=v; saveKids(); S.screen='lesson'; S.i=0; startItem(); },
   pop(){ S.pop=!S.pop; },
   color(v){ kid().color=v; saveKids(); },
-  timer(){ const k=kid(); k.timer=!k.timer; saveKids(); },
+  sw(){ const T=S.exT; if(T.frozen) return; T.running=!T.running; },
   switch(v){ if(v===S.kid){ S.pop=false; return; } S.pop=false; S.kid=v; const k=kid(); if(!k.color){ S.screen='color'; } else { S.screen='lesson'; S.i=0; startItem(); } },
   say(){ const p=document.querySelector('.task p'); if(p) speak(p.textContent); return false; },
   hint(){ const W=S.W; if(!W||W.cols) return; W.cols=true; nextField(W); S.note=null; },
