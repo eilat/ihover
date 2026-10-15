@@ -339,23 +339,46 @@ function markPat(word, pattern){
 }
 
 /* ---------- speech (English voice from the computer) ---------- */
-let enVoice = null;
+let enVoice = null, lastUtter = null;
+const badVoices = new Set();
+const speechLog = {state:'', voice:'', error:''};
+function enVoices(){ try{ return speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang)); }catch(e){ return []; } }
 function pickVoice(){
   if(!('speechSynthesis' in window)) return;
-  const vs = speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang));
-  const score = v => (/premium|enhanced|natural|neural/i.test(v.name)?10:0) + (/en[-_]US/i.test(v.lang)?3:0) + (/samantha|ava|allison|google us/i.test(v.name)?4:0) + (v.localService?1:0);
-  enVoice = vs.sort((a,b)=>score(b)-score(a))[0] || null;
+  // voices on the computer itself first: online voices (such as Google's) often stay silent inside an embedded page
+  const score = v => (v.localService?20:0) + (/premium|enhanced/i.test(v.name)?10:0) + (/en[-_]US/i.test(v.lang)?3:0) + (/samantha|ava|allison|karen|daniel|zira|aria|jenny/i.test(v.name)?4:0);
+  enVoice = enVoices().filter(v=>!badVoices.has(v.name)).sort((a,b)=>score(b)-score(a))[0] || null;
 }
-if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-function speak(text, slow){
-  try{
-    if(!('speechSynthesis' in window) || !text) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = enVoice?.lang || 'en-US'; if(enVoice) u.voice = enVoice;
-    u.rate = slow ? .55 : .85;
-    speechSynthesis.speak(u);
-  }catch(e){}
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.addEventListener?.('voiceschanged', pickVoice); }
+let speechWarned = false;
+function speechTrouble(reason){
+  speechLog.state = 'silent'; speechLog.error = reason;
+  if(!speechWarned){ speechWarned = true; toast('ההקראה לא עובדת במכשיר הזה. אמא יכולה לבדוק באזור ההורים.'); }
+  if(S.view==='parent') render();
+}
+function speak(text, slow, retry){
+  if(!('speechSynthesis' in window) || !text) return;
+  const ss = speechSynthesis;
+  const fallback = why => {
+    if(!retry && enVoice){ badVoices.add(enVoice.name); pickVoice(); speak(text, slow, true); }
+    else speechTrouble(why);
+  };
+  const go = () => {
+    try{
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = enVoice?.lang || 'en-US'; if(enVoice) u.voice = enVoice;
+      u.rate = slow ? .55 : .85;
+      let started = false;
+      u.onstart = () => { started = true; speechLog.state='ok'; speechLog.voice = enVoice?.name || 'ברירת המחדל'; speechLog.error=''; if(S.view==='parent') render(); };
+      u.onerror = e => { if(e.error==='interrupted' || e.error==='canceled') return; started = true; fallback(e.error||'error'); };
+      lastUtter = u; // keep a reference: some browsers drop an utterance that nothing points to
+      ss.resume();
+      ss.speak(u);
+      setTimeout(() => { if(!started && lastUtter===u && !ss.speaking) fallback('silent'); }, 2500);
+    }catch(e){ speechTrouble(String(e.message||e)); }
+  };
+  // stopping and starting in the same moment loses the new sentence in Chrome, so wait a beat after a cancel
+  if(ss.speaking || ss.pending){ ss.cancel(); setTimeout(go, 80); } else go();
 }
 const canSpeak = 'speechSynthesis' in window;
 const sayBtns = txt => canSpeak ? `<button class="say" data-say="${esc(txt)}" aria-label="להשמיע">${I.speak}</button><button class="say slow" data-sayslow="${esc(txt)}">${I.slow}לאט</button>` : '';
@@ -1066,6 +1089,18 @@ function vParent(){
       <td style="white-space:nowrap"><button class="icon-btn" data-edit="${l.id}" aria-label="עריכה" title="עריכה">${I.edit}</button> <button class="icon-btn" data-del="${l.id}" aria-label="מחיקה" title="מחיקה">${I.trash}</button></td></tr>`).join('')}
     </tbody></table></div>` : `<div class="empty"><p>עוד אין שיעורים. מצלמים את ההערות של המורה ומוסיפים אותן כאן.</p></div>`}
     <div class="row"><button class="btn" data-act="editkids">${I.edit} שמות וצבעים</button></div>
+    ${speechCard()}
+  </div>`;
+}
+function speechCard(){
+  const has = 'speechSynthesis' in window, vs = has ? enVoices() : [];
+  const st = speechLog.state==='ok' ? `ההקראה עבדה, בקול ${esc(speechLog.voice)}. אם לא שמעת כלום, כדאי לבדוק את עוצמת הקול ואת מתג השקט.`
+    : speechLog.state==='silent' ? `ההקראה לא התחילה${speechLog.error?` (${esc(speechLog.error)})`:''}.` : 'עוד לא נוסתה.';
+  return `<div class="p-card"><h3>${I.speak} בדיקת הקראה</h3>
+    <div>${has ? `קולות באנגלית במכשיר: <b>${vs.length}</b>${enVoice?`. הקול שנבחר: <span class="en">${esc(enVoice.name)}</span>${enVoice.localService?'':' (קול מהרשת)'}`:''}` : 'הדפדפן הזה לא תומך בהקראה.'}</div>
+    <div>מצב: ${st}</div>
+    ${has?`<div class="row"><button class="btn" data-say="Hello! This is a test of the reading voice.">להשמיע משפט ניסיון</button></div>`:''}
+    ${has && !vs.length ? `<div class="mine">אין במכשיר קול באנגלית. במק: הגדרות המערכת ← נגישות ← תוכן מדובר ← קול המערכת ← ניהול קולות, ולהוריד קול באנגלית (למשל Samantha).</div>`:''}
   </div>`;
 }
 
