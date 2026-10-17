@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מתמטיקידס · השיעורים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Assistant:wght@400;600&display=swap">
+<style>
+/* השיעורים: the first screen. On top, what she can learn today (one open lesson per strand, she picks);
+   below, the whole map: addition and multiplication side by side, topics as paths of stops. */
+:root{--bg:#EEF1F4;--surface:#fff;--ink:#1E2633;--muted:#5A6577;--line:#D3DAE3;--accent:#7444C9;--good:#1F7A4D;--good-soft:#DDF2E7;
+  --f-display:"Rubik",system-ui,sans-serif;--f-body:"Assistant","Rubik",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer} button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+/* shell: the shared top bar, first-entry screens, parent gate and parent area */
+.bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);min-height:68px;position:relative;z-index:30}
+.bar svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sh-me{position:relative}
+.sh-chip{display:flex;align-items:center;gap:10px;min-height:50px;padding:4px 10px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font:inherit;font-size:18px;font-weight:600;color:var(--ink);cursor:pointer}
+.sh-chip:hover,.sh-chip[aria-expanded="true"]{border-color:var(--accent)}
+.sh-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;overflow:hidden;flex:none}
+.sh-av svg{width:100%;height:100%;display:block;stroke:none!important}
+.sh-down svg{width:20px;height:20px;display:block;color:var(--muted)}
+.sh-chip[aria-expanded="true"] .sh-down svg{transform:rotate(180deg)}
+.sh-nav{display:flex;align-items:center;gap:8px;min-height:50px;padding:6px 18px 6px 16px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);font-weight:600;font-size:17px;text-decoration:none;border:2px solid transparent}
+.sh-nav:hover{border-color:var(--accent)}
+.sh-nav svg{width:24px;height:24px}
+.sh-title{flex:1;text-align:center;font-family:var(--f-display);font-size:21px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-bank{position:relative;display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600;font-size:22px;background:#FFF1C7;color:#5A4300;padding:6px 16px;border-radius:999px}
+.sh-coin{width:24px;height:24px;flex:none;stroke-width:2!important}
+.sh-bank.bump{animation:sh-bump .5s ease}
+.sh-plus{position:absolute;top:-6px;inset-inline-end:8px;font-size:18px;color:#1F7A4D;animation:sh-up 1.5s ease forwards;pointer-events:none}
+@keyframes sh-bump{40%{transform:scale(1.15)}}
+@keyframes sh-up{from{opacity:0;transform:translateY(8px)}20%{opacity:1}to{opacity:0;transform:translateY(-26px)}}
+.sh-menu{position:absolute;top:calc(100% + 8px);inset-inline-start:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px;width:330px;display:flex;flex-direction:column;gap:6px}
+.sh-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 10px;border-radius:12px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;text-align:start}
+.sh-row:hover{background:var(--bg)}
+.sh-row .sh-av{width:38px;height:38px}
+.sh-parent{color:var(--muted);font-weight:400;font-size:15px}
+.sh-lock{width:38px;display:grid;place-items:center}.sh-lock svg{width:20px;height:20px}
+.sh-sep{height:1.5px;background:var(--line);margin:4px 0}
+.sh-h{margin:4px 10px 0;font-size:14px;color:var(--muted);font-weight:600}
+.sh-sws{display:grid;grid-template-columns:repeat(6,40px);gap:8px;padding:4px 10px}
+.sh-sws.big{grid-template-columns:repeat(6,56px);gap:12px;justify-content:center}
+.sh-sw{width:40px;height:40px;border-radius:50%;border:3px solid var(--surface);background:var(--c);box-shadow:0 0 0 2px var(--line);display:grid;place-items:center;color:#fff;padding:0;cursor:pointer}
+.sh-sws.big .sh-sw{width:56px;height:56px}
+.sh-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.sh-sw svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:3}
+.sh-full{position:fixed;inset:68px 0 0 0;background:var(--bg);display:grid;place-items:center;padding:16px;z-index:40}
+.sh-card{background:var(--surface);border-radius:20px;padding:40px 28px;display:flex;flex-direction:column;gap:20px;align-items:center;text-align:center;max-width:640px;width:100%}
+.sh-card h1{margin:0;font-family:var(--f-display);font-size:30px}.sh-card p{margin:0;color:var(--muted)}
+.sh-who{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.sh-whocard{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 30px;border-radius:20px;border:3px solid var(--c);background:var(--surface);font:inherit;font-size:24px;font-weight:600;color:var(--ink);cursor:pointer}
+.sh-whocard .sh-av{width:110px;height:110px}
+.sh-scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:60;padding:16px}
+.sh-modal{background:var(--surface);color:var(--ink);border-radius:20px;padding:26px;max-width:400px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center;position:relative;max-height:calc(100vh - 32px);overflow:auto}
+.sh-modal.wide{max-width:860px;text-align:start}
+.sh-modal h2{margin:0;font-family:var(--f-display)}.sh-modal p{margin:0;color:var(--muted)}
+.sh-en{direction:ltr;font-size:22px;color:var(--ink)!important;font-weight:600}
+.sh-disp{direction:ltr;font-family:var(--f-display);font-size:34px;font-weight:600;min-height:56px;border:3px solid var(--ink);border-radius:12px;display:grid;place-items:center}
+.sh-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;direction:ltr}
+.sh-pad button{min-height:52px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font:inherit;font-size:22px;font-weight:600;color:var(--ink);cursor:pointer}
+.sh-pad .ok{background:var(--accent);border-color:var(--accent);color:#fff;font-size:18px}
+.sh-x{position:absolute;top:10px;inset-inline-end:10px;width:44px;height:44px;border-radius:12px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.sh-x svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+.sh-note{font-size:15px}
+.sh-pcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.sh-pcols h3{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-family:var(--f-display)}
+.sh-pcols h3 .sh-av{width:34px;height:34px}
+.sh-coins{display:flex;align-items:center;gap:4px;font-size:15px;color:var(--muted);margin-inline-start:auto}.sh-coins .sh-coin{width:18px;height:18px}
+.sh-topics{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.sh-topics li{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:15px}
+.sh-topics b{flex:1;min-width:150px}.sh-topics span{color:var(--muted)}
+.sh-topics button,.sh-reset{font:inherit;font-size:14px;min-height:36px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.sh-reset{margin-top:10px}
+@media (max-width:700px){.sh-nav span{display:none}.sh-title{font-size:17px}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-direction:column;gap:22px}
+h1{margin:0;font-family:var(--f-display);font-size:30px}
+h2{margin:0;font-family:var(--f-display);font-size:22px}
+.meta{margin:0;color:var(--muted);font-size:15px}
+/* today */
+.today{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.pickc{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:start;padding:22px 24px;border-radius:20px;border:3px solid var(--accent);background:var(--surface);box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 18%,transparent)}
+.pickc .strand{font-size:15px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface));border-radius:999px;padding:2px 12px}
+.pickc b{font-family:var(--f-display);font-size:26px}
+.pickc .go{margin-top:8px;background:var(--accent);color:#fff;border-radius:999px;padding:10px 26px;font-weight:600;font-size:18px}
+.pickc:hover{transform:translateY(-2px)}
+.pickc.soon{border-style:dashed;box-shadow:none}
+.pickc.soon .go{background:var(--surface);color:var(--muted);border:2px solid var(--line)}
+/* map */
+.known{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:15px}
+.known span{display:inline-flex;align-items:center;gap:6px;background:var(--good-soft);color:var(--good);border-radius:999px;padding:3px 12px;font-weight:600}
+.known svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:3}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:18px;align-items:start}
+.strandcol{display:flex;flex-direction:column;gap:12px}
+.topic{background:var(--surface);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.topic.locked{background:transparent;border:2px dashed var(--line)}
+.topic.locked h2{color:var(--muted)}
+.topic header{display:flex;align-items:center;gap:10px}
+.topic header .tag{margin-inline-start:auto;font-size:14px;color:var(--muted)}
+.path{display:flex;gap:6px;flex-wrap:wrap}
+.stop{flex:1;min-width:92px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px;border:0;background:transparent;text-align:center;font-size:15px;color:var(--muted);border-radius:14px}
+.stop .dot{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;border:3px solid var(--line);background:var(--surface);font-family:var(--f-display);font-weight:600;font-size:18px}
+.stop .dot svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stop.done .dot{background:var(--accent);border-color:var(--accent);color:#fff}
+.stop.done{color:var(--ink)}
+.stop.open{color:var(--ink);font-weight:600}
+.stop.open .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 20%,transparent);animation:pulse 2s ease-in-out infinite}
+.stop.locked .dot{border-style:dashed;color:var(--muted)}
+button.stop:hover{background:var(--bg)}
+@keyframes pulse{50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--accent) 10%,transparent)}}
+.scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--surface);border-radius:20px;padding:26px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center}
+.modal h2{margin:0}.modal p{margin:0;color:var(--muted)}
+.btn{min-height:50px;padding:8px 22px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.test{font-size:13px;min-height:34px;padding:2px 12px;border-radius:999px;border:1.5px dashed var(--line);background:transparent;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<header class="bar" id="bar"></header>
+<main class="wrap" id="app"></main>
+<div id="overlay"></div>
+<script>
+/* Shell: what every page shares. Who is learning, her colour, her coins, which lessons are open,
+   and the top bar: [her name ▾] [home/lessons] .... title .... [coins].
+   The parent area lives inside her name's menu, behind a question in English.
+   Everything is kept in this browser (localStorage), so all pages of the prototype see the same girl. */
+const Shell = (() => {
+  const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
+  const FACES={
+    lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+    nori:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40c-1-16 8-27 20-27s21 11 20 27c0 6-2 10-4 12H16c-2-2-4-6-4-12z" fill="#2E2A33"/><ellipse cx="32" cy="38" rx="15.5" ry="17" fill="#E9B98F"/><path d="M16 33c2-10 9-15 16-15s14 5 16 15c-6-2-11-6-14-11-3 6-10 10-18 11z" fill="#2E2A33"/><path d="M42 15l7-4-1 8z M42 15l8 3-6 4z" fill="#E8457A"/><circle cx="43.5" cy="16.5" r="2.4" fill="#C72F63"/><circle cx="26" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="38" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="22.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="41.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27.5 47c2.6 2.3 6.4 2.3 9 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
+  };
+  const IC={
+    down:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+    home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>',
+    lessons:'<svg viewBox="0 0 24 24"><path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>',
+    lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    close:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const COIN='<svg class="sh-coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#F2C230" stroke="#C99A12" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#C99A12" stroke-width="1.6"/></svg>';
+  const ANIMALS=['cat','bunny','fox','bear','panda','owl','dino','unicorn','squirrel'];
+
+  /* the skills map (math-app/SKILLS-MAP.md): a topic opens when the topics it needs are done */
+  const TOPICS=[
+    {id:'ח1',strand:'add',name:'חיבור עד 20',after:[],lessons:[['ח1.1','חברים של 10'],['ח1.2','עוברות את העשר']]},
+    {id:'ח2',strand:'add',name:'ערך המקום עד 1000',after:['ח1'],lessons:[['ח2.1','עשרות ואחדות'],['ח2.2','מאות, עשרות, אחדות']]},
+    {id:'ח3',strand:'add',name:'חיבור דו־ספרתי בראש',after:['ח2'],lessons:[['ח3.1','עשרות שלמות'],['ח3.2','מקום אחרי מקום'],['ח3.3','קפיצות על הציר']]},
+    {id:'ח4',strand:'add',name:'חיבור תלת־ספרתי בראש',after:['ח3'],lessons:[['ח4.1','מקום אחרי מקום'],['ח4.2','קפיצות'],['ח4.3','השלמה לעשרת או למאה'],['ח4.4','מספר כמעט עגול'],['ח4.5','איזו דרך מתאימה כאן?']]},
+    {id:'כ1',strand:'mul',name:'מה זה כפל',after:['ח1'],lessons:[['כ1.1','קבוצות שוות'],['כ1.2','קפיצות שוות'],['כ1.3','מערך והחלפה']]},
+    {id:'כ2',strand:'mul',name:'לוח הכפל: העוגנים',after:['כ1','ח2'],lessons:[['כ2.1','כפול 2, 10, 1, 0'],['כ2.2','כפול 5']]},
+    {id:'כ3',strand:'mul',name:'לוח הכפל: בונות מהעוגנים',after:['כ2','ח3'],lessons:[['כ3.1','כפול 4 וכפול 8'],['כ3.2','כפול 3 וכפול 6'],['כ3.3','כפול 9'],['כ3.4','מה שנשאר, ואיזו דרך?']]}
+  ];
+  const BUILT={'ח4.1':'lesson.html'};
+  // until the diagnostic exists, the prototype acts as if it placed both girls after ח3
+  const PLACED=['ח1','ח2','ח3'];
+
+  const get=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?d:v; }catch(e){ return d; } };
+  const put=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+  let KIDS=get('mk:kids',[{id:'lili',name:'לילי',color:null,face:'lili'},{id:'nori',name:'נורי',color:null,face:'nori'}]);
+  let kidId=get('mk:kid',null);
+  const kid=()=>KIDS.find(k=>k.id===kidId)||null;
+  const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const avatar=k=>`<span class="sh-av" style="background:${accentOf(k)}">${FACES[k.face]||FACES.lili}</span>`;
+
+  /* coins live in the girl's home, so the home and the lessons share one purse */
+  const homeOf=id=>get('home:'+id,{});
+  const coins=(id=kidId)=>{ const h=homeOf(id); return h.coins==null?12:h.coins; };
+  function addCoins(n,id=kidId){ const h=homeOf(id); h.coins=(h.coins==null?12:h.coins)+n; put('home:'+id,h); renderBar(); }
+
+  const progOf=id=>({done:{},placed:PLACED.slice(),opened:[],...get('mk:prog:'+id,{})});
+  const saveProg=(id,p)=>put('mk:prog:'+id,p);
+  const topicDone=(p,t)=>p.placed.includes(t.id)||t.lessons.every(([l])=>p.done[l]);
+  const topicOpen=(p,t)=>p.placed.includes(t.id)||p.opened.includes(t.id)||t.after.every(a=>topicDone(p,TOPICS.find(x=>x.id===a)));
+  function lessonState(p,t,i){
+    const id=t.lessons[i][0];
+    if(p.done[id]) return 'done';
+    if(p.placed.includes(t.id)) return 'known';
+    if(!topicOpen(p,t)) return 'locked';
+    return i===0||p.done[t.lessons[i-1][0]] ? 'open' : 'locked';
+  }
+  function completeLesson(lessonId,id=kidId){
+    const p=progOf(id); const first=!p.done[lessonId]; p.done[lessonId]=true; saveProg(id,p);
+    const h=homeOf(id); let animal=null;
+    if(first){
+      if(h.chosen){ animal=ANIMALS.find(a=>!(h.animals||[]).includes(a)); if(animal){ (h.animals ||= []).push(animal); h.newAnimal=animal; } }
+      else h.pendingAnimals=(h.pendingAnimals||0)+1;
+      put('home:'+id,h);
+    }
+    return {first, animal, chosen:!!h.chosen};
+  }
+
+  /* ---------- top bar ---------- */
+  let opts={}, menu=false, gate=null, screen=null, bumpN=0, lastCoins=null, bumpT=0;
+  function renderBar(){
+    const bar=document.getElementById('bar'); if(!bar) return;
+    const k=kid();
+    if(!k || screen){ bar.innerHTML=`<span class="sh-title" style="text-align:start">מתמטיקידס</span>`; return; }
+    const c=opts.coins!=null?opts.coins:coins();
+    // coins that just arrived float up next to the purse
+    if(lastCoins!=null && c>lastCoins){ bumpN=c-lastCoins; clearTimeout(bumpT); bumpT=setTimeout(()=>{ bumpN=0; renderBar(); },1500); }
+    lastCoins=c;
+    const nav = opts.page==='home'
+      ? `<a class="sh-nav" href="index.html">${IC.lessons}<span>שיעורים</span></a>`
+      : `<a class="sh-nav" href="home.html">${IC.home}<span>הבית</span></a>`;
+    bar.innerHTML=`<div class="sh-me">
+        <button class="sh-chip" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true">${avatar(k)}${esc(k.name)}<span class="sh-down">${IC.down}</span></button>
+        ${menu?menuHtml(k):''}
+      </div>${nav}
+      <span class="sh-title">${opts.title||''}</span>
+      <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
+  }
+  function menuHtml(k){
+    const others=KIDS.filter(x=>x.id!==k.id);
+    return `<div class="sh-menu" role="menu">
+      ${others.map(x=>`<button class="sh-row" role="menuitem" data-sh="kid" data-v="${x.id}">${avatar(x)}<span>לעבור ל${esc(x.name)}</span></button>`).join('')}
+      <div class="sh-sep"></div>
+      <p class="sh-h">הצבע שלי</p>
+      <div class="sh-sws">${COLORS.map(c=>`<button class="sh-sw" style="--c:${c.c}" data-sh="color" data-v="${c.id}" aria-label="צבע ${c.name}" aria-pressed="${k.color===c.id}">${k.color===c.id?IC.check:''}</button>`).join('')}</div>
+      <div class="sh-sep"></div>
+      <button class="sh-row sh-parent" role="menuitem" data-sh="gate"><span class="sh-lock">${IC.lock}</span><span>אזור הורים</span></button>
+    </div>`;
+  }
+
+  /* ---------- first entry (who / colour), parent gate and parent area ---------- */
+  const ONES=['','one','two','three','four','five','six','seven','eight','nine'], TENSW=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  function newGate(){ const t=2+Math.floor(Math.random()*8), o=1+Math.floor(Math.random()*9); return {n:t*10+o, words:`${TENSW[t]}-${ONES[o]}`, input:'', msg:'', open:false}; }
+  function renderOv(){
+    let ov=document.getElementById('sh-ov'); if(!ov){ ov=document.createElement('div'); ov.id='sh-ov'; document.body.appendChild(ov); }
+    if(screen==='who'){ ov.innerHTML=`<div class="sh-full"><div class="sh-card"><h1>מי לומדת היום?</h1><div class="sh-who">${KIDS.map(k=>`<button class="sh-whocard" style="--c:${k.color?accentOf(k):'var(--line)'}" data-sh="pick" data-v="${k.id}">${avatar(k)}${esc(k.name)}</button>`).join('')}</div></div></div>`; return; }
+    if(screen==='color'){ const k=kid(); ov.innerHTML=`<div class="sh-full"><div class="sh-card"><h1>שלום ${esc(k.name)}! איזה צבע את רוצה?</h1><p>אפשר להחליף אותו מתי שרוצים, בלחיצה על השם שלך למעלה.</p><div class="sh-sws big">${COLORS.map(c=>`<button class="sh-sw" style="--c:${c.c}" data-sh="first" data-v="${c.id}" aria-label="צבע ${c.name}"></button>`).join('')}</div></div></div>`; return; }
+    if(!gate){ ov.innerHTML=''; return; }
+    if(gate.open){ ov.innerHTML=`<div class="sh-scrim"><div class="sh-modal wide" role="dialog" aria-label="אזור הורים"><button class="sh-x" data-sh="gateClose" aria-label="סגירה">${IC.close}</button><h2>אזור הורים</h2>${parentHtml()}</div></div>`; return; }
+    ov.innerHTML=`<div class="sh-scrim"><div class="sh-modal" role="dialog" aria-label="שאלה להורים">
+      <button class="sh-x" data-sh="gateClose" aria-label="סגירה">${IC.close}</button>
+      <h2>שאלה להורים</h2><p>Type the number in digits:</p><p class="sh-en">${gate.words}</p>
+      <div class="sh-disp">${gate.input||'&nbsp;'}</div>${gate.msg?`<p>${gate.msg}</p>`:''}
+      <div class="sh-pad">${[7,8,9,4,5,6,1,2,3].map(n=>`<button data-sh="gKey" data-v="${n}">${n}</button>`).join('')}<button data-sh="gDel" aria-label="מחיקה">⌫</button><button data-sh="gKey" data-v="0">0</button><button class="ok" data-sh="gOk">אישור</button></div>
+    </div></div>`;
+  }
+  function parentHtml(){
+    return `<p class="sh-note">בגרסת הניסיון: כאילו האבחון מיקם את שתיהן אחרי "חיבור דו־ספרתי בראש". מסך ההורה המלא (סיכומים, הגדרות) יחובר בהמשך.</p>
+      <div class="sh-pcols">${KIDS.map(k=>{ const p=progOf(k.id);
+        return `<section><h3>${avatar(k)}${esc(k.name)} <span class="sh-coins">${COIN}${coins(k.id)}</span></h3><ul class="sh-topics">${TOPICS.map(t=>{
+          const done=topicDone(p,t), open=topicOpen(p,t), n=t.lessons.filter(([l])=>p.done[l]).length;
+          const st = p.placed.includes(t.id) ? 'ידוע מהאבחון' : done ? 'הושלם' : open ? `פתוח · ${n} מתוך ${t.lessons.length}` : 'נעול';
+          const btn = p.placed.includes(t.id) || done ? '' : p.opened.includes(t.id)
+            ? `<button data-sh="unopen" data-v="${k.id}|${t.id}">לבטל פתיחה</button>`
+            : open ? '' : `<button data-sh="open" data-v="${k.id}|${t.id}">לפתוח עכשיו</button>`;
+          return `<li><b>${t.name}</b><span>${st}</span>${btn}</li>`; }).join('')}</ul>
+          <button class="sh-reset" data-sh="resetProg" data-v="${k.id}">לאפס התקדמות בשיעורים</button></section>`; }).join('')}</div>`;
+  }
+  const ACT={
+    menu(){ menu=!menu; },
+    kid(v){ put('mk:kid',v); location.reload(); return 'stop'; },
+    color(v){ kid().color=v; put('mk:kids',KIDS); applyAccent(); opts.onColor?.(); },
+    gate(){ menu=false; gate=newGate(); },
+    gateClose(){ gate=null; opts.onParentClose?.(); },
+    gKey(v){ if(gate.input.length<3) gate.input+=v; gate.msg=''; },
+    gDel(){ gate.input=gate.input.slice(0,-1); },
+    gOk(){ if(+gate.input===gate.n) gate.open=true; else { gate=newGate(); gate.msg='לא מתאים. הנה מספר אחר.'; } },
+    open(v){ const [id,t]=v.split('|'), p=progOf(id); p.opened.push(t); saveProg(id,p); },
+    unopen(v){ const [id,t]=v.split('|'), p=progOf(id); p.opened=p.opened.filter(x=>x!==t); saveProg(id,p); },
+    resetProg(v){ saveProg(v,{done:{},placed:PLACED.slice(),opened:[]}); },
+    pick(v){ kidId=v; put('mk:kid',v); if(kid().color){ location.reload(); return 'stop'; } screen='color'; },
+    first(v){ kid().color=v; put('mk:kids',KIDS); location.reload(); return 'stop'; }
+  };
+  function applyAccent(){ document.documentElement.style.setProperty('--accent', accentOf(kid())); }
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('[data-sh]');
+    if(!t){ if(menu && !e.target.closest('.sh-menu')){ menu=false; renderBar(); } return; }
+    e.preventDefault();
+    if(ACT[t.dataset.sh]?.(t.dataset.v)==='stop') return;
+    renderBar(); renderOv();
+  });
+  // the parent gate takes the keyboard while it is open, before the page sees it
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && menu){ menu=false; renderBar(); e.stopImmediatePropagation(); return; }
+    if(!gate) return;
+    if(!gate.open){ if(/^[0-9]$/.test(e.key)) ACT.gKey(e.key); else if(e.key==='Backspace') ACT.gDel(); else if(e.key==='Enter') ACT.gOk(); else if(e.key==='Escape') ACT.gateClose(); else return; }
+    else if(e.key==='Escape') ACT.gateClose(); else return;
+    e.preventDefault(); e.stopImmediatePropagation(); renderOv();
+  },true);
+
+  /* a page calls Shell.start({page, title}) first. Returns false when the page must not run yet
+     (nobody chosen: the lessons page asks who is learning, other pages go there). */
+  function start(o){
+    opts=o||{}; applyAccent();
+    if(!kid() || !kid().color){
+      if(opts.page!=='lessons'){ location.replace('index.html'); return false; }
+      screen = kid() ? 'color' : 'who'; renderBar(); renderOv(); return false;
+    }
+    renderBar(); renderOv(); return true;
+  }
+  const isOpen=()=>menu||!!gate;
+  return {start, renderBar:o=>{ Object.assign(opts,o||{}); renderBar(); }, kid, accentOf, coins, addCoins, completeLesson,
+    TOPICS, BUILT, progOf, topicDone, topicOpen, lessonState, isOpen, esc, COIN, IC};
+})();
+
+const STRANDS=[{id:'add',name:'חיבור'},{id:'mul',name:'כפל'}];
+let modal=null;
+function nextOf(p,strand){ // the lesson waiting for her in this strand
+  for(const t of Shell.TOPICS.filter(t=>t.strand===strand)) for(let i=0;i<t.lessons.length;i++) if(Shell.lessonState(p,t,i)==='open') return {t,i};
+  return null;
+}
+function render(){
+  Shell.renderBar({page:'lessons', title:'השיעורים שלי'});
+  const k=Shell.kid(), p=Shell.progOf(k.id), CH=Shell.IC.check, LK=Shell.IC.lock;
+  const picks=STRANDS.map(s=>{ const n=nextOf(p,s.id); if(!n) return '';
+    const [id,name]=n.t.lessons[n.i], built=Shell.BUILT[id];
+    return `<button class="pickc ${built?'':'soon'}" data-act="lesson" data-v="${id}"><span class="strand">${s.name} · ${n.t.name}</span><b>${name}</b>
+      <span class="meta">שיעור ${n.i+1} מתוך ${n.t.lessons.length}</span><span class="go">${built?'להתחיל':'עוד בהכנה'}</span></button>`; }).join('');
+  const known=Shell.TOPICS.filter(t=>p.placed.includes(t.id));
+  const cols=STRANDS.map(s=>`<div class="strandcol"><h2>${s.name}</h2>${Shell.TOPICS.filter(t=>t.strand===s.id && !p.placed.includes(t.id)).map(t=>{
+      const open=Shell.topicOpen(p,t), done=Shell.topicDone(p,t);
+      const need=t.after.filter(a=>!Shell.topicDone(p,Shell.TOPICS.find(x=>x.id===a))).map(a=>`"${Shell.TOPICS.find(x=>x.id===a).name}"`).join(' ואת ');
+      const stops=t.lessons.map(([id,name],i)=>{ const st=Shell.lessonState(p,t,i);
+        const dot = st==='done'?CH : st==='locked'?LK : i+1;
+        const inner=`<span class="dot">${dot}</span><span>${name}</span>`;
+        return st==='locked' ? `<div class="stop locked" aria-label="${name}, נעול">${inner}</div>` : `<button class="stop ${st}" data-act="lesson" data-v="${id}">${inner}</button>`; }).join('');
+      return `<section class="topic ${open?'':'locked'}"><header><h2 style="font-size:19px">${t.name}</h2><span class="tag">${done?'סיימת! ✓':open?'':'נפתח אחרי שמסיימים את '+need}</span></header><div class="path">${stops}</div></section>`;
+    }).join('')}</div>`).join('');
+  document.getElementById('app').innerHTML=`
+    <div><h1>מה לומדים היום, ${Shell.esc(k.name)}?</h1><p class="meta">אפשר לבחור.</p></div>
+    <div class="today">${picks||'<p>סיימת את כל השיעורים! ✓</p>'}</div>
+    ${known.length?`<p class="known">כבר יודעת: ${known.map(t=>`<span>${CH}${t.name}</span>`).join('')}</p>`:''}
+    <div class="map">${cols}</div>`;
+  let ov='';
+  if(modal) ov=`<div class="scrim"><div class="modal" role="dialog">${modal}</div></div>`;
+  document.getElementById('overlay').innerHTML=ov;
+}
+const A={
+  lesson(v){ if(Shell.BUILT[v]){ location.href=Shell.BUILT[v]; return false; }
+    const name=Shell.TOPICS.flatMap(t=>t.lessons).find(([id])=>id===v)[1];
+    modal=`<h2>${name}</h2><p>השיעור הזה עוד בהכנה. בקרוב!</p><button class="btn primary" data-act="close">בסדר</button>
+      <button class="test" data-act="fakeDone" data-v="${v}">לבדיקה בלבד: לסמן שסיימתי אותו</button>`; },
+  close(){ modal=null; },
+  fakeDone(v){ const r=Shell.completeLesson(v); Shell.addCoins(10); modal=null; }
+};
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && modal){ modal=null; render(); } });
+if(Shell.start({page:'lessons', title:'השיעורים שלי', onColor:render, onParentClose:render})) render();
+</script></body></html>

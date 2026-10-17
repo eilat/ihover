@@ -368,7 +368,7 @@ function vTens(){
   const hint = S.tenHelp && st===0 && !S.tens.done && tenHint(a,b) ? `<div class="fb info">רמז: ${tenHint(a,b).replace(/ זה \d+\.$/,'.')}</div>` : '';
   return shell(1, `
     <p class="eyebrow">עשרות הן מספרים קטנים · ${S.tens.i+1} מתוך ${TENS.length}</p>
-    ${S.tens.done ? prompt(`${a} עשרות ועוד ${b} עשרות זה ${a+b} עשרות, כלומר ${(a+b)*10}. מחברות כמו מספרים קטנים, ומוסיפות 0 בסוף.`) : prompt(qs[st])}
+    ${S.tens.done ? prompt(`${a} עשרות ועוד ${b} עשרות זה ${a+b} עשרות, כלומר ${(a+b)*10}. מחברות עשרות כמו שמחברים מספרים קטנים.`) : prompt(qs[st])}
     ${tensPic(a,b)}
     <div class="eq">${eq}</div>
     ${hint}${feedback()}

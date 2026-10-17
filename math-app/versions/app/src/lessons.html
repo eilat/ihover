@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מתמטיקידס · השיעורים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Assistant:wght@400;600&display=swap">
+<style>
+/* השיעורים: the first screen. On top, what she can learn today (one open lesson per strand, she picks);
+   below, the whole map: addition and multiplication side by side, topics as paths of stops. */
+:root{--bg:#EEF1F4;--surface:#fff;--ink:#1E2633;--muted:#5A6577;--line:#D3DAE3;--accent:#7444C9;--good:#1F7A4D;--good-soft:#DDF2E7;
+  --f-display:"Rubik",system-ui,sans-serif;--f-body:"Assistant","Rubik",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer} button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+/*SHELL_CSS*/
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-direction:column;gap:22px}
+h1{margin:0;font-family:var(--f-display);font-size:30px}
+h2{margin:0;font-family:var(--f-display);font-size:22px}
+.meta{margin:0;color:var(--muted);font-size:15px}
+/* today */
+.today{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.pickc{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:start;padding:22px 24px;border-radius:20px;border:3px solid var(--accent);background:var(--surface);box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 18%,transparent)}
+.pickc .strand{font-size:15px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface));border-radius:999px;padding:2px 12px}
+.pickc b{font-family:var(--f-display);font-size:26px}
+.pickc .go{margin-top:8px;background:var(--accent);color:#fff;border-radius:999px;padding:10px 26px;font-weight:600;font-size:18px}
+.pickc:hover{transform:translateY(-2px)}
+.pickc.soon{border-style:dashed;box-shadow:none}
+.pickc.soon .go{background:var(--surface);color:var(--muted);border:2px solid var(--line)}
+/* map */
+.known{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:15px}
+.known span{display:inline-flex;align-items:center;gap:6px;background:var(--good-soft);color:var(--good);border-radius:999px;padding:3px 12px;font-weight:600}
+.known svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:3}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:18px;align-items:start}
+.strandcol{display:flex;flex-direction:column;gap:12px}
+.topic{background:var(--surface);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.topic.locked{background:transparent;border:2px dashed var(--line)}
+.topic.locked h2{color:var(--muted)}
+.topic header{display:flex;align-items:center;gap:10px}
+.topic header .tag{margin-inline-start:auto;font-size:14px;color:var(--muted)}
+.path{display:flex;gap:6px;flex-wrap:wrap}
+.stop{flex:1;min-width:92px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px;border:0;background:transparent;text-align:center;font-size:15px;color:var(--muted);border-radius:14px}
+.stop .dot{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;border:3px solid var(--line);background:var(--surface);font-family:var(--f-display);font-weight:600;font-size:18px}
+.stop .dot svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stop.done .dot{background:var(--accent);border-color:var(--accent);color:#fff}
+.stop.done{color:var(--ink)}
+.stop.open{color:var(--ink);font-weight:600}
+.stop.open .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 20%,transparent);animation:pulse 2s ease-in-out infinite}
+.stop.locked .dot{border-style:dashed;color:var(--muted)}
+button.stop:hover{background:var(--bg)}
+@keyframes pulse{50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--accent) 10%,transparent)}}
+.scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--surface);border-radius:20px;padding:26px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center}
+.modal h2{margin:0}.modal p{margin:0;color:var(--muted)}
+.btn{min-height:50px;padding:8px 22px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.test{font-size:13px;min-height:34px;padding:2px 12px;border-radius:999px;border:1.5px dashed var(--line);background:transparent;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<header class="bar" id="bar"></header>
+<main class="wrap" id="app"></main>
+<div id="overlay"></div>
+<script>
+/*SHELL*/
+const STRANDS=[{id:'add',name:'חיבור'},{id:'mul',name:'כפל'}];
+let modal=null;
+function nextOf(p,strand){ // the lesson waiting for her in this strand
+  for(const t of Shell.TOPICS.filter(t=>t.strand===strand)) for(let i=0;i<t.lessons.length;i++) if(Shell.lessonState(p,t,i)==='open') return {t,i};
+  return null;
+}
+function render(){
+  Shell.renderBar({page:'lessons', title:'השיעורים שלי'});
+  const k=Shell.kid(), p=Shell.progOf(k.id), CH=Shell.IC.check, LK=Shell.IC.lock;
+  const picks=STRANDS.map(s=>{ const n=nextOf(p,s.id); if(!n) return '';
+    const [id,name]=n.t.lessons[n.i], built=Shell.BUILT[id];
+    return `<button class="pickc ${built?'':'soon'}" data-act="lesson" data-v="${id}"><span class="strand">${s.name} · ${n.t.name}</span><b>${name}</b>
+      <span class="meta">שיעור ${n.i+1} מתוך ${n.t.lessons.length}</span><span class="go">${built?'להתחיל':'עוד בהכנה'}</span></button>`; }).join('');
+  const known=Shell.TOPICS.filter(t=>p.placed.includes(t.id));
+  const cols=STRANDS.map(s=>`<div class="strandcol"><h2>${s.name}</h2>${Shell.TOPICS.filter(t=>t.strand===s.id && !p.placed.includes(t.id)).map(t=>{
+      const open=Shell.topicOpen(p,t), done=Shell.topicDone(p,t);
+      const need=t.after.filter(a=>!Shell.topicDone(p,Shell.TOPICS.find(x=>x.id===a))).map(a=>`"${Shell.TOPICS.find(x=>x.id===a).name}"`).join(' ואת ');
+      const stops=t.lessons.map(([id,name],i)=>{ const st=Shell.lessonState(p,t,i);
+        const dot = st==='done'?CH : st==='locked'?LK : i+1;
+        const inner=`<span class="dot">${dot}</span><span>${name}</span>`;
+        return st==='locked' ? `<div class="stop locked" aria-label="${name}, נעול">${inner}</div>` : `<button class="stop ${st}" data-act="lesson" data-v="${id}">${inner}</button>`; }).join('');
+      return `<section class="topic ${open?'':'locked'}"><header><h2 style="font-size:19px">${t.name}</h2><span class="tag">${done?'סיימת! ✓':open?'':'נפתח אחרי שמסיימים את '+need}</span></header><div class="path">${stops}</div></section>`;
+    }).join('')}</div>`).join('');
+  document.getElementById('app').innerHTML=`
+    <div><h1>מה לומדים היום, ${Shell.esc(k.name)}?</h1><p class="meta">אפשר לבחור.</p></div>
+    <div class="today">${picks||'<p>סיימת את כל השיעורים! ✓</p>'}</div>
+    ${known.length?`<p class="known">כבר יודעת: ${known.map(t=>`<span>${CH}${t.name}</span>`).join('')}</p>`:''}
+    <div class="map">${cols}</div>`;
+  let ov='';
+  if(modal) ov=`<div class="scrim"><div class="modal" role="dialog">${modal}</div></div>`;
+  document.getElementById('overlay').innerHTML=ov;
+}
+const A={
+  lesson(v){ if(Shell.BUILT[v]){ location.href=Shell.BUILT[v]; return false; }
+    const name=Shell.TOPICS.flatMap(t=>t.lessons).find(([id])=>id===v)[1];
+    modal=`<h2>${name}</h2><p>השיעור הזה עוד בהכנה. בקרוב!</p><button class="btn primary" data-act="close">בסדר</button>
+      <button class="test" data-act="fakeDone" data-v="${v}">לבדיקה בלבד: לסמן שסיימתי אותו</button>`; },
+  close(){ modal=null; },
+  fakeDone(v){ const r=Shell.completeLesson(v); Shell.addCoins(10); modal=null; }
+};
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && modal){ modal=null; render(); } });
+if(Shell.start({page:'lessons', title:'השיעורים שלי', onColor:render, onParentClose:render})) render();
+</script></body></html>
