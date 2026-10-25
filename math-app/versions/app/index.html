@@ -391,7 +391,7 @@ function answer(S, value){
     let art, label;
     if(h.chosen && CH.ANIMALS[h.animal]){
       const w=h.worn||{}, head={hat:w.hat, hair:w.hair, glasses:w.glasses};
-      art=CH.drawChar(h.animal, head).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"'); label=`הבית של ה${CH.ANIMALS[h.animal].name}`;
+      art=CH.drawChar(h.animal, head).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"'); label='הבית שלי';
     } else { art=IC.gift; label='הבית שלי: חיה מחכה לך'; }
     return here ? `<span class="sh-pet here" aria-hidden="true">${art}</span>` : `<a class="sh-pet ${bumpN?'happy':''}" href="home.html" aria-label="${label}" title="${label}">${art}</a>`;
   }
