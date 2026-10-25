@@ -33,7 +33,14 @@ svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;strok
 /* three columns, nothing on the page scrolls: the shop (right) scrolls inside itself, the home stays in the middle */
 .shop{display:flex;flex-direction:column;min-height:0;padding-bottom:0}
 .shop .scroll{flex:1;min-height:0;overflow:auto;padding:2px 2px 16px;margin:0 -2px}
-.mid{min-height:0;overflow:auto}
+.mid{min-height:0}
+.mid .room{flex:1;min-height:260px}
+.room{position:relative}
+.mid .room svg.scene{height:100%}
+.banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:8px 18px;border-radius:999px;background:var(--surface);box-shadow:0 6px 18px rgba(0,0,0,.16);font-weight:600;animation:drop .35s ease both}
+.banner.ok{background:var(--good);color:#fff}
+.banner .preview-tag{background:var(--accent)}
+@keyframes drop{from{opacity:0;transform:translate(-50%,-10px)}}
 .col{display:flex;flex-direction:column;gap:16px;min-width:0}
 .card{background:var(--surface);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.06);min-width:0}
 h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
@@ -188,7 +195,7 @@ a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
 .sh-reset{margin-top:10px}
 @media (max-width:700px){.sh-back span{display:none}.sh-back{padding:6px 12px}.sh-title{font-size:18px}}
 
-@media (max-width:1180px){.wrap{grid-template-columns:340px minmax(0,1fr)}.shop{grid-row:span 2;max-height:calc(100vh - 101px);position:sticky;top:16px}.practice{grid-column:2}}
+@media (max-width:1180px){.mid .room{flex:none;aspect-ratio:800/440;min-height:0}.wrap{grid-template-columns:340px minmax(0,1fr)}.shop{grid-row:span 2;max-height:calc(100vh - 101px);position:sticky;top:16px}.practice{grid-column:2}}
 @media (max-width:760px){.wrap{grid-template-columns:minmax(0,1fr)}.shop{grid-row:auto;max-height:70vh;position:static}.practice{grid-column:auto}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head>
@@ -786,6 +793,8 @@ const PET_SPOTS=[[96,330],[560,346],[236,356],[660,350]];
 const OBJ_SPOTS={balloon:[200,40,70,150,'140 20 70 160'], ball:[470,350,60,60,'150 196 50 44'], wand:[650,150,46,110,'150 100 56 100'], flower:[580,190,50,110,'150 100 50 100']};
 const FRIEND_SPOTS=[[660,236,76],[248,236,78],[600,262,70],[170,270,70],[440,282,58],[680,286,60],[60,290,60],[360,296,52]];
 
+// wooden planks: rows every 38, joints staggered row by row
+const FLOOR=(()=>{ let d=''; for(let k=0,y=306;y<1200;k++,y+=38){ d+=`M-800 ${y+34} H1600 `; for(let x=-780+(k%3)*140;x<1600;x+=300) d+=`M${x} ${y} V${y+34} `; } return d; })();
 function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
   const A = ANIMALS[animal];
   const wp = WALLPAPERS.find(w=>w.id===wallpaper) || WALLPAPERS[0];
@@ -802,18 +811,18 @@ function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
   const fr = (friends||[]).slice(0,8).map((a,k)=>{ const [x,y,w]=FRIEND_SPOTS[k];
     return `<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${x}" y="${y}" width="${w}" height="${w*1.2}" viewBox="-6 -18 216 260">${strip(drawChar(a,{}))}</svg></g>`; }).join('');
   const wearOnly = Object.fromEntries(Object.entries(worn).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
-  return `<svg class="scene" viewBox="0 0 800 440" role="img" aria-label="החדר של ה${A.name}">
+  return `<svg class="scene" viewBox="0 0 800 440" preserveAspectRatio="xMidYMax meet" role="img" aria-label="החדר של ה${A.name}">
     <defs>${WALLPAPERS.map(w=>w.def).join('')}</defs>
-    <rect width="800" height="300" fill="${wpShow.fill}"/>
+    <rect x="-800" y="-700" width="2400" height="1000" fill="${wpShow.fill}"/>
     <rect x="320" y="34" width="160" height="124" rx="8" fill="#CDEBFB" stroke="#fff" stroke-width="10"/>
     <path d="M400 34 V158 M320 96 H480" stroke="#fff" stroke-width="6"/><circle cx="452" cy="66" r="13" fill="#FFE082"/>
     <path d="M308 28 Q330 90 316 166 L300 166 L300 28Z M492 28 Q470 90 484 166 L500 166 L500 28Z" fill="#F4A9B8"/>
     <rect x="290" y="22" width="220" height="10" rx="5" fill="#9C6B45"/>
-    <rect y="292" width="800" height="14" fill="#fff"/>
-    <rect y="306" width="800" height="134" fill="#DDBB91"/>
-    <path d="M0 340 H800 M0 378 H800 M0 416 H800 M120 306 V340 M420 306 V340 M720 306 V340 M260 340 V378 M560 340 V378 M80 378 V416 M380 378 V416 M680 378 V416" stroke="#C9A378" stroke-width="3"/>
+    <rect x="-800" y="292" width="2400" height="14" fill="#fff"/>
+    <rect x="-800" y="306" width="2400" height="900" fill="#DDBB91"/>
+    <path d="${FLOOR}" stroke="#C9A378" stroke-width="3"/>
     ${under}${back}${objs}
-    <svg x="300" y="104" width="200" height="240" viewBox="-6 -18 216 260">${strip(drawChar(animal, wearOnly, preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {}))}</svg>
+    <svg x="378" y="200" width="122" height="146" viewBox="-6 -18 216 260">${strip(drawChar(animal, wearOnly, preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {}))}</svg>
     ${girl?`<ellipse cx="580" cy="342" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="506" y="66" width="150" height="280" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}))}</svg>`:''}
     ${fr}${pets}
   </svg>`;
@@ -907,7 +916,7 @@ function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-
 function load(id){ try{ const s=JSON.parse(localStorage.getItem('home:'+id)||'null'); return s?{...fresh(),...s}:fresh(); }catch(e){ return fresh(); } }
 function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); }catch(e){} }
 let S=load(kidId);
-let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, modal=null, offer=null;
+let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, banner=null, bannerT=0, modal=null, offer=null;
 const T={ms:0,from:null,running:false,used:false};
 
 /* ---------- bonus practice: 5 difficulty levels, up after 2 in a row, down after a hard time ---------- */
@@ -1032,6 +1041,14 @@ function practiceHtml(){
     <div class="level"><span>רמה ${S.level}: ${LEVELS[S.level].name}</span><span class="bars" aria-hidden="true">${bars}</span></div>
     ${body}${msg?`<p class="msg ${msg.ok?'ok':''}">${msg.text}</p>`:''}</section>`;
 }
+/* the room fills the middle column: grow the drawing taller (more wall above, more floor below) or wider */
+function fitRoom(){
+  const box=document.querySelector('.room'), svg=box?.querySelector('svg.scene'); if(!svg) return;
+  const w=box.clientWidth, h=box.clientHeight; if(!w||!h) return;
+  const H=800*h/w;
+  svg.setAttribute('viewBox', H>=440 ? `0 ${-(H-440)*.55} 800 ${H}` : `${-(440*w/h-800)/2} 0 ${440*w/h} 440`);
+}
+addEventListener('resize',fitRoom);
 function render(){
   renderBar();
   if(!S.chosen){
@@ -1046,12 +1063,12 @@ function render(){
   document.getElementById('app').innerHTML=`
     ${shopHtml()}
     <div class="col mid">
-      <div class="room">${roomSvg({animal:S.animal, worn:S.worn, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
-      ${preview?`<p class="meta"><span class="preview-tag">מסתכלת</span> ככה זה ייראה. לקנות, או ללחוץ שוב על העין כדי לבטל.</p>`:''}
+      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
       <section class="card"><h2>החיות שלי</h2><p class="meta">כל שיעור שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
         <div class="carousel"><button class="arrow" data-act="scrollAn" data-v="-1" aria-label="חיות קודמות">${IC.next}</button><div class="animals">${anim}</div><button class="arrow" data-act="scrollAn" data-v="1" aria-label="עוד חיות">${IC.prev}</button></div></section>
     </div>
     <aside class="col practice">${practiceHtml()}<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div></aside>`;
+  fitRoom();
   const sc=document.querySelector('.shop .scroll'); if(sc) sc.scrollTop=keep.shop||0;
   const an=document.querySelector('.animals'); if(an && keep.an!=null){ an.style.scrollBehavior='auto'; an.scrollLeft=keep.an; an.style.scrollBehavior=''; }
   let ov='';
@@ -1077,7 +1094,9 @@ const A={
   tab(v){ tab=v; },
   preview(v){ preview = preview===v ? null : v; },
   scrollAn(v){ const an=document.querySelector('.animals'); if(an) an.scrollBy({left:-v*258}); return false; },
-  buy(v){ const p=priceOf(v); if(S.coins<p) return; S.coins-=p; grant(v); preview=null; msg={ok:true,text:`קנית: ${nameOf(v)}!`}; save(); },
+  buy(v){ const p=priceOf(v); if(S.coins<p) return; S.coins-=p; grant(v); preview=null; save();
+    // the news goes on top of the home, where the new thing just appeared, and fades by itself
+    banner=`קנית: ${nameOf(v)}!`; clearTimeout(bannerT); bannerT=setTimeout(()=>{ banner=null; document.querySelector('.banner.ok')?.remove(); },2600); },
   useWp(v){ S.wallpaper=v; save(); },
   wear(v){ const it=itemById(v); S.worn[it.cat] = S.worn[it.cat]===v ? undefined : v; save(); },
   wearMe(v){ const c=girlItem(v).cat; S.girlWorn[c] = S.girlWorn[c]===v ? undefined : v; save(); },

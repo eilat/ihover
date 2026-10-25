@@ -33,7 +33,14 @@ svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;strok
 /* three columns, nothing on the page scrolls: the shop (right) scrolls inside itself, the home stays in the middle */
 .shop{display:flex;flex-direction:column;min-height:0;padding-bottom:0}
 .shop .scroll{flex:1;min-height:0;overflow:auto;padding:2px 2px 16px;margin:0 -2px}
-.mid{min-height:0;overflow:auto}
+.mid{min-height:0}
+.mid .room{flex:1;min-height:260px}
+.room{position:relative}
+.mid .room svg.scene{height:100%}
+.banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:8px 18px;border-radius:999px;background:var(--surface);box-shadow:0 6px 18px rgba(0,0,0,.16);font-weight:600;animation:drop .35s ease both}
+.banner.ok{background:var(--good);color:#fff}
+.banner .preview-tag{background:var(--accent)}
+@keyframes drop{from{opacity:0;transform:translate(-50%,-10px)}}
 .col{display:flex;flex-direction:column;gap:16px;min-width:0}
 .card{background:var(--surface);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.06);min-width:0}
 h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
@@ -119,7 +126,7 @@ h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
 .testbar{padding:0 4px;color:var(--muted);font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .testbar button{font-size:13px;min-height:34px;padding:2px 12px;border-radius:999px;border:1.5px dashed var(--line);background:transparent;color:var(--muted)}
 /*SHELL_CSS*/
-@media (max-width:1180px){.wrap{grid-template-columns:340px minmax(0,1fr)}.shop{grid-row:span 2;max-height:calc(100vh - 101px);position:sticky;top:16px}.practice{grid-column:2}}
+@media (max-width:1180px){.mid .room{flex:none;aspect-ratio:800/440;min-height:0}.wrap{grid-template-columns:340px minmax(0,1fr)}.shop{grid-row:span 2;max-height:calc(100vh - 101px);position:sticky;top:16px}.practice{grid-column:2}}
 @media (max-width:760px){.wrap{grid-template-columns:minmax(0,1fr)}.shop{grid-row:auto;max-height:70vh;position:static}.practice{grid-column:auto}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head>
@@ -152,7 +159,7 @@ function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-
 function load(id){ try{ const s=JSON.parse(localStorage.getItem('home:'+id)||'null'); return s?{...fresh(),...s}:fresh(); }catch(e){ return fresh(); } }
 function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); }catch(e){} }
 let S=load(kidId);
-let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, modal=null, offer=null;
+let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, banner=null, bannerT=0, modal=null, offer=null;
 const T={ms:0,from:null,running:false,used:false};
 
 /* ---------- bonus practice: 5 difficulty levels, up after 2 in a row, down after a hard time ---------- */
@@ -277,6 +284,14 @@ function practiceHtml(){
     <div class="level"><span>רמה ${S.level}: ${LEVELS[S.level].name}</span><span class="bars" aria-hidden="true">${bars}</span></div>
     ${body}${msg?`<p class="msg ${msg.ok?'ok':''}">${msg.text}</p>`:''}</section>`;
 }
+/* the room fills the middle column: grow the drawing taller (more wall above, more floor below) or wider */
+function fitRoom(){
+  const box=document.querySelector('.room'), svg=box?.querySelector('svg.scene'); if(!svg) return;
+  const w=box.clientWidth, h=box.clientHeight; if(!w||!h) return;
+  const H=800*h/w;
+  svg.setAttribute('viewBox', H>=440 ? `0 ${-(H-440)*.55} 800 ${H}` : `${-(440*w/h-800)/2} 0 ${440*w/h} 440`);
+}
+addEventListener('resize',fitRoom);
 function render(){
   renderBar();
   if(!S.chosen){
@@ -291,12 +306,12 @@ function render(){
   document.getElementById('app').innerHTML=`
     ${shopHtml()}
     <div class="col mid">
-      <div class="room">${roomSvg({animal:S.animal, worn:S.worn, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
-      ${preview?`<p class="meta"><span class="preview-tag">מסתכלת</span> ככה זה ייראה. לקנות, או ללחוץ שוב על העין כדי לבטל.</p>`:''}
+      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
       <section class="card"><h2>החיות שלי</h2><p class="meta">כל שיעור שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
         <div class="carousel"><button class="arrow" data-act="scrollAn" data-v="-1" aria-label="חיות קודמות">${IC.next}</button><div class="animals">${anim}</div><button class="arrow" data-act="scrollAn" data-v="1" aria-label="עוד חיות">${IC.prev}</button></div></section>
     </div>
     <aside class="col practice">${practiceHtml()}<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div></aside>`;
+  fitRoom();
   const sc=document.querySelector('.shop .scroll'); if(sc) sc.scrollTop=keep.shop||0;
   const an=document.querySelector('.animals'); if(an && keep.an!=null){ an.style.scrollBehavior='auto'; an.scrollLeft=keep.an; an.style.scrollBehavior=''; }
   let ov='';
@@ -322,7 +337,9 @@ const A={
   tab(v){ tab=v; },
   preview(v){ preview = preview===v ? null : v; },
   scrollAn(v){ const an=document.querySelector('.animals'); if(an) an.scrollBy({left:-v*258}); return false; },
-  buy(v){ const p=priceOf(v); if(S.coins<p) return; S.coins-=p; grant(v); preview=null; msg={ok:true,text:`קנית: ${nameOf(v)}!`}; save(); },
+  buy(v){ const p=priceOf(v); if(S.coins<p) return; S.coins-=p; grant(v); preview=null; save();
+    // the news goes on top of the home, where the new thing just appeared, and fades by itself
+    banner=`קנית: ${nameOf(v)}!`; clearTimeout(bannerT); bannerT=setTimeout(()=>{ banner=null; document.querySelector('.banner.ok')?.remove(); },2600); },
   useWp(v){ S.wallpaper=v; save(); },
   wear(v){ const it=itemById(v); S.worn[it.cat] = S.worn[it.cat]===v ? undefined : v; save(); },
   wearMe(v){ const c=girlItem(v).cat; S.girlWorn[c] = S.girlWorn[c]===v ? undefined : v; save(); },

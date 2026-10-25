@@ -47,6 +47,8 @@ const PET_SPOTS=[[96,330],[560,346],[236,356],[660,350]];
 const OBJ_SPOTS={balloon:[200,40,70,150,'140 20 70 160'], ball:[470,350,60,60,'150 196 50 44'], wand:[650,150,46,110,'150 100 56 100'], flower:[580,190,50,110,'150 100 50 100']};
 const FRIEND_SPOTS=[[660,236,76],[248,236,78],[600,262,70],[170,270,70],[440,282,58],[680,286,60],[60,290,60],[360,296,52]];
 
+// wooden planks: rows every 38, joints staggered row by row
+const FLOOR=(()=>{ let d=''; for(let k=0,y=306;y<1200;k++,y+=38){ d+=`M-800 ${y+34} H1600 `; for(let x=-780+(k%3)*140;x<1600;x+=300) d+=`M${x} ${y} V${y+34} `; } return d; })();
 function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
   const A = ANIMALS[animal];
   const wp = WALLPAPERS.find(w=>w.id===wallpaper) || WALLPAPERS[0];
@@ -63,18 +65,18 @@ function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
   const fr = (friends||[]).slice(0,8).map((a,k)=>{ const [x,y,w]=FRIEND_SPOTS[k];
     return `<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${x}" y="${y}" width="${w}" height="${w*1.2}" viewBox="-6 -18 216 260">${strip(drawChar(a,{}))}</svg></g>`; }).join('');
   const wearOnly = Object.fromEntries(Object.entries(worn).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
-  return `<svg class="scene" viewBox="0 0 800 440" role="img" aria-label="החדר של ה${A.name}">
+  return `<svg class="scene" viewBox="0 0 800 440" preserveAspectRatio="xMidYMax meet" role="img" aria-label="החדר של ה${A.name}">
     <defs>${WALLPAPERS.map(w=>w.def).join('')}</defs>
-    <rect width="800" height="300" fill="${wpShow.fill}"/>
+    <rect x="-800" y="-700" width="2400" height="1000" fill="${wpShow.fill}"/>
     <rect x="320" y="34" width="160" height="124" rx="8" fill="#CDEBFB" stroke="#fff" stroke-width="10"/>
     <path d="M400 34 V158 M320 96 H480" stroke="#fff" stroke-width="6"/><circle cx="452" cy="66" r="13" fill="#FFE082"/>
     <path d="M308 28 Q330 90 316 166 L300 166 L300 28Z M492 28 Q470 90 484 166 L500 166 L500 28Z" fill="#F4A9B8"/>
     <rect x="290" y="22" width="220" height="10" rx="5" fill="#9C6B45"/>
-    <rect y="292" width="800" height="14" fill="#fff"/>
-    <rect y="306" width="800" height="134" fill="#DDBB91"/>
-    <path d="M0 340 H800 M0 378 H800 M0 416 H800 M120 306 V340 M420 306 V340 M720 306 V340 M260 340 V378 M560 340 V378 M80 378 V416 M380 378 V416 M680 378 V416" stroke="#C9A378" stroke-width="3"/>
+    <rect x="-800" y="292" width="2400" height="14" fill="#fff"/>
+    <rect x="-800" y="306" width="2400" height="900" fill="#DDBB91"/>
+    <path d="${FLOOR}" stroke="#C9A378" stroke-width="3"/>
     ${under}${back}${objs}
-    <svg x="300" y="104" width="200" height="240" viewBox="-6 -18 216 260">${strip(drawChar(animal, wearOnly, preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {}))}</svg>
+    <svg x="378" y="200" width="122" height="146" viewBox="-6 -18 216 260">${strip(drawChar(animal, wearOnly, preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {}))}</svg>
     ${girl?`<ellipse cx="580" cy="342" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="506" y="66" width="150" height="280" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}))}</svg>`:''}
     ${fr}${pets}
   </svg>`;
