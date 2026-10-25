@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מתמטיקידס · שיעור</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Assistant:wght@400;600&display=swap">
+<style>
+/* Combined version: notebook look (v1) + sticks in a box (v2) + top bar instead of a side panel.
+   One anchor per screen: the exercise with its answer box. Tools have fixed homes: speaker top-right of the task,
+   progress strip on top of the card with a stopwatch the child starts and stops herself, hint under the exercise,
+   keypad and scratchpad in a left column. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --ink:#1E2633; --muted:#5A6577; --line:#D3DAE3;
+  --h:#2F5BD3; --h-soft:#DCE5FA; --t:#D9980A; --t-soft:#FCEFC9; --o:#23895A; --o-soft:#DCF1E5;
+  --good:#1F7A4D; --good-soft:#DDF2E7; --hint-bg:#FFF1C9; --accent:#7444C9;
+  --f-display:"Rubik",system-ui,sans-serif; --f-body:"Assistant","Rubik",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161D; --surface:#1B212B; --ink:#E8EDF4; --muted:#9AA6B8; --line:#2E3746;
+  --h:#7096F4; --h-soft:#24345A; --t:#F2BE3C; --t-soft:#3C3320; --o:#4DC48B; --o-soft:#1E3A2E;
+  --good:#3FB37A; --good-soft:#1C3A2B; --hint-bg:#3D3420; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161D; --surface:#1B212B; --ink:#E8EDF4; --muted:#9AA6B8; --line:#2E3746;
+  --h:#7096F4; --h-soft:#24345A; --t:#F2BE3C; --t-soft:#3C3320; --o:#4DC48B; --o-soft:#1E3A2E;
+  --good:#3FB37A; --good-soft:#1C3A2B; --hint-bg:#3D3420; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ltr{direction:ltr;unicode-bidi:isolate}
+[hidden]{display:none!important}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);position:relative;min-height:64px}
+.chip{display:flex;align-items:center;gap:10px;min-height:48px;padding:4px 14px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:18px;font-weight:600}
+.chip:hover{border-color:var(--accent)}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--accent);display:grid;place-items:center;overflow:hidden;flex:none}
+.avatar svg{width:100%;height:100%;display:block;stroke:none}
+.chip svg{width:20px;height:20px;color:var(--accent)}
+.lesson-name{flex:1;text-align:center;color:var(--muted);font-size:16px}
+.timer{font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lock{width:44px;height:44px;border-radius:12px;border:2px solid transparent;background:transparent;display:grid;place-items:center;color:var(--muted)}
+.lock:hover{border-color:var(--line)}
+.lock svg{width:22px;height:22px}
+.pop{position:absolute;top:calc(100% + 6px);inset-inline-start:16px;z-index:20;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:18px;width:min(400px,calc(100vw - 32px));display:flex;flex-direction:column;gap:16px}
+.pop h3{margin:0;font-size:15px;color:var(--muted);font-weight:600}
+.pop .kids{display:flex;gap:8px;flex-wrap:wrap}
+.kidbtn{min-height:44px;padding:4px 14px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:flex;gap:8px;align-items:center}
+.kidbtn[aria-pressed="true"]{border-color:var(--ink)}
+.kidbtn .avatar{width:34px;height:34px}
+.sws{display:grid;grid-template-columns:repeat(6,52px);gap:8px}
+.sw{width:52px;height:52px;border-radius:50%;border:4px solid var(--surface);background:var(--c);box-shadow:0 0 0 2px var(--line);display:grid;place-items:center;color:#fff;padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.sw svg{width:24px;height:24px;stroke-width:3}
+.toggle{display:flex;align-items:center;gap:12px;min-height:48px;border:0;background:transparent;padding:0;text-align:start}
+.switch{width:52px;height:30px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle[aria-pressed="true"] .switch{background:var(--accent)}
+.toggle[aria-pressed="true"] .switch::after{transform:translateX(-22px)}
+
+/* layout: exercise column (right) + tools column (left) */
+.layout{max-width:1100px;margin-inline:auto;padding-block:20px 40px;padding-inline:16px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:20px;align-items:start}
+.card{background:var(--surface);border-radius:8px;padding:clamp(18px,3vw,32px);box-shadow:0 1px 2px rgba(0,0,0,.06);min-width:0;
+  background-image:linear-gradient(color-mix(in srgb,var(--accent) 9%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--accent) 9%,transparent) 1px,transparent 1px);background-size:28px 28px}
+.main{display:flex;flex-direction:column;gap:18px}
+.tools{display:flex;flex-direction:column;gap:14px;position:sticky;top:16px}
+.toolbox{background:var(--surface);border-radius:8px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+/* task line with speaker */
+.task{display:flex;align-items:center;gap:12px}
+.say{flex:none;width:52px;height:52px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;padding:0;box-shadow:0 3px 8px color-mix(in srgb,var(--accent) 35%,transparent)}
+.say svg{width:26px;height:26px}
+.task p{margin:0;font-size:23px;font-weight:600;font-family:var(--f-display);background:var(--surface);padding:2px 6px;border-radius:6px}
+.task .ch{color:var(--h)} .task .ct{color:var(--t)} .task .co{color:var(--o)}
+
+/* the anchor: exercise + answer box */
+.anchor{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-family:var(--f-display);font-weight:600;font-size:clamp(44px,5.6vw,62px);line-height:1.1;font-variant-numeric:tabular-nums}
+.anchor.sm{font-size:clamp(36px,4.4vw,48px)}
+.slot{position:relative;display:inline-flex}
+.box{min-width:84px;height:56px;padding:0 12px;border-radius:10px;border:2.5px dashed var(--muted);background:var(--surface);font-family:var(--f-display);font-weight:600;font-size:28px;color:var(--ink);display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
+.box.big{min-width:150px;height:1.45em;font-size:1em;border-width:3px}
+.box.on{border:3px solid var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 22%,transparent)}
+.box.done{border:3px solid var(--good);background:var(--good-soft);color:var(--good);cursor:default}
+.box.wait{cursor:default;color:var(--muted)}
+.parts{text-align:center;font-family:var(--f-display);font-weight:600;font-size:26px}
+.parts .h{color:var(--h)} .parts .t{color:var(--t)} .parts .o{color:var(--o)}
+.toast{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--good);color:#fff;font-family:var(--f-body);font-size:17px;font-weight:600;padding:6px 14px;border-radius:999px;box-shadow:0 6px 16px rgba(0,0,0,.15);animation:toast 1.8s ease both;z-index:5;direction:rtl}
+.toast::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--good)}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,6px) scale(.9)}12%{opacity:1;transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0}}
+
+/* progress line + hint button */
+.strip{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:10px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.strip-l{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.strip .lbl{font-family:var(--f-display);font-size:20px;font-weight:600;color:var(--ink)}
+.strip .ph{font-size:15px;color:var(--muted)}
+.dots{display:flex;gap:7px;align-items:center;direction:rtl}
+.dots i{width:16px;height:16px;border-radius:50%;background:var(--line);display:block}
+.dots i.done{background:var(--accent)}
+.dots i.now{width:22px;height:22px;background:var(--surface);border:6px solid var(--accent)}
+.sw-btn{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-variant-numeric:tabular-nums;font-weight:600;font-size:16px}
+.sw-btn svg{width:20px;height:20px}
+.sw-btn.run{border-color:var(--accent);color:var(--accent)}
+.sw-btn.stopped{color:var(--good);border-color:var(--good);cursor:default}
+.hintrow{display:flex;justify-content:center}
+.prog{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:48px}
+.prog p{margin:0;font-size:16px;color:var(--muted);background:var(--surface);padding:0 6px;border-radius:6px}
+.prog b{color:var(--ink)}
+.hintbtn{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 16px;border-radius:999px;border:2px solid #E7B416;background:var(--hint-bg);font-weight:600}
+.hintbtn svg{width:22px;height:22px}
+.note{background:var(--hint-bg);border-radius:12px;padding:12px 16px;font-size:19px}
+.note.ok{background:var(--good-soft)}
+
+/* sticks box */
+.tray{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;border-radius:12px;background:var(--t-soft);border:2px solid color-mix(in srgb,var(--t) 40%,transparent)}
+.tray .row{display:flex;gap:6px;justify-content:center}
+.tray .tb{width:11px;height:44px}
+.tray .row + .row{border-top:2px dashed color-mix(in srgb,var(--t) 50%,transparent);padding-top:8px;width:100%}
+
+/* columns */
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;direction:ltr}
+.col{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 8px;border-radius:12px;border:2px solid var(--line);background:var(--surface);transition:box-shadow .2s,border-color .2s}
+.col.on{border:3px solid var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 16%,transparent),0 8px 20px rgba(0,0,0,.08)}
+.col-title{font-size:16px;font-weight:600;direction:rtl;display:flex;gap:6px;align-items:center}
+.c-h .col-title{color:var(--h)} .c-t .col-title{color:var(--t)} .c-o .col-title{color:var(--o)}
+.col-title .ok{color:var(--good);width:18px;height:18px;stroke-width:3}
+.blocks{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:flex-end;min-height:34px;width:100%;padding:6px;border-radius:8px}
+.c-h .blocks{background:var(--h-soft)} .c-t .blocks{background:var(--t-soft)} .c-o .blocks{background:var(--o-soft)}
+.blocks + .blocks{margin-top:-4px}
+.hb{width:28px;height:28px;border-radius:3px;background:var(--h);background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:2.8px 2.8px}
+.hb.arrived{animation:arrive .9s cubic-bezier(.3,1.3,.5,1) both;box-shadow:0 0 0 3px var(--accent)}
+@keyframes arrive{0%{transform:translateX(160px) scale(.6);opacity:.3}100%{transform:none;opacity:1}}
+.tb{width:7px;height:28px;border-radius:3px;background:var(--t)}
+.ob{width:9px;height:9px;border-radius:50%;background:var(--o)}
+.bundle{display:flex;gap:3px;padding:8px 6px 4px;border:2.5px solid var(--ink);border-radius:8px;position:relative;animation:pop .4s ease both}
+.bundle::after{content:"100";position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:12px;font-weight:600;padding:0 8px;border-radius:999px;font-family:var(--f-display)}
+@keyframes pop{from{transform:scale(.85);opacity:.4}to{transform:none;opacity:1}}
+.fld{display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--f-display);font-weight:600;font-size:21px;font-variant-numeric:tabular-nums}
+.explore-val{font-family:var(--f-display);font-weight:600;font-size:21px;min-height:56px;display:grid;place-items:center}
+
+/* keypad + scratchpad */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;direction:ltr}
+.key{height:56px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-family:var(--f-display);font-weight:600;font-size:24px}
+.key:hover{border-color:var(--accent)}
+.key.ok{background:var(--accent);border-color:var(--accent);color:#fff;font-size:18px}
+.kbd{margin:8px 0 0;font-size:13px;color:var(--muted);text-align:center}
+.scrbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.scrbtn svg{width:20px;height:20px}
+.scr{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.scr canvas{width:100%;height:220px;border-radius:10px;border:2px dashed var(--line);background:var(--surface);touch-action:none;cursor:crosshair}
+.scr .row{display:flex;gap:8px}
+.scr .row button{flex:1;min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-size:15px}
+.scr .row button[aria-pressed="true"]{border-color:var(--ink);font-weight:600}
+.btn{min-height:52px;padding:8px 24px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-size:18px;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* full screens: who / colour / transition / done */
+.screen{max-width:760px;margin:40px auto;padding:0 16px}
+.screen .card{display:flex;flex-direction:column;gap:22px;align-items:center;text-align:center;padding:40px 24px}
+.screen h1{margin:0;font-family:var(--f-display);font-size:clamp(30px,4vw,40px)}
+.screen p{margin:0;color:var(--muted);font-size:19px}
+.who{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.whocard{width:200px;min-height:170px;border-radius:20px;border:3px solid var(--c,var(--line));background:color-mix(in srgb,var(--c,var(--line)) 12%,var(--surface));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-family:var(--f-display);font-size:26px;font-weight:600}
+.whocard .avatar{width:96px;height:96px;background:var(--c,var(--muted))}
+.whocard{min-height:200px}
+.whocard:hover{box-shadow:0 8px 20px rgba(0,0,0,.1)}
+.screen .sws{grid-template-columns:repeat(3,72px);gap:14px}
+.screen .sw{width:72px;height:72px}
+.map{list-style:none;margin:0;padding:0;display:flex;gap:0;direction:rtl}
+.map li{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:92px;position:relative;color:var(--muted);font-size:16px}
+.map li:not(:last-child)::after{content:"";position:absolute;top:13px;inset-inline-start:calc(50% + 16px);width:calc(100% - 32px);border-top:3px dashed var(--line)}
+.map li.done:not(:last-child)::after{border-color:var(--accent)}
+.map .dot{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);background:var(--surface);display:grid;place-items:center;color:#fff}
+.map .dot svg{width:15px;height:15px;stroke-width:3}
+.map li.done .dot{background:var(--accent);border-color:var(--accent)}
+.map li.now{color:var(--ink);font-weight:600}
+.map li.now .dot{border:8px solid var(--accent)}
+.here{font-size:12px;font-weight:700;background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px}
+
+/* parent gate */
+.scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--surface);border-radius:20px;padding:26px;max-width:400px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center;position:relative}
+.modal h2{margin:0;font-family:var(--f-display)}
+.modal p{margin:0;color:var(--muted)}
+.modal .en{direction:ltr;font-size:22px;color:var(--ink);font-weight:600}
+.modal .disp{direction:ltr;font-family:var(--f-display);font-size:34px;font-weight:600;min-height:56px;border:3px solid var(--ink);border-radius:12px;display:grid;place-items:center}
+.modal .x{position:absolute;top:10px;inset-inline-end:10px;width:44px;height:44px;border-radius:12px;border:0;background:transparent;display:grid;place-items:center}
+.modal .x svg{width:22px;height:22px}
+
+/* shell: the shared top bar, first-entry screens, parent gate and parent area */
+.bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);min-height:68px;position:relative;z-index:30}
+.bar svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sh-me{position:relative}
+.sh-gear{width:50px;height:50px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);cursor:pointer;padding:0}
+.sh-gear:hover,.sh-gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.sh-gear svg{width:26px;height:26px}
+.sh-back{display:flex;align-items:center;gap:6px;min-height:50px;padding:6px 18px 6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:17px;text-decoration:none}
+.sh-back:hover{border-color:var(--accent)}
+.sh-back svg{width:22px;height:22px}
+.sh-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;overflow:hidden;flex:none}
+.sh-av svg{width:100%;height:100%;display:block;stroke:none!important}
+.sh-title{flex:1;margin:0;text-align:start;font-family:var(--f-display);font-size:24px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-pet{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,var(--surface));border:2px solid transparent;overflow:hidden}
+a.sh-pet:hover{border-color:var(--accent)}
+.sh-pet svg{width:52px;height:52px;display:block;stroke:none!important;transform-origin:50% 85%;animation:sh-idle 5s ease-in-out infinite}
+a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
+.sh-pet.here{background:transparent}
+@keyframes sh-idle{0%,62%,100%{transform:none}68%{transform:translateY(-3px) rotate(-7deg)}76%{transform:translateY(0) rotate(5deg)}84%{transform:rotate(-2deg)}}
+@keyframes sh-hop{0%,100%{transform:none}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(1px) scale(.98)}}
+.sh-bank{position:relative;display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600;font-size:22px;background:#FFF1C7;color:#5A4300;padding:6px 16px;border-radius:999px}
+.sh-coin{width:24px;height:24px;flex:none;stroke-width:2!important}
+.sh-bank.bump{animation:sh-bump .5s ease}
+.sh-plus{position:absolute;top:-6px;inset-inline-end:8px;font-size:18px;color:#1F7A4D;animation:sh-up 1.5s ease forwards;pointer-events:none}
+@keyframes sh-bump{40%{transform:scale(1.15)}}
+@keyframes sh-up{from{opacity:0;transform:translateY(8px)}20%{opacity:1}to{opacity:0;transform:translateY(-26px)}}
+.sh-menu{position:absolute;top:calc(100% + 8px);inset-inline-start:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px;width:330px;display:flex;flex-direction:column;gap:6px}
+.sh-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 10px;border-radius:12px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;text-align:start}
+.sh-row:hover{background:var(--bg)}
+.sh-row .sh-av{width:38px;height:38px}
+.sh-now{cursor:default;font-size:19px}.sh-now:hover{background:transparent}
+.sh-parent{color:var(--muted);font-weight:400;font-size:15px}
+.sh-lock{width:38px;display:grid;place-items:center}.sh-lock svg{width:20px;height:20px}
+.sh-sep{height:1.5px;background:var(--line);margin:4px 0}
+.sh-h{margin:4px 10px 0;font-size:14px;color:var(--muted);font-weight:600}
+.sh-sws{display:grid;grid-template-columns:repeat(6,40px);gap:8px;padding:4px 10px}
+.sh-sws.big{grid-template-columns:repeat(6,56px);gap:12px;justify-content:center}
+.sh-sw{width:40px;height:40px;border-radius:50%;border:3px solid var(--surface);background:var(--c);box-shadow:0 0 0 2px var(--line);display:grid;place-items:center;color:#fff;padding:0;cursor:pointer}
+.sh-sws.big .sh-sw{width:56px;height:56px}
+.sh-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.sh-sw svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:3}
+.sh-full{position:fixed;inset:68px 0 0 0;background:var(--bg);display:grid;place-items:center;padding:16px;z-index:40}
+.sh-card{background:var(--surface);border-radius:20px;padding:40px 28px;display:flex;flex-direction:column;gap:20px;align-items:center;text-align:center;max-width:640px;width:100%}
+.sh-card h1{margin:0;font-family:var(--f-display);font-size:30px}.sh-card p{margin:0;color:var(--muted)}
+.sh-who{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.sh-whocard{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 30px;border-radius:20px;border:3px solid var(--c);background:var(--surface);font:inherit;font-size:24px;font-weight:600;color:var(--ink);cursor:pointer}
+.sh-whocard .sh-av{width:110px;height:110px}
+.sh-scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:60;padding:16px}
+.sh-modal{background:var(--surface);color:var(--ink);border-radius:20px;padding:26px;max-width:400px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center;position:relative;max-height:calc(100vh - 32px);overflow:auto}
+.sh-modal.wide{max-width:860px;text-align:start}
+.sh-modal h2{margin:0;font-family:var(--f-display)}.sh-modal p{margin:0;color:var(--muted)}
+.sh-en{direction:ltr;font-size:22px;color:var(--ink)!important;font-weight:600}
+.sh-disp{direction:ltr;font-family:var(--f-display);font-size:34px;font-weight:600;min-height:56px;border:3px solid var(--ink);border-radius:12px;display:grid;place-items:center}
+.sh-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;direction:ltr}
+.sh-pad button{min-height:52px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font:inherit;font-size:22px;font-weight:600;color:var(--ink);cursor:pointer}
+.sh-pad .ok{background:var(--accent);border-color:var(--accent);color:#fff;font-size:18px}
+.sh-x{position:absolute;top:10px;inset-inline-end:10px;width:44px;height:44px;border-radius:12px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.sh-x svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+.sh-note{font-size:15px}
+.sh-pcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.sh-pcols h3{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-family:var(--f-display)}
+.sh-pcols h3 .sh-av{width:34px;height:34px}
+.sh-coins{display:flex;align-items:center;gap:4px;font-size:15px;color:var(--muted);margin-inline-start:auto}.sh-coins .sh-coin{width:18px;height:18px}
+.sh-topics{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.sh-topics li{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:15px}
+.sh-topics b{flex:1;min-width:150px}.sh-topics span{color:var(--muted)}
+.sh-topics button,.sh-reset{font:inherit;font-size:14px;min-height:36px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.sh-reset{margin-top:10px}
+@media (max-width:700px){.sh-back span{display:none}.sh-back{padding:6px 12px}.sh-title{font-size:18px}}
+
+.screen .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+a.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)} a.btn.primary{color:#fff}
+.btn .bi{width:22px;height:22px}
+.gift{background:#FFF1C7;color:#5A4300!important;border-radius:14px;padding:10px 18px;font-weight:600}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.tools{position:static}.cols{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* pictures for the new lessons */
+.vis{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface);border-radius:12px;padding:10px 6px}
+.pic{width:100%;height:auto;display:block;overflow:visible}
+.pic,.pic text{stroke:none} /* the page's icon rule (svg{stroke:currentColor}) must not outline the drawings */
+.pic{direction:ltr}
+.pic text{font-family:var(--f-display);font-weight:600}
+.nl-n{font-size:22px;fill:var(--ink)} .nl-n.strong{font-size:25px} .nl-j{font-size:22px} .nl-s{font-size:14px;fill:var(--muted);font-weight:400!important}
+.decomp{margin:0;font-family:var(--f-display);font-weight:600;font-size:26px;text-align:center}
+.decomp .hl{color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border-radius:6px;padding:0 4px}
+.cp{color:#3A6FD8} .ck{color:#E5484D}
+.legend{margin:0;font-size:17px;display:flex;gap:10px}
+.pair{display:flex;align-items:center;justify-content:center;gap:18px;width:100%}
+.pair .pic{width:auto;max-height:220px}
+.arrow-r{font-size:34px;color:var(--muted)}
+.arr{max-height:240px;width:auto}
+.spin{animation:spin .8s cubic-bezier(.3,1.2,.5,1) both}
+@keyframes spin{from{transform:rotate(-90deg) scale(.8);opacity:.4}to{transform:none;opacity:1}}
+.steps{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.stepf{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-family:var(--f-display);font-weight:600;font-size:19px;direction:rtl}
+.stepf>span:first-child{direction:ltr;unicode-bidi:isolate}
+.stepf.on{border:3px solid var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 16%,transparent)}
+.pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.picbtn{border:3px solid var(--line);border-radius:16px;background:var(--surface);padding:10px;display:grid;place-items:center;min-height:120px}
+.picbtn:hover{border-color:var(--accent)}
+.picbtn .pic{max-width:100%!important}
+.choices{display:flex;gap:12px;justify-content:center}
+.btn.good{background:var(--good);border-color:var(--good);color:#fff}
+.btn.meh{border-color:#E7B416;background:var(--hint-bg)}
+.btn svg{width:22px;height:22px;vertical-align:-5px;margin-inline-end:6px}
+.btn:disabled{opacity:.45;cursor:default}
+.screen .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+a.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)} a.btn.primary{color:#fff}
+.gift{background:#FFF1C7;color:#5A4300!important;border-radius:14px;padding:10px 18px;font-weight:600}
+</style>
+</head>
+<body>
+<header class="bar" id="bar"></header>
+<div id="screen" hidden></div>
+<div class="layout" id="layout" hidden>
+  <section class="card main" id="main" aria-live="polite"></section>
+  <aside class="tools" aria-label="כלים">
+    <div class="toolbox" id="kp"></div>
+    <div class="toolbox">
+      <button class="scrbtn" id="scrToggle" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>טיוטה</button>
+      <div class="scr" id="scr" hidden>
+        <canvas id="cv" width="480" height="440" aria-label="טיוטה לציור עם העכבר"></canvas>
+        <div class="row"><button id="pen" aria-pressed="true">עט</button><button id="eraser" aria-pressed="false">מחק</button><button id="clear">לנקות</button></div>
+      </div>
+    </div>
+  </aside>
+</div>
+<div id="overlay"></div>
+
+<script>
+/* Shell: what every page shares. Who is learning, her colour, her coins, which lessons are open,
+   and the top bar: [her name ▾] [home/lessons] .... title .... [coins].
+   The parent area lives inside her name's menu, behind a question in English.
+   Everything is kept in this browser (localStorage), so all pages of the prototype see the same girl. */
+const Shell = (() => {
+  // the animals' art, kept private to the shell so it can draw her animal's head in the bar on every page
+  const CH=(()=>{
+/* Shared art + logic for the three reward prototypes.
+   A character = an animal + one worn item per category. All parts share one geometry
+   (viewBox 0 0 200 240, head centre 100,100 r58, body centre 100,188), so every item fits every animal. */
+
+const ANIMALS = {
+  cat:     {name:'חתולה',     fur:'#E8A25B', light:'#F7D9B5', dark:'#B86E2C'},
+  bunny:   {name:'ארנבת',     fur:'#E9E4E0', light:'#FFFFFF', dark:'#B9AEA8'},
+  fox:     {name:'שועלה',     fur:'#E07B39', light:'#FFF4E8', dark:'#5A3420'},
+  bear:    {name:'דובה',      fur:'#A8754F', light:'#E6C7A6', dark:'#6E4A30'},
+  panda:   {name:'פנדה',      fur:'#F6F5F1', light:'#FFFFFF', dark:'#2B2B2E', body:'#2B2B2E'},
+  owl:     {name:'ינשופה',    fur:'#9C7457', light:'#F1E4D1', dark:'#6B4A35'},
+  dino:    {name:'דינוזאורית', fur:'#6CC08B', light:'#DDF3C9', dark:'#3E8E5D'},
+  unicorn: {name:'חד־קרן',    fur:'#EFE2FA', light:'#FFFFFF', dark:'#C9B8DA'},
+  squirrel:{name:'סנאית',     fur:'#C8743A', light:'#F3D6B4', dark:'#8A4B1F'}
+};
+const ANIMAL_ORDER = ['cat','bunny','fox','bear','panda','owl','dino','unicorn','squirrel'];
+
+/* parts drawn behind the body and head: tails, spikes, mane */
+function backSvg(a, A){
+  if(a==='squirrel') return `<path d="M140 226 Q206 222 196 150 Q190 104 150 96 Q176 120 168 150 Q160 182 132 196Z" fill="${A.fur}"/><path d="M150 210 Q192 200 186 154 Q182 126 160 112 Q174 136 168 160 Q162 186 142 200Z" fill="${A.light}" opacity=".55"/>`;
+  if(a==='dino') return `<path d="M140 214 Q196 214 204 176 Q184 196 148 192Z" fill="${A.fur}"/>
+    <g fill="${A.dark}"><path d="M70 50 L80 26 L90 46Z"/><path d="M90 44 L100 18 L110 44Z"/><path d="M110 46 L120 26 L130 50Z"/><path d="M130 56 L144 40 L146 64Z"/></g>`;
+  if(a==='unicorn') return `<path d="M128 52 Q170 60 166 110 Q176 140 156 162 Q150 128 136 104Z" fill="#C89BF0"/><path d="M134 66 Q160 80 156 116 Q164 136 150 150 Q146 120 136 100Z" fill="#7FC8F8"/><path d="M140 82 Q154 98 148 126" stroke="#FF9EC7" stroke-width="9" fill="none" stroke-linecap="round"/>`;
+  return '';
+}
+function earsSvg(a, A){
+  if(a==='cat') return `<path d="M50 78 L58 26 L94 54 Z" fill="${A.fur}"/><path d="M150 78 L142 26 L106 54 Z" fill="${A.fur}"/><path d="M60 66 L63 40 L82 55 Z" fill="#F4A9B8"/><path d="M140 66 L137 40 L118 55 Z" fill="#F4A9B8"/>`;
+  if(a==='bunny') return `<ellipse cx="74" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(-10 74 30)"/><ellipse cx="126" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(10 126 30)"/><ellipse cx="74" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(-10 74 32)"/><ellipse cx="126" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(10 126 32)"/>`;
+  if(a==='fox') return `<path d="M46 84 L50 18 L96 52 Z" fill="${A.fur}"/><path d="M154 84 L150 18 L104 52 Z" fill="${A.fur}"/><path d="M50 30 L52 18 L64 28 Z M150 30 L148 18 L136 28 Z" fill="${A.dark}"/>`;
+  if(a==='bear') return `<circle cx="56" cy="56" r="22" fill="${A.fur}"/><circle cx="144" cy="56" r="22" fill="${A.fur}"/><circle cx="56" cy="56" r="11" fill="${A.light}"/><circle cx="144" cy="56" r="11" fill="${A.light}"/>`;
+  if(a==='panda') return `<circle cx="56" cy="54" r="21" fill="${A.dark}"/><circle cx="144" cy="54" r="21" fill="${A.dark}"/>`;
+  if(a==='owl') return `<path d="M52 70 L50 30 L82 52Z" fill="${A.dark}"/><path d="M148 70 L150 30 L118 52Z" fill="${A.dark}"/>`;
+  if(a==='unicorn') return `<path d="M56 70 L60 34 L86 54Z" fill="${A.fur}"/><path d="M144 70 L140 34 L114 54Z" fill="${A.fur}"/><path d="M63 62 L65 44 L78 55Z M137 62 L135 44 L122 55Z" fill="#F4B8D8"/>`;
+  if(a==='squirrel') return `<path d="M54 74 L58 30 L86 54Z" fill="${A.fur}"/><path d="M146 74 L142 30 L114 54Z" fill="${A.fur}"/><path d="M58 30 L52 18 M58 30 L62 16 M142 30 L148 18 M142 30 L138 16" stroke="${A.dark}" stroke-width="4" stroke-linecap="round"/>`;
+  return ''; // dino: no ears
+}
+function faceSvg(a, A){
+  const eyes = (r=7) => `<circle cx="78" cy="100" r="${r}" fill="#2A2225"/><circle cx="122" cy="100" r="${r}" fill="#2A2225"/><circle cx="${78+r*.35}" cy="${100-r*.35}" r="${r*.34}" fill="#fff"/><circle cx="${122+r*.35}" cy="${100-r*.35}" r="${r*.34}" fill="#fff"/>`;
+  const cheeks = `<ellipse cx="66" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/><ellipse cx="134" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/>`;
+  const mouth = `<path d="M100 118 L100 124 M92 126 Q100 132 108 126" stroke="#3B2A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  const nose = c => `<path d="M94 113 Q100 119 106 113 Q100 110 94 113Z" fill="${c}"/>`;
+  if(a==='owl') return `<circle cx="78" cy="98" r="19" fill="${A.light}"/><circle cx="122" cy="98" r="19" fill="${A.light}"/>${eyes(9)}
+    <path d="M92 112 L100 128 L108 112Z" fill="#F2A33A"/>${cheeks}`;
+  if(a==='panda') return `<ellipse cx="76" cy="102" rx="15" ry="12" fill="${A.dark}" transform="rotate(-25 76 102)"/><ellipse cx="124" cy="102" rx="15" ry="12" fill="${A.dark}" transform="rotate(25 124 102)"/>
+    <circle cx="78" cy="100" r="6" fill="#fff"/><circle cx="122" cy="100" r="6" fill="#fff"/><circle cx="78" cy="100" r="3.6" fill="#2A2225"/><circle cx="122" cy="100" r="3.6" fill="#2A2225"/>
+    ${cheeks}${nose('#2A2225')}${mouth}`;
+  if(a==='dino') return `<ellipse cx="100" cy="124" rx="30" ry="18" fill="${A.light}"/>${eyes(7)}${cheeks}
+    <circle cx="92" cy="116" r="2.4" fill="${A.dark}"/><circle cx="108" cy="116" r="2.4" fill="${A.dark}"/>
+    <path d="M86 128 Q100 138 114 128" stroke="#2F5D41" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  const muzzle = a==='fox' ? `<path d="M62 112 Q100 160 138 112 Q120 104 100 108 Q80 104 62 112Z" fill="${A.light}"/>`
+               : a==='bear' ? `<ellipse cx="100" cy="122" rx="26" ry="19" fill="${A.light}"/>`
+               : a==='squirrel' ? `<ellipse cx="100" cy="122" rx="24" ry="17" fill="${A.light}"/>`
+               : a==='cat' ? `<ellipse cx="100" cy="122" rx="22" ry="15" fill="${A.light}"/>` : '';
+  const whisk = a==='cat'||a==='bunny' ? `<path d="M70 120 L46 116 M70 126 L46 128 M130 120 L154 116 M130 126 L154 128" stroke="${A.dark}" stroke-width="2" stroke-linecap="round"/>` : '';
+  const teeth = a==='squirrel' ? `<rect x="96" y="127" width="8" height="7" rx="1.5" fill="#fff" stroke="#3B2A2A" stroke-width="1.2"/>` : '';
+  return `${muzzle}${eyes(7)}${cheeks}${nose(a==='bunny'||a==='unicorn'?'#E58AA0':'#3B2A2A')}${mouth}${teeth}${whisk}`;
+}
+/* parts drawn on top of the head: horn, forelock */
+function headExtrasSvg(a, A){
+  if(a==='unicorn') return `<path d="M100 8 L90 50 L110 50Z" fill="#F7C948" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/><path d="M92 40 L108 34 M94 28 L106 24" stroke="#E0A800" stroke-width="2.4"/>
+    <path d="M80 50 Q96 40 112 50 Q100 60 86 64Z" fill="#FF9EC7"/>`;
+  if(a==='owl') return `<path d="M62 76 Q78 68 92 78 M108 78 Q122 68 138 76" stroke="${A.dark}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  return '';
+}
+/* body details */
+function bodySvg(a, A){
+  const body=A.body||A.fur;
+  let s=`<ellipse cx="100" cy="190" rx="54" ry="48" fill="${body}"/><ellipse cx="100" cy="198" rx="32" ry="30" fill="${a==='panda'?'#F6F5F1':A.light}" opacity=".95"/>`;
+  if(a==='owl') s+=`<path d="M48 176 Q40 214 70 230 Q62 200 66 172Z M152 176 Q160 214 130 230 Q138 200 134 172Z" fill="${A.dark}"/><path d="M86 188 q4 4 8 0 M106 188 q4 4 8 0 M96 204 q4 4 8 0 M86 218 q4 4 8 0 M106 218 q4 4 8 0" stroke="${A.dark}" stroke-width="2" fill="none"/>`;
+  if(a==='dino') s+=`<g fill="${A.dark}" opacity=".5"><circle cx="64" cy="186" r="6"/><circle cx="140" cy="200" r="5"/><circle cx="132" cy="176" r="4"/></g>`;
+  return s;
+}
+
+/* ---- items: [category, id, name, price, svg(A) or {back, front}] ---- */
+const CATS = [
+  {id:'outfit', name:'בגדים'}, {id:'hair', name:'תסרוקות'}, {id:'hat', name:'כובעים'},
+  {id:'glasses', name:'משקפיים'}, {id:'pet', name:'חיות מחמד'}, {id:'object', name:'חפצים'}
+];
+const ITEMS = [
+  // clothes (drawn on the body)
+  {cat:'outfit', id:'stripes', name:'חולצת פסים', price:4, svg:()=>`<path d="M52 170 Q100 150 148 170 L152 214 Q100 232 48 214Z" fill="#3E7BD8"/><path d="M50 182 Q100 166 150 182 M49 196 Q100 182 151 196 M49 210 Q100 198 151 210" stroke="#fff" stroke-width="6" fill="none"/>`},
+  {cat:'outfit', id:'dress', name:'שמלה', price:6, svg:()=>`<path d="M60 166 Q100 154 140 166 L146 186 L160 228 Q100 242 40 228 L54 186Z" fill="#E8577E"/><circle cx="80" cy="206" r="4" fill="#fff"/><circle cx="104" cy="214" r="4" fill="#fff"/><circle cx="126" cy="202" r="4" fill="#fff"/><circle cx="92" cy="186" r="4" fill="#fff"/><circle cx="118" cy="184" r="4" fill="#fff"/>`},
+  {cat:'outfit', id:'cape', name:'גלימה', price:8, svg:{back:()=>`<path d="M40 156 Q100 138 160 156 L176 236 Q100 226 24 236Z" fill="#7B4BC9"/>`, front:()=>`<path d="M66 156 L100 172 L134 156" stroke="#F2B21E" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="100" cy="172" r="7" fill="#F2B21E"/>`}},
+  {cat:'outfit', id:'overalls', name:'אוברול', price:5, svg:()=>`<path d="M58 186 L142 186 L150 224 Q100 238 50 224Z" fill="#2F9E8F"/><path d="M70 160 L74 190 M130 160 L126 190" stroke="#2F9E8F" stroke-width="9" stroke-linecap="round"/><rect x="86" y="194" width="28" height="18" rx="4" fill="#257E72"/>`},
+  // hair (on the head, between the ears)
+  {cat:'hair', id:'bangs', name:'פוני', price:3, svg:()=>`<path d="M54 82 Q60 40 100 40 Q140 40 146 82 Q132 64 120 74 Q110 58 100 72 Q88 58 80 74 Q68 62 54 82Z" fill="#4A2E22"/>`},
+  {cat:'hair', id:'curls', name:'תלתלים', price:4, svg:()=>`<g fill="#D9783A"><circle cx="70" cy="56" r="14"/><circle cx="88" cy="46" r="15"/><circle cx="108" cy="44" r="15"/><circle cx="126" cy="50" r="14"/><circle cx="138" cy="64" r="12"/><circle cx="60" cy="70" r="11"/></g>`},
+  {cat:'hair', id:'pony', name:'קוקו', price:5, svg:()=>`<path d="M60 70 Q70 42 100 42 Q130 42 140 70 Q120 56 100 58 Q80 56 60 70Z" fill="#2E2A33"/><path d="M150 70 Q186 76 178 130 Q170 110 154 100Z" fill="#2E2A33"/><circle cx="152" cy="74" r="7" fill="#E8457A"/>`},
+  {cat:'hair', id:'tuft', name:'ציצית', price:2, svg:()=>`<path d="M96 46 Q86 22 104 18 Q96 30 108 34 Q104 24 118 26 Q106 38 104 48Z" fill="#6B3E26"/>`},
+  // hats
+  {cat:'hat', id:'crown', name:'כתר', price:10, svg:()=>`<path d="M66 50 L72 18 L88 38 L100 12 L112 38 L128 18 L134 50Z" fill="#F2C230" stroke="#C99A12" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="36" r="5" fill="#E8457A"/><circle cx="80" cy="42" r="4" fill="#3E7BD8"/><circle cx="120" cy="42" r="4" fill="#3E7BD8"/>`},
+  {cat:'hat', id:'beanie', name:'כובע צמר', price:5, svg:()=>`<path d="M48 62 Q52 18 100 16 Q148 18 152 62Z" fill="#E05A47"/><rect x="44" y="56" width="112" height="16" rx="8" fill="#F5F0E6"/><circle cx="100" cy="12" r="11" fill="#F5F0E6"/>`},
+  {cat:'hat', id:'straw', name:'כובע קש', price:6, svg:()=>`<ellipse cx="100" cy="54" rx="80" ry="14" fill="#E8C66A"/><path d="M62 54 Q66 16 100 16 Q134 16 138 54Z" fill="#E8C66A"/><path d="M63 46 Q100 54 137 46 L138 54 Q100 60 62 54Z" fill="#3E9C6B"/>`},
+  {cat:'hat', id:'bow', name:'פפיון', price:3, svg:()=>`<path d="M118 48 L100 36 L102 62Z M118 48 L136 36 L134 62Z" fill="#E8457A"/><circle cx="118" cy="49" r="7" fill="#C72F63"/>`},
+  // glasses
+  {cat:'glasses', id:'round', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="4"><circle cx="78" cy="100" r="15"/><circle cx="122" cy="100" r="15"/><path d="M93 98 Q100 94 107 98"/></g>`},
+  {cat:'glasses', id:'hearts', name:'משקפי לב', price:6, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="3.5"><path d="M78 116 L62 100 Q58 86 70 86 Q76 86 78 92 Q80 86 86 86 Q98 86 94 100Z"/><path d="M122 116 L106 100 Q102 86 114 86 Q120 86 122 92 Q124 86 130 86 Q142 86 138 100Z"/></g><path d="M94 96 Q100 92 106 96" stroke="#D81B60" stroke-width="3" fill="none"/>`},
+  {cat:'glasses', id:'stars', name:'משקפי כוכב', price:7, svg:()=>{ const st=(x,y)=>`<path d="M${x} ${y-17} L${x+5} ${y-5} L${x+17} ${y-4} L${x+8} ${y+5} L${x+11} ${y+17} L${x} ${y+10} L${x-11} ${y+17} L${x-8} ${y+5} L${x-17} ${y-4} L${x-5} ${y-5}Z"/>`; return `<g fill="#FFD54F" fill-opacity=".7" stroke="#E0A800" stroke-width="3" stroke-linejoin="round">${st(78,100)}${st(122,100)}</g><path d="M94 98 Q100 94 106 98" stroke="#E0A800" stroke-width="3" fill="none"/>`; }},
+  {cat:'glasses', id:'shades', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="60" y="90" width="34" height="20" rx="8"/><rect x="106" y="90" width="34" height="20" rx="8"/></g><path d="M94 96 L106 96" stroke="#263238" stroke-width="4"/><path d="M66 95 L76 95" stroke="#fff" stroke-width="3" opacity=".6" stroke-linecap="round"/>`},
+  // pets (bottom corner)
+  {cat:'pet', id:'chick', name:'אפרוח', price:6, svg:()=>`<g transform="translate(0 0)"><ellipse cx="34" cy="222" rx="20" ry="16" fill="#FFD54F"/><circle cx="34" cy="198" r="13" fill="#FFD54F"/><circle cx="30" cy="196" r="2.4" fill="#2A2225"/><path d="M20 198 L13 201 L20 203Z" fill="#F59E0B"/><path d="M40 222 Q48 216 50 224" stroke="#F2B21E" stroke-width="3" fill="none"/></g>`},
+  {cat:'pet', id:'snail', name:'חילזון', price:5, svg:()=>`<path d="M8 234 Q40 238 64 232 Q60 222 50 224 L18 226Z" fill="#A5D6A7"/><circle cx="40" cy="214" r="18" fill="#C68B59"/><path d="M40 214 m-10 0 a10 10 0 1 1 10 10 a6 6 0 1 1 -6 -6" stroke="#8D5A35" stroke-width="3" fill="none"/><path d="M14 226 L8 210 M20 226 L18 210" stroke="#7CB342" stroke-width="3" stroke-linecap="round"/><circle cx="8" cy="208" r="3" fill="#2A2225"/><circle cx="18" cy="208" r="3" fill="#2A2225"/>`},
+  {cat:'pet', id:'puppy', name:'גור כלבים', price:9, svg:()=>`<ellipse cx="34" cy="222" rx="24" ry="15" fill="#D7B48A"/><circle cx="30" cy="198" r="16" fill="#D7B48A"/><ellipse cx="17" cy="198" rx="6" ry="12" fill="#8D6E4F"/><ellipse cx="43" cy="198" rx="6" ry="12" fill="#8D6E4F"/><circle cx="25" cy="196" r="2.6" fill="#2A2225"/><circle cx="35" cy="196" r="2.6" fill="#2A2225"/><ellipse cx="30" cy="204" rx="4" ry="3" fill="#2A2225"/><path d="M56 216 Q66 206 62 198" stroke="#D7B48A" stroke-width="5" fill="none" stroke-linecap="round"/>`},
+  {cat:'pet', id:'fish', name:'דג בצנצנת', price:7, svg:()=>`<path d="M14 196 Q10 236 36 238 Q62 236 58 196Z" fill="#B3E5FC" fill-opacity=".8" stroke="#81D4FA" stroke-width="3"/><rect x="12" y="190" width="48" height="8" rx="4" fill="#81D4FA"/><path d="M28 218 Q36 208 44 218 Q36 228 28 218Z M44 218 L52 212 L52 224Z" fill="#FF8A3D"/><circle cx="32" cy="216" r="1.8" fill="#2A2225"/>`},
+  // objects (held on the right)
+  {cat:'object', id:'balloon', name:'בלון', price:3, svg:()=>`<path d="M176 92 Q170 140 154 176" stroke="#555" stroke-width="2" fill="none"/><ellipse cx="178" cy="62" rx="20" ry="25" fill="#E8457A"/><path d="M172 87 L184 87 L178 94Z" fill="#E8457A"/><ellipse cx="171" cy="54" rx="5" ry="8" fill="#fff" opacity=".45"/>`},
+  {cat:'object', id:'wand', name:'שרביט קסמים', price:6, svg:()=>`<path d="M156 186 L182 126" stroke="#6D4C41" stroke-width="6" stroke-linecap="round"/><path d="M184 102 L189 115 L203 116 L192 124 L196 138 L184 130 L172 138 L176 124 L165 116 L179 115Z" fill="#FFD54F" stroke="#E0A800" stroke-width="2"/>`},
+  {cat:'object', id:'ball', name:'כדור', price:2, svg:()=>`<circle cx="174" cy="218" r="17" fill="#42A5F5"/><path d="M157 218 Q174 206 191 218 M174 201 Q166 218 174 235" stroke="#fff" stroke-width="4" fill="none"/>`},
+  {cat:'object', id:'flower', name:'פרח', price:4, svg:()=>`<path d="M162 186 L170 132" stroke="#43A047" stroke-width="5" stroke-linecap="round"/><g fill="#FF8AB3"><circle cx="170" cy="112" r="9"/><circle cx="184" cy="122" r="9"/><circle cx="180" cy="138" r="9"/><circle cx="162" cy="138" r="9"/><circle cx="157" cy="122" r="9"/></g><circle cx="170" cy="126" r="8" fill="#FFD54F"/>`}
+];
+const itemById = id => ITEMS.find(i=>i.id===id);
+const LAYER_ORDER = ['outfit','hair','hat','glasses','object','pet'];
+
+/* draw one character. worn = {cat: itemId}. preview = {cat: itemId} overrides (for "try on") */
+function drawChar(animal, worn={}, preview={}){
+  const A = ANIMALS[animal], w = {...worn, ...preview};
+  const it = c => w[c] ? itemById(w[c]) : null;
+  const part = (item, side) => !item ? '' : typeof item.svg === 'function' ? (side==='front' ? item.svg(A) : '') : (item.svg[side] ? item.svg[side](A) : '');
+  const out = it('outfit');
+  return `<svg viewBox="-6 -18 216 260" role="img" aria-label="${A.name}">
+    ${part(out,'back')}
+    ${backSvg(animal, A)}
+    ${bodySvg(animal, A)}
+    ${part(out,'front')}
+    ${animal==='fox' ? `<path d="M144 206 Q186 190 182 156 Q170 176 150 186Z" fill="${A.fur}"/><path d="M178 160 Q184 168 181 176 Q174 170 170 168Z" fill="#fff"/>` : ''}
+    ${animal==='bunny' ? `<circle cx="150" cy="214" r="12" fill="#fff"/>` : ''}
+    ${earsSvg(animal, A)}
+    <circle cx="100" cy="100" r="58" fill="${A.fur}"/>
+    ${faceSvg(animal, A)}
+    ${headExtrasSvg(animal, A)}
+    ${part(it('hair'),'front')}${part(it('hat'),'front')}${part(it('glasses'),'front')}${part(it('object'),'front')}${part(it('pet'),'front')}
+  </svg>`;
+}
+
+/* ---- earning: a mini lesson of 5 mental-addition questions ---- */
+const QUESTIONS = [[300,400],[60,30],[432,251],[253,172],[50,70]];
+const STARS_PER = 3, LESSON_LEN = QUESTIONS.length;
+const HINTS = {
+  '300+400':'3 מאות ועוד 4 מאות. כמה מאות זה?',
+  '60+30':'6 עשרות ועוד 3 עשרות.',
+  '432+251':'מאות: 400 + 200. עשרות: 30 + 50. אחדות: 2 + 1.',
+  '253+172':'מאות: 200 + 100. עשרות: 50 + 70 = 120. אחדות: 3 + 2.',
+  '50+70':'5 + 7 = 12, אז 50 + 70 = 120.'
+};
+
+function loadState(key){
+  const fresh = {animal:'cat', animals:['cat'], items:[], worn:{}, stars:10, lessons:0, q:0, wrong:0, gifts:0};
+  try{ const s = JSON.parse(localStorage.getItem(key)||'null'); return s ? {...fresh, ...s} : fresh; }catch(e){ return fresh; }
+}
+function saveState(key, s){ try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){} }
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const L = x => `<span class="ltr">${x}</span>`;
+const STAR = '<svg viewBox="0 0 24 24" class="star" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
+let VOICE=null;
+function pickVoice(){ try{ const he=speechSynthesis.getVoices().filter(v=>/^he|^iw/i.test(v.lang)); const s=v=>(/premium/i.test(v.name)?4:0)+(/enhanced/i.test(v.name)?3:0); VOICE=he.sort((a,b)=>s(b)-s(a))[0]||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){}
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+
+/* answer a question; returns {ok, stars, lessonDone, unlocked} */
+function answer(S, value){
+  const [x,y] = QUESTIONS[S.q];
+  if(+value !== x+y){ S.wrong++; return {ok:false, hint: S.wrong>=2 ? HINTS[`${x}+${y}`] : 'עוד לא. נסי שוב, את יכולה.'}; }
+  S.stars += STARS_PER; S.wrong = 0; S.q++;
+  let lessonDone=false, unlocked=null;
+  if(S.q >= LESSON_LEN){
+    S.q = 0; S.lessons++; lessonDone = true;
+    const next = ANIMAL_ORDER.find(a => !S.animals.includes(a));
+    if(next){ S.animals.push(next); unlocked = next; }
+  }
+  return {ok:true, stars:STARS_PER, lessonDone, unlocked};
+}
+
+    return {ANIMALS, drawChar};
+  })();
+  const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
+  const FACES={
+    lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+    nori:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40c-1-16 8-27 20-27s21 11 20 27c0 6-2 10-4 12H16c-2-2-4-6-4-12z" fill="#2E2A33"/><ellipse cx="32" cy="38" rx="15.5" ry="17" fill="#E9B98F"/><path d="M16 33c2-10 9-15 16-15s14 5 16 15c-6-2-11-6-14-11-3 6-10 10-18 11z" fill="#2E2A33"/><path d="M42 15l7-4-1 8z M42 15l8 3-6 4z" fill="#E8457A"/><circle cx="43.5" cy="16.5" r="2.4" fill="#C72F63"/><circle cx="26" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="38" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="22.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="41.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27.5 47c2.6 2.3 6.4 2.3 9 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
+  };
+  const IC={
+    gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/><circle cx="12" cy="12" r="6.6"/></svg>',
+    back:'<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+    gift:'<svg viewBox="0 0 100 100" aria-hidden="true" style="stroke:none"><rect x="16" y="42" width="68" height="46" rx="6" fill="#E8457A"/><rect x="10" y="30" width="80" height="16" rx="5" fill="#F06292"/><rect x="44" y="30" width="12" height="58" fill="#FFD54F"/><path d="M50 30 C38 10 18 16 30 28 Z M50 30 C62 10 82 16 70 28 Z" fill="#FFD54F"/></svg>',
+    down:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+    home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>',
+    lessons:'<svg viewBox="0 0 24 24"><path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>',
+    lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    close:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  const COIN='<svg class="sh-coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#F2C230" stroke="#C99A12" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#C99A12" stroke-width="1.6"/></svg>';
+  const ANIMALS=['cat','bunny','fox','bear','panda','owl','dino','unicorn','squirrel'];
+
+  /* the skills map (math-app/SKILLS-MAP.md): a topic opens when the topics it needs are done */
+  const TOPICS=[
+    {id:'ח1',strand:'add',name:'חיבור עד 20',after:[],lessons:[['ח1.1','חברים של 10'],['ח1.2','עוברות את העשר']]},
+    {id:'ח2',strand:'add',name:'ערך המקום עד 1000',after:['ח1'],lessons:[['ח2.1','עשרות ואחדות'],['ח2.2','מאות, עשרות, אחדות']]},
+    {id:'ח3',strand:'add',name:'חיבור דו־ספרתי בראש',after:['ח2'],lessons:[['ח3.1','עשרות שלמות'],['ח3.2','מקום אחרי מקום'],['ח3.3','קפיצות על הציר']]},
+    {id:'ח4',strand:'add',name:'חיבור תלת־ספרתי בראש',after:['ח3'],lessons:[['ח4.1','מקום אחרי מקום'],['ח4.2','קפיצות'],['ח4.3','השלמה למאה'],['ח4.4','מספר כמעט עגול'],['ח4.5','איזו דרך מתאימה כאן?']]},
+    {id:'כ1',strand:'mul',name:'מה זה כפל',after:['ח1'],lessons:[['כ1.1','קבוצות שוות'],['כ1.2','קפיצות שוות'],['כ1.3','מערך והחלפה']]},
+    {id:'כ2',strand:'mul',name:'לוח הכפל: העוגנים',after:['כ1','ח2'],lessons:[['כ2.1','כפול 2, 10, 1, 0'],['כ2.2','כפול 5']]},
+    {id:'כ3',strand:'mul',name:'לוח הכפל: בונות מהעוגנים',after:['כ2','ח3'],lessons:[['כ3.1','כפול 4 וכפול 8'],['כ3.2','כפול 3 וכפול 6'],['כ3.3','כפול 9'],['כ3.4','מה שנשאר, ואיזו דרך?']]}
+  ];
+  const BUILT={'ח4.1':'lesson.html','ח4.2':'play.html#h4.2','ח4.3':'play.html#h4.3','כ1.1':'play.html#k1.1','כ1.2':'play.html#k1.2','כ1.3':'play.html#k1.3'};
+  // until the diagnostic exists, the prototype acts as if it placed both girls after ח3
+  const PLACED=['ח1','ח2','ח3'];
+
+  const get=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?d:v; }catch(e){ return d; } };
+  const put=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+  let KIDS=get('mk:kids',[{id:'lili',name:'לילי',color:null,face:'lili'},{id:'nori',name:'נורי',color:null,face:'nori'}]);
+  let kidId=get('mk:kid',null);
+  const kid=()=>KIDS.find(k=>k.id===kidId)||null;
+  const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const avatar=k=>`<span class="sh-av" style="background:${accentOf(k)}">${FACES[k.face]||FACES.lili}</span>`;
+
+  /* coins live in the girl's home, so the home and the lessons share one purse */
+  const homeOf=id=>get('home:'+id,{});
+  const coins=(id=kidId)=>{ const h=homeOf(id); return h.coins==null?12:h.coins; };
+  function addCoins(n,id=kidId){ const h=homeOf(id); h.coins=(h.coins==null?12:h.coins)+n; put('home:'+id,h); renderBar(); }
+
+  const progOf=id=>({done:{},placed:PLACED.slice(),opened:[],...get('mk:prog:'+id,{})});
+  const saveProg=(id,p)=>put('mk:prog:'+id,p);
+  const topicDone=(p,t)=>p.placed.includes(t.id)||t.lessons.every(([l])=>p.done[l]);
+  const topicOpen=(p,t)=>p.placed.includes(t.id)||p.opened.includes(t.id)||t.after.every(a=>topicDone(p,TOPICS.find(x=>x.id===a)));
+  function lessonState(p,t,i){
+    const id=t.lessons[i][0];
+    if(p.done[id]) return 'done';
+    if(p.placed.includes(t.id)) return 'known';
+    if(!topicOpen(p,t)) return 'locked';
+    return i===0||p.done[t.lessons[i-1][0]] ? 'open' : 'locked';
+  }
+  function completeLesson(lessonId,id=kidId){
+    const p=progOf(id); const first=!p.done[lessonId]; p.done[lessonId]=true; saveProg(id,p);
+    const h=homeOf(id); let animal=null;
+    if(first){
+      if(h.chosen){ animal=ANIMALS.find(a=>!(h.animals||[]).includes(a)); if(animal){ (h.animals ||= []).push(animal); h.newAnimal=animal; } }
+      else h.pendingAnimals=(h.pendingAnimals||0)+1;
+      put('home:'+id,h);
+    }
+    return {first, animal, chosen:!!h.chosen};
+  }
+
+  /* ---------- top bar ---------- */
+  let opts={}, menu=false, gate=null, screen=null, bumpN=0, lastCoins=null, bumpT=0;
+  /* her animal's head, gently moving, next to the coins: the way into her home */
+  function petHtml(){
+    const h=opts.pet||homeOf(kidId), here=opts.page==='home';
+    let art, label;
+    if(h.chosen && CH.ANIMALS[h.animal]){
+      const w=h.worn||{}, head={hat:w.hat, hair:w.hair, glasses:w.glasses};
+      art=CH.drawChar(h.animal, head).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"'); label='הבית שלי';
+    } else { art=IC.gift; label='הבית שלי: חיה מחכה לך'; }
+    return here ? `<span class="sh-pet here" aria-hidden="true">${art}</span>` : `<a class="sh-pet ${bumpN?'happy':''}" href="home.html" aria-label="${label}" title="${label}">${art}</a>`;
+  }
+  function renderBar(){
+    const bar=document.getElementById('bar'); if(!bar) return;
+    const k=kid();
+    if(!k || screen){ bar.innerHTML=`<span class="sh-title">מתמטיקידס</span>`; return; }
+    const c=opts.coins!=null?opts.coins:coins();
+    // coins that just arrived float up next to the purse, and her animal hops
+    if(lastCoins!=null && c>lastCoins){ bumpN=c-lastCoins; clearTimeout(bumpT); bumpT=setTimeout(()=>{ bumpN=0; renderBar(); },1500); }
+    lastCoins=c;
+    // the lessons page is the main page: settings live there. Every other page has a way back to it.
+    const start = opts.page==='lessons'
+      ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>`
+      : `<a class="sh-back" href="index.html">${IC.back}<span>חזרה</span></a>`;
+    bar.innerHTML=`${start}<h1 class="sh-title">${opts.title||''}</h1>
+      ${petHtml()}
+      <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
+  }
+  function menuHtml(k){
+    const others=KIDS.filter(x=>x.id!==k.id);
+    return `<div class="sh-menu" role="menu">
+      <div class="sh-row sh-now">${avatar(k)}<span>${esc(k.name)}</span></div>
+      ${others.map(x=>`<button class="sh-row" role="menuitem" data-sh="kid" data-v="${x.id}">${avatar(x)}<span>לעבור ל${esc(x.name)}</span></button>`).join('')}
+      <div class="sh-sep"></div>
+      <p class="sh-h">הצבע שלי</p>
+      <div class="sh-sws">${COLORS.map(c=>`<button class="sh-sw" style="--c:${c.c}" data-sh="color" data-v="${c.id}" aria-label="צבע ${c.name}" aria-pressed="${k.color===c.id}">${k.color===c.id?IC.check:''}</button>`).join('')}</div>
+      <div class="sh-sep"></div>
+      <button class="sh-row sh-parent" role="menuitem" data-sh="gate"><span class="sh-lock">${IC.lock}</span><span>אזור הורים</span></button>
+    </div>`;
+  }
+
+  /* ---------- first entry (who / colour), parent gate and parent area ---------- */
+  const ONES=['','one','two','three','four','five','six','seven','eight','nine'], TENSW=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  function newGate(){ const t=2+Math.floor(Math.random()*8), o=1+Math.floor(Math.random()*9); return {n:t*10+o, words:`${TENSW[t]}-${ONES[o]}`, input:'', msg:'', open:false}; }
+  function renderOv(){
+    let ov=document.getElementById('sh-ov'); if(!ov){ ov=document.createElement('div'); ov.id='sh-ov'; document.body.appendChild(ov); }
+    if(screen==='who'){ ov.innerHTML=`<div class="sh-full"><div class="sh-card"><h1>מי לומדת היום?</h1><div class="sh-who">${KIDS.map(k=>`<button class="sh-whocard" style="--c:${k.color?accentOf(k):'var(--line)'}" data-sh="pick" data-v="${k.id}">${avatar(k)}${esc(k.name)}</button>`).join('')}</div></div></div>`; return; }
+    if(screen==='color'){ const k=kid(); ov.innerHTML=`<div class="sh-full"><div class="sh-card"><h1>שלום ${esc(k.name)}! איזה צבע את רוצה?</h1><p>אפשר להחליף אותו מתי שרוצים, בלחיצה על השם שלך למעלה.</p><div class="sh-sws big">${COLORS.map(c=>`<button class="sh-sw" style="--c:${c.c}" data-sh="first" data-v="${c.id}" aria-label="צבע ${c.name}"></button>`).join('')}</div></div></div>`; return; }
+    if(!gate){ ov.innerHTML=''; return; }
+    if(gate.open){ ov.innerHTML=`<div class="sh-scrim"><div class="sh-modal wide" role="dialog" aria-label="אזור הורים"><button class="sh-x" data-sh="gateClose" aria-label="סגירה">${IC.close}</button><h2>אזור הורים</h2>${parentHtml()}</div></div>`; return; }
+    ov.innerHTML=`<div class="sh-scrim"><div class="sh-modal" role="dialog" aria-label="שאלה להורים">
+      <button class="sh-x" data-sh="gateClose" aria-label="סגירה">${IC.close}</button>
+      <h2>שאלה להורים</h2><p>Type the number in digits:</p><p class="sh-en">${gate.words}</p>
+      <div class="sh-disp">${gate.input||'&nbsp;'}</div>${gate.msg?`<p>${gate.msg}</p>`:''}
+      <div class="sh-pad">${[7,8,9,4,5,6,1,2,3].map(n=>`<button data-sh="gKey" data-v="${n}">${n}</button>`).join('')}<button data-sh="gDel" aria-label="מחיקה">⌫</button><button data-sh="gKey" data-v="0">0</button><button class="ok" data-sh="gOk">אישור</button></div>
+    </div></div>`;
+  }
+  function parentHtml(){
+    return `<p class="sh-note">בגרסת הניסיון: כאילו האבחון מיקם את שתיהן אחרי "חיבור דו־ספרתי בראש". מסך ההורה המלא (סיכומים, הגדרות) יחובר בהמשך.</p>
+      <div class="sh-pcols">${KIDS.map(k=>{ const p=progOf(k.id);
+        return `<section><h3>${avatar(k)}${esc(k.name)} <span class="sh-coins">${COIN}${coins(k.id)}</span></h3><ul class="sh-topics">${TOPICS.map(t=>{
+          const done=topicDone(p,t), open=topicOpen(p,t), n=t.lessons.filter(([l])=>p.done[l]).length;
+          const st = p.placed.includes(t.id) ? 'ידוע מהאבחון' : done ? 'הושלם' : open ? `פתוח · ${n} מתוך ${t.lessons.length}` : 'נעול';
+          const btn = p.placed.includes(t.id) || done ? '' : p.opened.includes(t.id)
+            ? `<button data-sh="unopen" data-v="${k.id}|${t.id}">לבטל פתיחה</button>`
+            : open ? '' : `<button data-sh="open" data-v="${k.id}|${t.id}">לפתוח עכשיו</button>`;
+          return `<li><b>${t.name}</b><span>${st}</span>${btn}</li>`; }).join('')}</ul>
+          <button class="sh-reset" data-sh="resetProg" data-v="${k.id}">לאפס התקדמות בשיעורים</button></section>`; }).join('')}</div>`;
+  }
+  const ACT={
+    menu(){ menu=!menu; },
+    kid(v){ put('mk:kid',v); location.reload(); return 'stop'; },
+    color(v){ kid().color=v; put('mk:kids',KIDS); applyAccent(); opts.onColor?.(); },
+    gate(){ menu=false; gate=newGate(); },
+    gateClose(){ gate=null; opts.onParentClose?.(); },
+    gKey(v){ if(gate.input.length<3) gate.input+=v; gate.msg=''; },
+    gDel(){ gate.input=gate.input.slice(0,-1); },
+    gOk(){ if(+gate.input===gate.n) gate.open=true; else { gate=newGate(); gate.msg='לא מתאים. הנה מספר אחר.'; } },
+    open(v){ const [id,t]=v.split('|'), p=progOf(id); p.opened.push(t); saveProg(id,p); },
+    unopen(v){ const [id,t]=v.split('|'), p=progOf(id); p.opened=p.opened.filter(x=>x!==t); saveProg(id,p); },
+    resetProg(v){ saveProg(v,{done:{},placed:PLACED.slice(),opened:[]}); },
+    pick(v){ kidId=v; put('mk:kid',v); if(kid().color){ location.reload(); return 'stop'; } screen='color'; },
+    first(v){ kid().color=v; put('mk:kids',KIDS); location.reload(); return 'stop'; }
+  };
+  function applyAccent(){ document.documentElement.style.setProperty('--accent', accentOf(kid())); }
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('[data-sh]');
+    if(!t){ if(menu && !e.target.closest('.sh-menu')){ menu=false; renderBar(); } return; }
+    e.preventDefault();
+    if(ACT[t.dataset.sh]?.(t.dataset.v)==='stop') return;
+    renderBar(); renderOv();
+  });
+  // the parent gate takes the keyboard while it is open, before the page sees it
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && menu){ menu=false; renderBar(); e.stopImmediatePropagation(); return; }
+    if(!gate) return;
+    if(!gate.open){ if(/^[0-9]$/.test(e.key)) ACT.gKey(e.key); else if(e.key==='Backspace') ACT.gDel(); else if(e.key==='Enter') ACT.gOk(); else if(e.key==='Escape') ACT.gateClose(); else return; }
+    else if(e.key==='Escape') ACT.gateClose(); else return;
+    e.preventDefault(); e.stopImmediatePropagation(); renderOv();
+  },true);
+
+  /* a page calls Shell.start({page, title}) first. Returns false when the page must not run yet
+     (nobody chosen: the lessons page asks who is learning, other pages go there). */
+  function start(o){
+    opts=o||{}; applyAccent();
+    if(!kid() || !kid().color){
+      if(opts.page!=='lessons'){ location.replace('index.html'); return false; }
+      screen = kid() ? 'color' : 'who'; renderBar(); renderOv(); return false;
+    }
+    renderBar(); renderOv(); return true;
+  }
+  const isOpen=()=>menu||!!gate;
+  return {start, renderBar:o=>{ Object.assign(opts,o||{}); renderBar(); }, kid, accentOf, coins, addCoins, completeLesson,
+    TOPICS, BUILT, progOf, topicDone, topicOpen, lessonState, isOpen, esc, COIN, IC};
+})();
+
+/* ---------- one engine for every new lesson ----------
+   A lesson = explanation steps (fixed), two "together" exercises (fixed, broken into small boxes),
+   and "alone" exercises generated fresh each time from difficulty levels (math teacher's rules).
+   An exercise is a picture + a row of small boxes filled in order + an equation line; any box can
+   recognise typical wrong answers and say something specific about them. */
+const ICON={
+  speaker:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
+  bulb:'<svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  watch:'<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4M12 2v3"/></svg>',
+  pause:'<svg viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg>',
+  rotate:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>'
+};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const L=x=>`<span class="ltr">${x}</span>`;
+const r=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[r(0,a.length-1)];
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+const digits=n=>({h:Math.floor(n/100),t:Math.floor(n/10)%10,o:n%10});
+// typical wrong answers must not collide with each other or with the answer, or we can't tell what happened
+const distinct=(ans,ws)=>{ const v=ws.filter(x=>x!=null); return new Set([ans,...v]).size===v.length+1; };
+
+/* ---------- pictures ---------- */
+const COL={plate:'#5B8DEF', berry:'#E5484D', arc:'var(--accent)', arc2:'#D9980A', line:'var(--ink)'};
+/* an empty number line: only the numbers that matter, arcs sized by the jump */
+function numberLine({min,max,points=[],arcs=[],station=null}){
+  const X=v=>34+(v-min)/(max-min)*692, Y=118;
+  const arcSvg=arcs.map(a=>{ const x1=X(a.from), x2=X(a.to), h=Math.max(24,Math.min(84,(x2-x1)*.45)), mx=(x1+x2)/2;
+    return `<path d="M${x1} ${Y} Q${mx} ${Y-h*1.9} ${x2} ${Y}" fill="none" stroke="${a.color||COL.arc}" stroke-width="${a.small?2.5:3.5}" ${a.pending?'stroke-dasharray="7 6"':''} marker-end="url(#ah)"/>
+      <text x="${mx}" y="${Y-h-8}" text-anchor="middle" class="nl-j" fill="${a.color||COL.arc}">${a.label}</text>`; }).join('');
+  const pts=points.map(p=>`<path d="M${X(p.v)} ${Y-9} V${Y+9}" stroke="var(--ink)" stroke-width="${p.strong?4:2.5}"/>
+      <text x="${X(p.v)}" y="${Y+34}" text-anchor="middle" class="nl-n ${p.strong?'strong':''}">${p.label??p.v}</text>`).join('');
+  const st=station!=null?`<circle cx="${X(station)}" cy="${Y}" r="13" fill="var(--surface)" stroke="#D9980A" stroke-width="4"/><text x="${X(station)}" y="${Y+34}" text-anchor="middle" class="nl-n strong" fill="#B07A00">${station}</text>`:'';
+  return `<svg class="pic nl" viewBox="0 0 760 160" role="img" aria-label="ציר מספרים"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="context-stroke"/></marker></defs>
+    <path d="M14 ${Y} H746" stroke="var(--line)" stroke-width="4" stroke-linecap="round"/>${arcSvg}${st}${pts}</svg>`;
+}
+/* plates with strawberries laid out like dice, so she sees the number at once instead of counting */
+const DICE={1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],4:[[-1,-1],[1,-1],[-1,1],[1,1]],5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],
+  6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]],7:[[-1,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[1,1]],8:[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]],
+  9:[[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]],10:[[-2,-.6],[-1,-.6],[0,-.6],[1,-.6],[2,-.6],[-2,.6],[-1,.6],[0,.6],[1,.6],[2,.6]]};
+const berry=(x,y,s=1)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 9 C-9 4 -8 -6 0 -5 C8 -6 9 4 0 9Z" fill="${COL.berry}"/><path d="M-4 -6 L0 -3 L4 -6 L0 -8Z" fill="#3E9C4E"/></g>`;
+function plates({ks,lit=-1,totals=false,size=1}){
+  const n=ks.length, W=Math.max(1,n)*118, sp=118;
+  const ps=ks.map((k,i)=>{ const cx=W-59-i*sp, cy=62, /* counted from the right, like reading */ d=k>=10?13:15;
+    return `<g class="${i===lit?'lit':''}"><ellipse cx="${cx}" cy="${cy+4}" rx="54" ry="46" fill="rgba(0,0,0,.08)"/><ellipse cx="${cx}" cy="${cy}" rx="54" ry="46" fill="#fff" stroke="${i<=lit?'var(--accent)':COL.plate}" stroke-width="${i<=lit?5:4}"/>
+      <ellipse cx="${cx}" cy="${cy}" rx="38" ry="31" fill="none" stroke="#DCE6FB" stroke-width="2"/>${(DICE[k]||[]).map(([dx,dy])=>berry(cx+dx*d,cy+dy*d,k>=10?.85:1)).join('')}
+      ${totals&&i<=(lit<0?n-1:lit)?`<text x="${cx}" y="${cy+82}" text-anchor="middle" class="nl-n strong">${ks.slice(0,i+1).reduce((a,b)=>a+b,0)}</text>`:''}</g>`; }).join('');
+  return `<svg class="pic" viewBox="0 0 ${W} ${totals?160:124}" style="max-width:${Math.min(100,n*20)}%" role="img" aria-label="${n} צלחות">${ps}</svg>`;
+}
+/* a number line with a scale (a tick for every 1), for equal jumps from 0 */
+function jumpLine({max,k,count,landings=true,pendingNext=false,numbered=false}){
+  const X=v=>30+v/max*700, Y=118;
+  let t=''; for(let v=0;v<=max;v++){ const big=v%5===0; t+=`<path d="M${X(v)} ${Y-(big?10:5)} V${Y+(big?10:5)}" stroke="var(--ink)" stroke-width="${v%10===0?3:1.6}" opacity="${big?1:.55}"/>`;
+    if(v%10===0||(max<=30&&v%5===0)) t+=`<text x="${X(v)}" y="${Y+34}" text-anchor="middle" class="nl-n">${v}</text>`; }
+  let a=''; for(let i=0;i<count+(pendingNext?1:0);i++){ const x1=X(i*k), x2=X((i+1)*k), mx=(x1+x2)/2, h=Math.min(70,Math.max(26,(x2-x1)*.5)), pend=i>=count;
+    a+=`<path d="M${x1} ${Y} Q${mx} ${Y-h*1.9} ${x2} ${Y}" fill="none" stroke="${COL.arc}" stroke-width="3.2" ${pend?'stroke-dasharray="7 6"':''} marker-end="url(#ah2)"/>
+      <text x="${mx}" y="${Y-h-8}" text-anchor="middle" class="nl-j" fill="${COL.arc}">${numbered?`${i+1}`:`+${k}`}</text>
+      ${landings&&!pend?`<circle cx="${x2}" cy="${Y}" r="6" fill="${COL.arc}"/>`:''}`; }
+  return `<svg class="pic nl" viewBox="0 0 760 160" role="img" aria-label="ציר עם קפיצות"><defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="context-stroke"/></marker></defs>
+    <path d="M14 ${Y} H746" stroke="var(--line)" stroke-width="4"/><text x="${X(0)}" y="${Y-18}" text-anchor="middle" class="nl-s">התחלה</text>${t}${a}</svg>`;
+}
+/* an array of dots: rows go across, like lines in a notebook */
+function dotArray({rows,cols,lit=-1,sums=false,spin=false}){
+  const g=26, gap=c=>c>=5?10:0, W=cols*g+(cols>5?10:0)+(sums?70:20), H=rows*g+16;
+  let d=''; for(let i=0;i<rows;i++){ const on=i<=lit;
+    if(on) d+=`<rect x="4" y="${8+i*g}" width="${cols*g+(cols>5?10:0)+4}" height="${g-2}" rx="11" fill="color-mix(in srgb,var(--accent) 18%,transparent)"/>`;
+    for(let j=0;j<cols;j++) d+=`<circle cx="${18+j*g+(j>=5?gap(cols):0)}" cy="${20+i*g}" r="9" fill="${on?'var(--accent)':'#5B8DEF'}"/>`;
+    if(sums&&on) d+=`<text x="${cols*g+(cols>5?10:0)+30}" y="${27+i*g}" class="nl-n strong">${(i+1)*cols}</text>`; }
+  return `<svg class="pic arr ${spin?'spin':''}" viewBox="0 0 ${W} ${H}" style="max-width:${Math.min(96,W/4.2)}%" role="img" aria-label="${rows} שורות, ${cols} בכל שורה">${d}</svg>`;
+}
+const decomp=(n,a,b,ca='var(--accent)',cb='#D9980A')=>`<p class="decomp ltr">${n} = <span style="color:${ca}">${a}</span> + <span style="color:${cb}">${b}</span></p>`;
+
+/* ---------- the five lessons (spec: math-teacher, SKILLS-MAP.md) ---------- */
+const LESSONS={};
+
+/* ח4.2 jumps: keep the first number whole, jump hundreds then tens */
+function jumpsWrongs(a,b){ const B=Math.floor(b/100), T=Math.floor(b/10)%10, s=a+b, D=digits(a);
+  const carry=D.t+T>=10;
+  return [
+    [T&&B?a+B*100:null, `הגעת ל-${a+B*100}, זו הקפיצה הראשונה! נשארה עוד קפיצה של ${T*10}.`],
+    [B&&T?a+T*10:null, `קפצת ${T*10}. ומה עם ה-${B*100}?`],
+    [carry?s-100:null, `כמעט! ${a+B*100} ועוד ${T*10} עובר את ${(Math.floor((a+B*100)/100)+1)*100}. קפצי בעשרות.`],
+    [carry?+`${D.h+B}${D.t+T}${D.o}`:null, `יצא מספר ארוך מדי. ${D.t+T} עשרות זה ${(D.t+T)*10}, כלומר עוד מאה.`],
+    [B?a+B:null, `הוספת ${B} אחדות. ${B*100} זה ${B} מאות.`],
+    [B?a+B*10:null, `הוספת ${B} עשרות. ${B*100} זה ${B} מאות.`],
+    [s-10, 'קרוב! ספרי שוב את הקפיצות של 10.'], [s+10, 'קרוב! ספרי שוב את הקפיצות של 10.']
+  ]; }
+function wrongFrom(list,x,a){ const hit=list.find(([v])=>v===x); if(hit) return hit[1];
+  if(a!=null && x%10!==a%10) return `בקפיצות של מאות ועשרות האחדות לא זזות. התשובה חייבת להיגמר ב-${a%10}.`; return null; }
+LESSONS['h4.2']={id:'ח4.2', title:'קפיצות', explain:[
+  {say:'בשיעור הקודם פירקנו את שני המספרים. היום דרך נוספת: משאירות את 573 שלם, וקופצות.', vis:()=>numberLine({min:540,max:940,points:[{v:573,strong:1}]})+decomp(340,300,40)},
+  {say:'קודם 300: שלוש קפיצות של 100. 673, 773, 873.', vis:()=>numberLine({min:540,max:940,points:[{v:573,strong:1},{v:673},{v:773},{v:873,strong:1}],arcs:[{from:573,to:673,label:'+100'},{from:673,to:773,label:'+100'},{from:773,to:873,label:'+100'}]})+decomp(340,300,40)},
+  {say:'עכשיו 40: ארבע קפיצות של 10. 883, 893, 903, 913. עברנו את 900!', vis:()=>`<p class="decomp ltr">573 + 300 = 873</p>`+numberLine({min:866,max:920,points:[{v:873,strong:1},{v:883},{v:893},{v:900,label:'900',strong:1},{v:913,strong:1}],arcs:[873,883,893,903].map(v=>({from:v,to:v+10,label:'+10',color:COL.arc2}))})},
+  {say:'בדיקה: האחדות לא זזו. התחלנו ב-3 וסיימנו ב-3. אותה תשובה כמו בדרך של העמודות.', vis:()=>numberLine({min:540,max:940,points:[{v:573,strong:1},{v:873},{v:913,strong:1}],arcs:[{from:573,to:873,label:'+300'},{from:873,to:913,label:'+40',color:COL.arc2}]})+`<p class="decomp ltr">57<b class="hl">3</b> + 340 = 91<b class="hl">3</b></p>`}
+ ],
+ together:[[426,230],[568,250]].map(([a,b])=>()=>{ const B=Math.floor(b/100)*100, T=b-B, W=jumpsWrongs(a,b);
+   return {say:`${L(`${a} + ${b}`)}: קופצות.`, eq:[`${a} + ${b} =`,{sum:a+b}],
+    fields:[{q:`${b} זה ${B} ועוד כמה?`, label:`${b} = ${B} +`, ans:T},
+            {q:`קופצות ${B} מ-${a}. לאן הגעת?`, label:`${a} + ${B} =`, ans:a+B, wrong:x=>x===a+B/100?`הוספת ${B/100} אחדות. ${B} זה ${B/100} מאות.`:null},
+            {q:`קופצות ${T}. לאן הגעת?`, label:`${a+B} + ${T} =`, ans:a+b, wrong:x=>wrongFrom(W,x,a)||(T>=50?`בקפיצות של 10: ${[1,2,3,4,5].map(k=>a+B+k*10).join(', ')}.`:null)}],
+    vis:st=>{ const s=a+b, arcs=[]; if(st.done>=2||st.f===1) arcs.push({from:a,to:a+B,label:'+'+B,pending:st.done<2}); if(st.done>=3||st.f===2) arcs.push({from:a+B,to:s,label:'+'+T,color:COL.arc2,pending:st.done<3});
+      const pts=[{v:a,strong:1}]; if(st.done>=2) pts.push({v:a+B}); if(st.done>=3) pts.push({v:s,strong:1});
+      return numberLine({min:a-30,max:s+30,points:pts,arcs})+(st.done>=1?decomp(b,B,T):''); },
+    end:'הנחיתה האחרונה היא התשובה.'}; }),
+ levels:[1,2,2,4,5,6],
+ gen(lv){ let a,b,B,T;
+   for(;;){ a=r(121,689); const D=digits(a); if(!D.t||!D.o) continue;
+     if(lv===1){ B=r(1,4); T=0; if(D.h+B>9) continue; }
+     else { B=lv===4?0:r(1,4); T=r(1,8);
+       const tt=D.t+T; if(lv===2&&tt>9) continue; if((lv===4||lv===5)&&(tt<11||tt>15)) continue; if(lv===6&&tt!==10) continue; }
+     b=B*100+T*10; if(a+b>999||b<10) continue;
+     const W=jumpsWrongs(a,b); if(!distinct(a+b,W.map(w=>w[0]))) continue; break; }
+   const s=a+b, W=jumpsWrongs(a,b), Bh=B*100, Tt=T*10;
+   return {say:`כמה זה ${L(`${a} + ${b}`)}?`, eq:[`${a} + ${b} =`,{f:0}], fields:[{ans:s, wrong:x=>wrongFrom(W,x,a)}], showVis:'hint',
+     vis:st=>{ const arcs=[]; if(Bh) arcs.push({from:a,to:a+Bh,label:'+'+Bh,pending:!st.finished}); if(Tt) arcs.push({from:a+Bh,to:s,label:'+'+Tt,color:COL.arc2,pending:!st.finished});
+       return numberLine({min:a-30,max:s+30,points:[{v:a,strong:1},...(st.finished?[{v:s,strong:1}]:[])],arcs})+(Bh&&Tt?decomp(b,Bh,Tt):''); },
+     hints:[ Bh&&Tt?`איך מפרקות את ${b}? כמה מאות וכמה עשרות?`:`קופצות ${b} מ-${a}.`, Bh?`קפצי קודם ${Bh} מ-${a}. לאן הגעת?`:`קפצי ${Tt} בקפיצות של 10.`,
+       Bh&&Tt?`${a} ← ${a+Bh}. עכשיו ${Tt} בקפיצות של 10.`:`${a} ועוד ${b} זה ${s}.`], level:lv}; },
+ star(){ return {star:true, say:`⭐ שאלת אתגר: ${L('468 + 357')} בשלוש קפיצות: 300, 50, 7.`, eq:['468 + 357 =',{f:0}], fields:[{ans:825, wrong:x=>x===815?'כמעט! 818 ועוד 7 עובר את 820.':null}], showVis:'hint',
+   vis:st=>numberLine({min:440,max:850,points:[{v:468,strong:1},...(st.finished?[{v:768},{v:818},{v:825,strong:1}]:[])],arcs:[{from:468,to:768,label:'+300',pending:!st.finished},{from:768,to:818,label:'+50',color:COL.arc2,pending:!st.finished},{from:818,to:825,label:'+7',small:1,color:'#23895A',pending:!st.finished}]}),
+   hints:['קודם 300. לאן מגיעים?','768. עכשיו עוד 50.','768 ← 818 ← 825.']}; },
+ parent:'קפיצות מתאימות כשהמספר השני עגול. שאלי אותה: "מתי קל לך לקפוץ, ומתי עמודות?"'
+};
+
+/* ח4.3 completing to the hundred */
+const missWrong=(x,a)=>{ const t=Math.floor(a/10)%10, o=a%10, need=100-a%100;
+  if(o && x===(10-t)*10+(10-o)) return `בואי נבדוק: ${a%100} + ${x} = ${a%100+x}. זה יותר מדי ב-10. קודם עד העשרת (${10-o}), ואז עד המאה (${need-(10-o)}).`;
+  if(o && x===10-o) return `נכון, זה עד ${a+10-o}. ומשם עד ${a+need}?`; return null; };
+function completeWrongs(a,b){ const up=(Math.floor(a/100)+1)*100, c=up-a, s=a+b;
+  return [[up===s?null:up, `הגעת ל-${up}! נשארו עוד ${b-c} מתוך ${b}.`],[up+b, `${c} מתוך ${b} כבר שימשו כדי להגיע ל-${up}. מוסיפות רק מה שנשאר.`],
+    [s-100, `${a} ועוד ${b} עובר את ${up}, אז התשובה גדולה מ-${up}.`],[s-10, `${a} ועוד ${b} עובר את ${up}. בדקי שוב מה נשאר אחרי ${up}.`]]; }
+LESSONS['h4.3']={id:'ח4.3', title:'השלמה למאה', explain:[
+  {say:'את מכירה חברים של 10: 7 ו-3. יש גם חברים של 100. כמה חסר ל-68 עד 100? קודם עד 70: חסרים 2. ומ-70 עד 100: עוד 30. ביחד 32.', vis:()=>numberLine({min:60,max:104,points:[{v:68,strong:1},{v:70}],station:100,arcs:[{from:68,to:70,label:'+2',small:1,color:COL.arc2},{from:70,to:100,label:'+30'}]})+`<p class="decomp">חסרים ${L('32')}</p>`},
+  {say:'573 + 27: ל-573 חסרים 27 עד 600. ו-27 הוא בדיוק המספר השני! אז התשובה היא 600.', vis:()=>numberLine({min:560,max:610,points:[{v:573,strong:1}],station:600,arcs:[{from:573,to:600,label:'+27'}]})},
+  {say:'468 + 35: ל-468 חסרים 32 עד 500. לוקחות 32 מתוך 35, ונשארים 3. 500 ועוד 3 זה 503.', vis:()=>numberLine({min:455,max:512,points:[{v:468,strong:1},{v:503,strong:1}],station:500,arcs:[{from:468,to:500,label:'+32'},{from:500,to:503,label:'+3',small:1,color:COL.arc2}]})+decomp(35,32,3)},
+  {say:'מתי זה עוזר? כשמספר קרוב למאה הבאה, כמו 468. ב-412 + 35 נוח יותר לקפוץ.', vis:()=>numberLine({min:400,max:510,points:[{v:412},{v:468,strong:1}],station:500})}
+ ],
+ together:[
+  ()=>({say:`${L('380 + 45')}: קודם משלימות ל-400.`, eq:['380 + 45 =',{sum:425}],
+    fields:[{q:'כמה חסר מ-380 עד 400?', label:'380 → 400', ans:20, wrong:x=>x===30?'ספרי בעשרות: 390, 400. כמה עשרות?':null},{q:'45 זה 20 ועוד כמה?', label:'45 = 20 +', ans:25},{q:'400 + 25 = ?', label:'400 + 25 =', ans:425, wrong:x=>x===445?'את ה-20 כבר הוספנו כדי להגיע ל-400.':null}],
+    vis:st=>numberLine({min:370,max:435,points:[{v:380,strong:1},...(st.done>=3?[{v:425,strong:1}]:[])],station:400,arcs:[...(st.done>=1?[{from:380,to:400,label:'+20'}]:[]),...(st.done>=2?[{from:400,to:425,label:'+25',color:COL.arc2,pending:st.done<3}]:[])]})+(st.done>=2?decomp(45,20,25):'')}),
+  ()=>({say:`${L('476 + 38')}: קודם משלימות ל-500.`, eq:['476 + 38 =',{sum:514}],
+    fields:[{q:'כמה חסר מ-476 עד 480?', label:'476 → 480', ans:4},{q:'ומ-480 עד 500?', label:'480 → 500', ans:20},{q:'חסרים 24. ו-38 זה 24 ועוד כמה?', label:'38 = 24 +', ans:14, wrong:x=>x===24?'24 כבר הלכו להשלמה. ספרי מ-24 עד 38.':null},{q:'500 + 14 = ?', label:'500 + 14 =', ans:514, wrong:x=>x===538?'מוסיפות רק את מה שנשאר: 14.':null}],
+    vis:st=>numberLine({min:468,max:522,points:[{v:476,strong:1},...(st.done>=1?[{v:480}]:[]),...(st.done>=4?[{v:514,strong:1}]:[])],station:500,arcs:[...(st.done>=1?[{from:476,to:480,label:'+4',small:1,color:'#23895A'}]:[]),...(st.done>=2?[{from:480,to:500,label:'+20'}]:[]),...(st.done>=3?[{from:500,to:514,label:'+14',color:COL.arc2,pending:st.done<4}]:[])]})+(st.done>=3?decomp(38,24,14):'')})
+ ],
+ levels:[1,1,3,4,4,6],
+ gen(lv){ let a,b;
+   for(;;){ const H=r(1,8);
+     if(lv===1){ const T=r(7,9); a=H*100+T*10; const c=100-T*10; b=c+r(1,49); if(b>=100||b%10===0) continue; }
+     else if(lv===3){ const rr=r(71,98); if(rr%10===0) continue; a=H*100+rr; b=100-rr; }
+     else if(lv===4){ const rr=r(71,98); if(rr%10===0) continue; a=H*100+rr; b=100-rr+r(1,40); if(b>=100||b%10===0) continue; }
+     else { const rr=r(91,98); a=r(1,6)*100+rr; const c=100-rr; b=r(1,3)*100+r(1,8)*10+r(c,9); }
+     if(a+b>999) continue; if(!distinct(a+b,completeWrongs(a,b).map(w=>w[0]))) continue; break; }
+   const up=(Math.floor(a/100)+1)*100, c=up-a, s=a+b, W=completeWrongs(a,b);
+   return {say:`כמה זה ${L(`${a} + ${b}`)}?`, eq:[`${a} + ${b} =`,{f:0}], fields:[{ans:s, wrong:x=>wrongFrom(W,x)}], showVis:'hint',
+     vis:st=>numberLine({min:a-Math.max(8,c*.3),max:s+Math.max(8,(s-up)*.3+6),points:[{v:a,strong:1},...(st.finished?[{v:s,strong:1}]:[])],station:up,arcs:[{from:a,to:up,label:'+'+c},...(s>up?[{from:up,to:s,label:'+'+(s-up),color:COL.arc2,pending:!st.finished}]:[])]})+(s>up?decomp(b,c,b-c):''),
+     hints:[`לאיזו מאה ${a} קרוב? כמה חסר לו עד שם?`, a%10?`מ-${a} עד ${a+10-a%10} חסרים ${10-a%10}, ומשם עד ${up} עוד ${c-(10-a%10)}. ביחד ${c}. כמה נשאר מ-${b}?`:`עד ${up} חסרים ${c}. כמה נשאר מ-${b}?`,
+       `${a} + ${c} = ${up}, ונשארו ${b-c}. ${up} + ${b-c} = ?`], level:lv}; },
+ star(){ return {star:true, say:'⭐ שאלת אתגר: כמה חסר מ-387 עד 1000?', eq:['387 + ? = 1000 →',{f:0}], fields:[{ans:613, wrong:x=>missWrong(x,387)||(x===713?'קודם עד 390, אחר כך עד 400, ואז עד 1000.':null)}], showVis:'hint',
+   vis:()=>numberLine({min:370,max:1010,points:[{v:387,strong:1},{v:400}],station:1000,arcs:[{from:387,to:400,label:'+13',small:1,color:COL.arc2},{from:400,to:1000,label:'+?',pending:1}]}),
+   hints:['קודם עד 390, אחר כך עד 400, ואז עד 1000.','מ-387 עד 400 חסרים 13. ומ-400 עד 1000?','13 ועוד 600.']}; },
+ parent:'הטעות 68 + 42 = 100 נפוצה מאוד. אם היא חוזרת, תרגלו בעל פה "חברים של 100" עם מספרים כמו 70, 75, 68.'
+};
+
+/* כ1.1 equal groups: "3 × 4" is "3 פעמים 4": the first number says how many times, the second how many each time */
+function timesWrongs(n,k){ return [[n+k,`חיברת את מספר הצלחות למספר התותים. בכל צלחת ${k}: כמה בשתי צלחות? ובשלוש?`],[k,'זה בצלחת אחת. וכמה בכל הצלחות?'],[(n-1)*k,'ספרי שוב את הצלחות.'],[(n+1)*k,'ספרי שוב את הצלחות.']]; }
+function pickNK(used,ks=[2,3,4,5,10],nmax=5,pmax=30){ for(let t=0;;t++){ const n=r(2,nmax), k=pick(ks); if(n===k||n*k>pmax) continue; if(t<300&&(used.has(n+'x'+k)||!distinct(n*k,timesWrongs(n,k).map(w=>w[0])))) continue; used.add(n+'x'+k); return [n,k]; } }
+const swapSoft=(n,k)=>x=>x===k&&n!==k?{soft:1,text:`יוצא אותו מספר, נכון! כאן כותבות קודם כמה פעמים: ${n} צלחות, אז ${n} × ${k}.`}:null;
+LESSONS['k1.1']={id:'כ1.1', title:'קבוצות שוות', explain:[
+  {say:'יש פה 3 צלחות, ובכל צלחת 4 תותים. בכל הצלחות אותו מספר: אלה קבוצות שוות.', vis:()=>plates({ks:[4,4,4]})},
+  {say:'כמה תותים יש? אפשר לחבר: 4 + 4 + 4 = 12.', vis:()=>plates({ks:[4,4,4],lit:2,totals:true})+`<p class="decomp ltr">4 + 4 + 4 = 12</p>`},
+  {say:'יש דרך קצרה לכתוב: 3 × 4. קוראים "שלוש כפול ארבע", וזה אומר 3 פעמים 4. הראשון: כמה פעמים. השני: כמה בכל פעם.', vis:()=>plates({ks:[4,4,4]})+`<p class="decomp ltr"><span class="cp">3</span> × <span class="ck">4</span> = 12</p><p class="legend"><span class="cp">3 צלחות</span> · <span class="ck">4 בכל צלחת</span></p>`},
+  {say:'ופה? בצלחת אחת 2, בשנייה 5, בשלישית 3. אפשר לכתוב "פעמים"?', vis:()=>plates({ks:[2,5,3]}), ask:{options:['כן','לא'], ok:1, then:'נכון, כדי לכתוב "פעמים" כל הקבוצות צריכות להיות שוות.', no:'בואי נסתכל: בכל צלחת מספר אחר. "פעמים" זה רק כשבכל הקבוצות אותו מספר.'}}
+ ],
+ together:[
+  ()=>({say:'5 צלחות, ובכל אחת 2 תותים.', eq:['5 × 2 =',{f:3}], fields:[{q:'כמה צלחות?',label:'צלחות',ans:5},{q:'כמה בכל צלחת?',label:'בכל צלחת',ans:2},{q:'כמה זה 2 + 2 + 2 + 2 + 2?',label:'2 + 2 + 2 + 2 + 2 =',ans:10,wrong:x=>x===7?'חיברת צלחות ותותים. 2, 4, 6, ...':null},{q:'אז כמה זה 5 × 2?',ans:10}],
+    vis:st=>plates({ks:[2,2,2,2,2],lit:st.done>=2?4:-1,totals:st.done>=3})}),
+  ()=>({say:'4 צלחות, ובכל אחת 3 תותים.', eq:[{f:3},'×',{f:4},'=',{f:5}], fields:[{q:'כמה צלחות?',label:'צלחות',ans:4},{q:'כמה בכל צלחת?',label:'בכל צלחת',ans:3},{q:'כמה זה 3 + 3 + 3 + 3?',label:'3 + 3 + 3 + 3 =',ans:12},
+      {q:'עכשיו כתבי את התרגיל בעצמך: כמה פעמים?',ans:4,wrong:swapSoft(4,3)},{q:'וכמה בכל פעם?',ans:3},{q:'וכמה יוצא?',ans:12}],
+    vis:st=>plates({ks:[3,3,3,3],lit:st.done>=2?3:-1,totals:st.done>=3})})
+ ],
+ levels:['total','write','choice','repeat','write'],
+ gen(lv,used){ const [n,k]=pickNK(used); const W=timesWrongs(n,k), wr=x=>wrongFrom(W,x);
+   const help=[`כמה צלחות? וכמה בכל צלחת?`,`ספרי בקפיצות: ${k}, ${2*k}, ...`,`${Array(n).fill(k).join(' + ')} = ${n*k}`];
+   if(lv==='total') return {say:`${n} צלחות, ובכל צלחת ${k} תותים. כמה תותים יש בסך הכול?`, eq:['סך הכול:',{f:0}], fields:[{ans:n*k,wrong:wr}], showVis:'always', vis:st=>plates({ks:Array(n).fill(k),lit:st.helped||st.finished?n-1:-1,totals:st.helped||st.finished}), hints:help, level:lv};
+   if(lv==='write') return {say:'כתבי את התרגיל של התמונה, וכמה יוצא.', eq:[{f:0},'×',{f:1},'=',{f:2}], fields:[{q:'כמה פעמים? (כמה צלחות)',ans:n,wrong:swapSoft(n,k)},{q:'כמה בכל פעם?',ans:k},{q:'כמה יוצא?',ans:n*k,wrong:wr}], showVis:'always', vis:st=>plates({ks:Array(n).fill(k),lit:st.helped||st.finished?n-1:-1,totals:st.helped||st.finished}), hints:help, level:lv};
+   if(lv==='choice'){ const odd=[k-1,k+2,k].map(x=>Math.max(1,Math.min(10,x))); const opts=shuffle([{html:plates({ks:Array(n).fill(k)}),ok:1},{html:plates({ks:[n,k]}),ok:0,why:`זו צלחת עם ${n} וצלחת עם ${k}. ${n} × ${k} זה ${n} צלחות, בכל אחת ${k}.`},{html:plates({ks:Array(n).fill(0).map((_,i)=>odd[i%3])}),ok:0,why:'כאן הצלחות לא שוות. "פעמים" זה רק כשבכל הצלחות אותו מספר.'}]);
+     return {say:`איזו תמונה היא ${L(`${n} × ${k}`)}?`, eq:[], fields:[{choice:opts, wrongText:i=>opts[i].why}], showVis:'never', hints:[`${n} × ${k}: ${n} פעמים ${k}. כמה צלחות צריכות להיות?`,`מחפשות ${n} צלחות, ובכל אחת בדיוק ${k}.`,'זו התמונה עם הצלחות השוות.'], level:lv}; }
+   return {say:'כמה פעמים כתוב '+k+'?', eq:[`${Array(n).fill(k).join(' + ')} =`,{f:0},`× ${k}`], fields:[{ans:n,wrong:x=>x===n*k?`${n*k} זה כמה יוצא. כמה פעמים כתוב ${k}?`:x===k?`${k} זה כמה בכל פעם. כמה פעמים הוא כתוב?`:null}], showVis:'hint', vis:()=>plates({ks:Array(n).fill(k)}), hints:[`ספרי כמה פעמים כתוב ${k}.`,`כל ${k} הוא צלחת אחת. כמה צלחות?`,`${n} פעמים.`], level:lv}; },
+ star(){ return {star:true, say:'⭐ שאלת אתגר: יש 12 תותים. רוצות לחלק אותם ל-3 צלחות, בכל צלחת אותו מספר. כמה בכל צלחת?', eq:['בכל צלחת:',{f:0}], fields:[{ans:4,wrong:x=>x===9?'9 זה אם לוקחים 3. צריך שיהיה אותו מספר בכל צלחת, ו-12 ביחד.':x===36?'זה יותר מדי. יש רק 12 תותים.':null}], showVis:'hint',
+   vis:st=>plates({ks:st.finished?[4,4,4]:[0,0,0]}), hints:['נסי לשים תות אחד בכל צלחת, ועוד אחד...','3 פעמים כמה זה 12?','3 × 4 = 12.']}; },
+ parent:'בבית: "תני לי 4 פעמים 3 כפיות". העיקר שתאמר "פעמים" ותראה קבוצות שוות.'
+};
+
+/* כ1.2 equal jumps from 0 on a scaled line */
+function jumpWrongs(n,k){ return [[(n-1)*k,'ספרי את הקשתות, לא את הנקודות. ה-0 הוא ההתחלה.'],[(n+1)*k,'ספרי את הקשתות, לא את הנקודות. ה-0 הוא ההתחלה.'],[n+k,`זה ${n} ועוד ${k}. אבל יש ${n} קפיצות, ובכל אחת ${k}.`],[n*k-1,`קפיצה של ${k}: מ-${(n-1)*k} סופרות ${k} שנתות.`],[n*k+1,`קפיצה של ${k}: מ-${(n-1)*k} סופרות ${k} שנתות.`],[k,'זו קפיצה אחת. כמה קפיצות צריך?']]; }
+const maxFor=p=>p<=30?30:50;
+LESSONS['k1.2']={id:'כ1.2', title:'קפיצות שוות', explain:[
+  {say:'זוכרת 4 צלחות עם 5 תותים? עכשיו כל צלחת הופכת לקפיצה של 5.', vis:()=>plates({ks:[5,5,5,5]})+jumpLine({max:30,k:5,count:4,landings:false})},
+  {say:'מתחילות ב-0. קפיצה ראשונה: 5. שנייה: 10. שלישית: 15. רביעית: 20.', vis:()=>jumpLine({max:30,k:5,count:4})+`<p class="decomp ltr">5, 10, 15, 20</p>`},
+  {say:'4 קפיצות של 5, כלומר 4 פעמים 5: 4 × 5 = 20. סופרות קפיצות, לא שנתות. ה-0 הוא ההתחלה, לא קפיצה.', vis:()=>jumpLine({max:30,k:5,count:4,numbered:true})+`<p class="decomp ltr">4 × 5 = 20</p>`},
+  {say:'3 × 10: קפיצות של 10. 10, 20, 30.', vis:()=>jumpLine({max:50,k:10,count:3})+`<p class="decomp ltr">3 × 10 = 30</p>`}
+ ],
+ together:[[6,2],[3,4]].map(([n,k])=>()=>({say:`${L(`${n} × ${k}`)}: ${n} קפיצות של ${k}. לאן נוחתות בכל קפיצה?`, eq:[`${n} × ${k} =`,{f:n}],
+   fields:[...Array(n).fill(0).map((_,i)=>({q:`קפיצה ${i+1}: לאן הגעת?`,label:`קפיצה ${i+1}`,ans:(i+1)*k,wrong:x=>x===i*k+1||x===(i+1)*k-1?`קפיצה של ${k}: מ-${i*k} סופרות ${k} שנתות.`:null})),{q:`אז כמה זה ${n} × ${k}?`,ans:n*k,wrong:x=>wrongFrom(jumpWrongs(n,k),x)}],
+   vis:st=>jumpLine({max:maxFor(n*k),k,count:Math.min(st.done,n),pendingNext:st.done<n})})),
+ levels:[2,10,5,'write','34'],
+ gen(lv,used){ let n,k; const ks=lv==='write'||lv==='34'?[3,4]:[lv];
+   for(let t=0;;t++){ n=r(2,6); k=pick(ks); const p=n*k; if(n===k||p>(k>=5?50:30)) continue; if(t<300&&(used.has(n+'x'+k)||!distinct(p,jumpWrongs(n,k).map(w=>w[0])))) continue; used.add(n+'x'+k); break; }
+   const W=jumpWrongs(n,k), help=[`כמה קפיצות? וכמה כל קפיצה?`,`הראשונה מגיעה ל-${k}. לאן השנייה?`,Array(n).fill(0).map((_,i)=>(i+1)*k).join(', ')], max=maxFor(n*k);
+   if(lv==='write') return {say:'כתבי את התרגיל של הקפיצות, וכמה יוצא.', eq:[{f:0},'×',{f:1},'=',{f:2}], fields:[{q:'כמה קפיצות?',ans:n,wrong:x=>x===k?{soft:1,text:`יוצא אותו מספר! כאן כותבות קודם כמה קפיצות: ${n}.`}:x===n+1?'ספרי את הקשתות, לא את הנקודות.':null},{q:'כמה כל קפיצה?',ans:k},{q:'לאן נחתו בסוף?',ans:n*k,wrong:x=>wrongFrom(W,x)}],
+     showVis:'always', vis:st=>jumpLine({max,k,count:n,landings:st.finished,numbered:!st.finished}), hints:help, level:lv};
+   return {say:`כמה זה ${L(`${n} × ${k}`)}? ${n} קפיצות של ${k}.`, eq:[`${n} × ${k} =`,{f:0}], fields:[{ans:n*k,wrong:x=>wrongFrom(W,x)}], showVis:'hint',
+     vis:st=>jumpLine({max,k,count:st.finished?n:1,pendingNext:!st.finished}), hints:help, level:lv}; },
+ star(){ return {star:true, say:'⭐ שאלת אתגר: קפצו קפיצות של 5 והגיעו ל-25. כמה קפיצות?', eq:['קפיצות:',{f:0}], fields:[{ans:5,wrong:x=>x===20?'20 זה לאן מגיעים לפני הקפיצה האחרונה. כמה קשתות?':x===6?'ה-0 הוא ההתחלה, לא קפיצה.':null}], showVis:'hint',
+   vis:st=>jumpLine({max:30,k:5,count:5,numbered:st.finished}), hints:['ספרי בחמישיות עד 25: 5, 10, ...','5, 10, 15, 20, 25: כמה מספרים אמרת?','5 קפיצות.']}; },
+ parent:'ספירה בקפיצות (5, 10, 15) היא הבסיס ללוח הכפל. אפשר לתרגל אותה בקול בהליכה.'
+};
+
+/* כ1.3 arrays and turning them around */
+LESSONS['k1.3']={id:'כ1.3', title:'מערך והחלפה', explain:[
+  {say:'3 צלחות עם 5 תותים. נסדר כל צלחת בשורה, ונוריד את הצלחות. זה נקרא מערך: 3 שורות, בכל שורה 5.', vis:()=>plates({ks:[5,5,5]})+dotArray({rows:3,cols:5})},
+  {say:'3 שורות של 5: 3 × 5. סופרות לפי שורות: 5, 10, 15.', vis:()=>dotArray({rows:3,cols:5,lit:2,sums:true})+`<p class="decomp ltr">3 × 5 = 15</p>`},
+  {say:'עכשיו נסובב.', vis:st=>st.rot?dotArray({rows:5,cols:3,spin:true})+`<p class="decomp ltr">5 × 3 = 15 &nbsp;&nbsp; 3 × 5 = 15</p>`:dotArray({rows:3,cols:5}), ask:{rotate:1, then:'עכשיו 5 שורות, בכל שורה 3: 5 × 3. לא הוספנו אף נקודה ולא הורדנו. אז 5 × 3 = 15, כמו 3 × 5.'}},
+  {say:'זה עוזר! 8 × 2 זה 8 קפיצות קטנות. מסובבות: 2 × 8 = 8 + 8 = 16. בוחרות את הסדר הנוח.', vis:()=>`<div class="pair">${dotArray({rows:8,cols:2})}<span class="arrow-r">⟵</span>${dotArray({rows:2,cols:8,spin:true})}</div><p class="decomp ltr">8 × 2 = 2 × 8 = 16</p>`}
+ ],
+ together:[
+  ()=>({say:'מערך של נקודות.', eq:[], fields:[{q:'כמה שורות? (שורה הולכת לרוחב)',label:'שורות',ans:2,wrong:x=>x===7?'זה כמה נקודות יש בשורה אחת. שורה הולכת לרוחב, כמו שורה במחברת. כמה שורות כאלה?':null},{q:'כמה בכל שורה?',label:'בכל שורה',ans:7},{q:'2 × 7 = ?',label:'2 × 7 =',ans:14,wrong:x=>x===9?'חיברת שורות ונקודות. 7, 14...':null},
+      {q:'עכשיו לחצי על "לסובב".',rotate:1},{q:'כמה שורות עכשיו?',label:'שורות',ans:7},{q:'כמה בכל שורה?',label:'בכל שורה',ans:2},{q:'7 × 2 = ?',label:'7 × 2 =',ans:14}],
+    vis:st=>st.done>=4?dotArray({rows:7,cols:2,spin:st.done===4}):dotArray({rows:2,cols:7,lit:st.done>=2?1:-1,sums:st.done>=2}), end:'אותו מספר!'}),
+  ()=>({say:'מערך של נקודות.', eq:[], fields:[{q:'כמה שורות?',label:'שורות',ans:4,wrong:x=>x===6?'זה כמה נקודות בשורה אחת. כמה שורות?':null},{q:'כמה בכל שורה?',label:'בכל שורה',ans:6},{q:'4 × 6 = ?',label:'4 × 6 =',ans:24,wrong:x=>x===10?'חיברת שורות ונקודות. 6, 12, ...':null},{q:'ובלי לספור שוב: 6 × 4 = ?',label:'6 × 4 =',ans:24,wrong:x=>x!==24?'כשמסובבים, מוסיפים נקודות?':null}],
+    vis:st=>dotArray({rows:4,cols:6,lit:st.done>=2?3:-1,sums:st.done>=2})})
+ ],
+ levels:['count','write','swap','missing','turn'],
+ gen(lv,used){ const pair=()=>{ for(let t=0;;t++){ const a=r(2,5), b=r(2,7); if(a===b||a*b>30||(t<300&&used.has(a+'x'+b))) continue; used.add(a+'x'+b); return [a,b]; } };
+   if(lv==='count'||lv==='write'){ const [R,C]=pair(); const help=['כמה שורות? וכמה בכל שורה?',`סופרות לפי שורות: ${C}, ${2*C}, ...`,`${Array(R).fill(0).map((_,i)=>(i+1)*C).join(', ')}`];
+     const wr=x=>x===R+C?`חיברת שורות ונקודות. בכל שורה ${C}, ויש ${R} שורות: ${C}, ${2*C}, ...`:x===(R-1)*C||x===(R+1)*C?'ספרי שוב את השורות.':null;
+     if(lv==='count') return {say:'כמה נקודות יש במערך?', eq:['סך הכול:',{f:0}], fields:[{ans:R*C,wrong:wr}], showVis:'always', vis:st=>dotArray({rows:R,cols:C,lit:st.helped||st.finished?R-1:-1,sums:st.helped||st.finished}), hints:help, level:lv};
+     return {say:'כתבי את התרגיל של המערך: שורות × בכל שורה.', eq:[{f:0},'×',{f:1},'=',{f:2}], fields:[{q:'כמה שורות?',ans:R,wrong:x=>x===C?'זה כמה נקודות בשורה אחת. שורה הולכת לרוחב. כמה שורות?':null},{q:'כמה בכל שורה?',ans:C},{q:'כמה יוצא?',ans:R*C,wrong:wr}], showVis:'always', vis:st=>dotArray({rows:R,cols:C,lit:st.helped||st.finished?R-1:-1,sums:st.helped||st.finished}), hints:help, level:lv}; }
+   if(lv==='swap'){ const a=r(3,5), b=r(6,7); return {say:`${L(`${a} × ${b} = ${a*b}`)}. אז כמה זה ${L(`${b} × ${a}`)}?`, eq:[`${b} × ${a} =`,{f:0}], fields:[{ans:a*b,wrong:x=>'כשסובבנו, הוספנו נקודות?'}], showVis:'hint', vis:st=>`<div class="pair">${dotArray({rows:a,cols:b})}<span class="arrow-r">⟵</span>${dotArray({rows:b,cols:a,spin:1})}</div>`, hints:['כשסובבנו, הוספנו נקודות?','זה אותו מערך, רק מסובב.',`${b} × ${a} = ${a} × ${b} = ${a*b}`], level:lv}; }
+   if(lv==='missing'){ const m=r(3,9), two=pick([2,10]); return {say:'איזה מספר חסר?', eq:[`${two} × ${m} = ${m} ×`,{f:0}], fields:[{ans:two,wrong:x=>x===two*m?`${two*m} זה כמה יוצא. כאן שואלות איזה מספר חסר: ${m} × ?`:x===m?`${m} כבר כתוב. מה המספר השני בצד השמאלי?`:null}], showVis:'hint', vis:()=>`<div class="pair">${dotArray({rows:two===10?2:two,cols:m})}</div>`, hints:['מסובבות: מה מתחלף עם מה?',`${two} × ${m} ו-${m} × ${two} הם אותו מערך.`,`${m} × ${two}`], level:lv}; }
+   const m=r(6,9); return {say:`כמה זה ${L(`${m} × 2`)}?`, eq:[`${m} × 2 =`,{f:0}], fields:[{ans:m*2,wrong:x=>x===m+2?`זה ${m} ועוד 2. סובבי: 2 × ${m} = ${m} + ${m}.`:null}], showVis:'hint', vis:()=>dotArray({rows:2,cols:m,lit:1,sums:1}), hints:[`סובבי: 2 × ${m} = ${m} + ${m}.`,`${m} + ${m} = ?`,`${m} + ${m} = ${2*m}`], level:lv}; },
+ star(){ return {star:true, say:'⭐ שאלת אתגר: 12 נקודות בשורות שוות: 3 × 4. מצאי סידור אחר.', eq:[{f:0},'×',{f:1},'= 12'], fields:[{q:'כמה שורות?',ans:null,any:1},{q:'כמה בכל שורה?',ans:null,any:1}], showVis:'never', hints:['נסי 2 שורות. כמה בכל שורה?','2 × 6 = 12','גם 6 × 2, 1 × 12.']}; },
+ parent:'ההחלפה חוסכת חצי מלוח הכפל. שאלי: "האם זה עובד גם בחיסור? 5 − 3 ו-3 − 5?" כדי שלא תכליל.'
+};
+
+/* ---------- state ---------- */
+const DEF=LESSONS[decodeURIComponent(location.hash.slice(1))]||LESSONS['h4.2'];
+const COINS_PER=3;
+const S={screen:'lesson', i:0, items:[], it:null, f:0, val:'', wrong:{}, done:0, finished:false, helped:false, showVis:false, note:null, toast:null, locked:false, step:0, asked:null, rot:false,
+  starOffered:false, used:new Set(), lastLevel:null, lastHelped:false, reward:null, exT:{ms:0,from:null,frozen:false,running:false}, log:[]};
+// the plan: explanation, 2 together, the solo slots (generated when reached)
+function plan(){ S.items=[{type:'explain',phase:'הסבר'}, ...DEF.together.map(t=>({type:'task',phase:'שאלות',mode:'ביחד',make:t})), ...DEF.levels.map(lv=>({type:'task',phase:'שאלות',mode:'לבד',level:lv}))]; }
+const soloCount=()=>DEF.levels.length, qCount=()=>DEF.together.length+soloCount();
+const TRANS=()=>({1:{title:'סיימת את ההסבר!', text:'עכשיו פותרות ביחד, צעד אחרי צעד.', stop:1}, [1+DEF.together.length]:{title:'עכשיו לבד!', text:'אם צריך, הכפתור "רמז" מחזיר את התמונה.', stop:2}});
+const STOPS=['הסבר','ביחד','לבד','סיכום'];
+
+function startItem(){
+  const P=S.items[S.i]; S.f=0; S.val=''; S.wrong={}; S.done=0; S.finished=false; S.helped=false; S.note=null; S.locked=false; S.step=0; S.asked=null; S.rot=false; S.totalWrong=0;
+  S.exT={ms:0,from:null,frozen:false,running:false};
+  if(P.type==='explain'){ S.it=null; return; }
+  if(P.mode==='ביחד') S.it=P.make();
+  else { // stay at the same level after a hard one, so the count "שאלה 3 מתוך 6" stays true
+    const lv = S.lastHelped && S.lastLevel!=null ? S.lastLevel : P.level;
+    S.it=P.star?DEF.star():DEF.gen(lv,S.used); S.it.level=lv; }
+  S.showVis = S.it.showVis==='always' || !S.it.showVis;
+  clearScratch();
+}
+const curField=()=>S.it?.fields[S.f];
+function stV(){ return {f:S.f, done:S.done, finished:S.finished, helped:S.helped, rot:S.rot, step:S.step}; }
+
+/* ---------- stopwatch (same as the place-value lesson) ---------- */
+const fmt=ms=>{ const s=Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
+const exMs=()=>S.exT.ms+(S.exT.from!=null?Date.now()-S.exT.from:0);
+function syncTimer(){ const run=S.exT.running && S.screen==='lesson' && !document.hidden && !S.exT.frozen && S.it;
+  if(run && S.exT.from==null) S.exT.from=Date.now(); if(!run && S.exT.from!=null){ S.exT.ms+=Date.now()-S.exT.from; S.exT.from=null; } }
+function freezeTimer(){ S.exT.frozen=true; syncTimer(); }
+const timeTag=()=>exMs()>0?` ⏱ ${fmt(exMs())}`:'';
+document.addEventListener('visibilitychange',syncTimer);
+setInterval(()=>{ const el=document.getElementById('swt'); if(el && S.exT.running) el.textContent=fmt(exMs()); },500);
+
+/* ---------- voice ---------- */
+let VOICE=null;
+function pickVoice(){ try{ const he=speechSynthesis.getVoices().filter(v=>/^he|^iw/i.test(v.lang)); const s=v=>(/premium/i.test(v.name)?4:0)+(/enhanced/i.test(v.name)?3:0); VOICE=he.sort((a,b)=>s(b)-s(a))[0]||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){}
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+
+/* ---------- checking ---------- */
+function toast(text, then){ const id={}; S.toast={text,id}; render(); setTimeout(()=>{ if(S.toast?.id===id){ S.toast=null; then?.(); render(); } },1500); }
+function fieldDone(){
+  S.done++; S.val=''; S.f++;
+  if(S.f>=S.it.fields.length){ finish(); render(); return; }
+  toast('נכון!');
+}
+function finish(){
+  S.finished=true; S.locked=true; S.showVis=S.it.showVis!=='never'; freezeTimer();
+  const it=S.it, last=it.fields[it.fields.length-1];
+  S.note={ok:true, text:`${it.star?'פתרת את שאלת האתגר! ':'נכון! '}${it.end||''}${timeTag()}`};
+  Shell.addCoins(it.star?8:COINS_PER);
+  S.lastLevel=it.level; S.lastHelped=S.helped||S.totalWrong>=2;
+  S.log.push({lesson:DEF.id, level:it.level, wrong:S.totalWrong, helped:S.helped, tags:S.tags||[]}); S.tags=[];
+}
+function check(x){
+  const fd=curField(); if(!fd || S.locked) return;
+  if(fd.any){ // any arrangement of 12 dots in equal rows, except the one we showed
+    const a0=S.it.fields[0].ans; S.val='';
+    if(S.f===0){ if(x<1||12%x){ S.note={text:`אי אפשר לסדר 12 ב-${x} שורות שוות. נסי מספר אחר.`}; render(); return; } fd.ans=x; S.note=null; fieldDone(); return; }
+    if(a0*x!==12){ S.note={text:`${a0} × ${x} זה ${a0*x}, לא 12. נסי שוב.`}; render(); return; }
+    if(a0===3&&x===4){ S.note={text:'זה הסידור שכבר יש. מצאי אחר!'}; S.it.fields[0].ans=null; S.f=0; S.done=0; render(); return; }
+    if(a0===4&&x===3){ S.note={text:'זה הסיבוב! יש עוד סידור, עם מספר שורות אחר?'}; S.it.fields[0].ans=null; S.f=0; S.done=0; render(); return; }
+    fd.ans=x; S.note=null; fieldDone(); return; }
+  if(x===fd.ans){ S.note=null; fieldDone(); return; }
+  const custom=fd.wrong?.(x);
+  if(custom && custom.soft){ S.note={text:custom.text}; S.val=''; render(); return; } // the right idea, different order: not a mistake
+  S.wrong[S.f]=(S.wrong[S.f]||0)+1; S.totalWrong=(S.totalWrong||0)+1; S.val=''; const w=S.wrong[S.f];
+  if(typeof custom==='string') (S.tags ||= []).push(custom.slice(0,30));
+  const H=S.it.hints||[];
+  if(w>=2){ S.helped=true; if(S.it.showVis==='hint') S.showVis=true; }
+  if(w>=3){ S.note={text:`התשובה היא ${fd.ans}. ${H[2]||''}`}; S.locked=true; setTimeout(()=>{ S.locked=false; S.done++; S.f++; if(S.f>=S.it.fields.length){ finish(); S.note={text:`התשובה היא ${fd.ans}. נמשיך.`}; } render(); },2200); render(); return; }
+  S.note={text: custom || (fd.q && w===1 ? 'עוד לא. נסי שוב.' : H[Math.min(w-1,1)] || 'עוד לא. נסי שוב.')};
+  render();
+}
+function choose(i){ const fd=curField(); if(!fd?.choice||S.locked) return;
+  if(fd.choice[i].ok){ S.note=null; fieldDone(); return; }
+  S.totalWrong=(S.totalWrong||0)+1; S.wrong[S.f]=(S.wrong[S.f]||0)+1; S.note={text:fd.wrongText?fd.wrongText(i):'עוד לא. נסי שוב.'}; render(); }
+
+/* ---------- rendering ---------- */
+function strip(){
+  const P=S.items[S.i]; let lbl, dots, ph;
+  if(P.type==='explain'){ const n=DEF.explain.length; lbl=`הסבר ${S.step+1} מתוך ${n}`; dots=Array(n).fill(0).map((_,i)=>`<i class="${i<S.step?'done':i===S.step?'now':''}"></i>`).join(''); ph='לומדות משהו חדש'; }
+  else { const q=S.i, n=qCount(); lbl=S.it?.star?'⭐ שאלת אתגר':`שאלה ${q} מתוך ${n}`; dots=Array(n).fill(0).map((_,i)=>`<i class="${i<q-1?'done':i===q-1?'now':''}"></i>`).join(''); ph=P.mode==='ביחד'?'פותרות ביחד':'לבד'; }
+  return `<div class="strip"><div class="strip-l"><span class="dots" aria-hidden="true">${dots}</span><span class="lbl">${lbl}</span><span class="ph">${ph}</span></div>${P.type==='explain'?'':swBtn()}</div>`;
+}
+function swBtn(){ const T=S.exT, ms=exMs();
+  if(T.frozen) return ms>0?`<span class="sw-btn stopped">${ICON.watch}<span>${fmt(ms)}</span></span>`:'';
+  if(T.running) return `<button class="sw-btn run" data-act="sw" aria-label="לעצור את הסטופר">${ICON.pause}<span id="swt">${fmt(ms)}</span></button>`;
+  return `<button class="sw-btn" data-act="sw" aria-label="להפעיל סטופר">${ICON.watch}<span id="swt">${ms?fmt(ms):'סטופר'}</span></button>`; }
+const taskLine=html=>`<div class="task"><button class="say" data-act="say" aria-label="להקריא">${ICON.speaker}</button><p>${html}</p></div>`;
+const noteBlock=()=>S.note?`<div class="note ${S.note.ok?'ok':''}" role="status">${S.note.text}</div>`:'';
+function boxHtml(i,big){
+  const it=S.it, fd=it.fields[i]; const state = i<S.done ? 'done' : i===S.f && !S.finished ? 'on' : 'wait';
+  const v = i<S.done ? (fd.ans??'') : i===S.f ? S.val : '';
+  return `<span class="slot"><span class="box ${big?'big':''} ${state}">${state==='wait'&&!v?'':v}</span>${S.toast&&i===S.f-1?`<span class="toast" role="status">${S.toast.text}</span>`:''}</span>`;
+}
+function vExplain(){
+  const st=DEF.explain[S.step], ask=st.ask, answered=S.asked!=null;
+  const canNext=!ask || (ask.rotate ? S.rot : answered && S.asked===ask.ok);
+  return `${strip()}${taskLine(st.say)}<div class="vis">${st.vis(stV())}</div>
+    ${ask&&ask.options?`<div class="choices">${ask.options.map((o,i)=>`<button class="btn ${S.asked===i?(i===ask.ok?'good':'meh'):''}" data-act="ask" data-v="${i}">${o}</button>`).join('')}</div>`:''}
+    ${ask&&ask.rotate&&!S.rot?`<div class="choices"><button class="btn primary" data-act="rotate">${ICON.rotate}לסובב</button></div>`:''}
+    ${ask&&(answered||S.rot)?`<div class="note ${canNext?'ok':''}">${canNext?ask.then:ask.no}</div>`:''}
+    <div class="actions">${S.step>0?'<button class="btn" data-act="exBack">אחורה</button>':''}<button class="btn primary" data-act="exNext" ${canNext?'':'disabled'}>${S.step<DEF.explain.length-1?'הלאה':'הבנתי, ממשיכות'}</button></div>`;
+}
+function vTask(){
+  const it=S.it, fd=curField();
+  const inEq=new Set(it.eq.filter(p=>p&&p.f!=null).map(p=>p.f));
+  const q = !S.finished && fd?.q ? fd.q : it.say;
+  const eq = it.eq.length ? `<div class="anchor ltr ${it.eq.length>3?'sm':''}">${it.eq.map(p=>typeof p==='string'?`<span>${p}</span>`:p.sum!=null?`<span class="slot"><span class="box big ${S.finished?'done':'wait'}">${S.finished?p.sum:'?'}</span></span>`:boxHtml(p.f,true)).join('')}</div>` : '';
+  const rows = it.fields.map((fd,i)=>({fd,i})).filter(({fd,i})=>!inEq.has(i)&&!fd.choice&&!fd.rotate&&fd.label);
+  const steps = rows.length ? `<div class="steps ltr">${rows.map(({fd,i})=>`<div class="stepf ${i===S.f&&!S.finished?'on':''}"><span>${fd.label}</span>${boxHtml(i)}</div>`).join('')}</div>` : '';
+  const choice = fd?.choice && !S.finished ? `<div class="pics">${fd.choice.map((o,i)=>`<button class="picbtn" data-act="choose" data-v="${i}" aria-label="תמונה ${i+1}">${o.html}</button>`).join('')}</div>` : '';
+  const rot = fd?.rotate && !S.finished ? `<div class="choices"><button class="btn primary" data-act="rotateF">${ICON.rotate}לסובב</button></div>` : '';
+  const vis = it.vis && S.showVis ? `<div class="vis">${it.vis(stV())}</div>` : '';
+  const hint = S.items[S.i].mode==='לבד' && !S.helped && !S.finished && it.hints ? `<div class="hintrow"><button class="hintbtn" data-act="hint">${ICON.bulb}רמז</button></div>` : '';
+  return `${strip()}${taskLine(q)}${vis}${choice}${rot}${steps}${eq}${hint}${noteBlock()}
+    ${S.finished?`<div class="actions"><button class="btn primary" data-act="next">${S.i>=S.items.length-1?'לסיום':'לתרגיל הבא'}</button></div>`:''}`;
+}
+function keypad(){
+  const fd=curField();
+  if(S.screen!=='lesson' || !S.it || !fd || fd.choice || fd.rotate || S.finished) return `<p class="kbd">כאן תופיע המקלדת כשיש מה לכתוב.</p>`;
+  const d=[7,8,9,4,5,6,1,2,3].map(n=>`<button class="key" data-act="key" data-v="${n}">${n}</button>`).join('');
+  return `<div class="pad">${d}<button class="key" data-act="del" aria-label="מחיקה">⌫</button><button class="key" data-act="key" data-v="0">0</button><button class="key ok" data-act="check">בדיקה</button></div><p class="kbd">אפשר גם להקליד במקלדת וללחוץ Enter</p>`;
+}
+function mapHtml(now){ return `<ol class="map" aria-label="מפת השיעור">${STOPS.map((s,i)=>`<li class="${i<now?'done':i===now?'now':''}"><span class="dot">${i<now?ICON.check:''}</span><span>${s}</span>${i===now?'<span class="here">את כאן</span>':''}</li>`).join('')}</ol>`; }
+function vScreen(){
+  if(S.screen==='trans'){ const t=TRANS()[S.i]; return `<div class="card"><h1>${t.title}</h1>${mapHtml(t.stop)}<p>${t.text}</p><button class="btn primary" data-act="go">ממשיכות</button></div>`; }
+  if(S.screen==='star') return `<div class="card"><h1>⭐ רוצה שאלת אתגר?</h1><p>שאלה קשה במיוחד. מי שפותרת מקבלת 8 מטבעות. אפשר גם לסיים עכשיו.</p><div class="row"><button class="btn primary" data-act="takeStar">לנסות!</button><button class="btn" data-act="skipStar">לסיים את השיעור</button></div></div>`;
+  if(S.screen==='done'){ const r=S.reward||{}; return `<div class="card"><h1>סיימנו את השיעור!</h1>${mapHtml(3)}<p>סיימת את השיעור "${DEF.title}". כל הכבוד על ההתמדה!</p>
+    ${r.first?`<p class="gift">${r.chosen?(r.animal?'מישהי חדשה עברה לגור אצלך בבית! בואי לפגוש אותה.':'בבית מחכים לך 10 מטבעות בונוס.'):'בבית מחכה לך חיה ראשונה לבחור, ו-10 מטבעות בונוס.'}</p>`:''}
+    <div class="row"><a class="btn primary" href="home.html">לבית שלי</a><a class="btn" href="index.html">לשיעורים</a><button class="btn" data-act="again">עוד פעם, עם תרגילים חדשים</button></div></div>`; }
+  return '';
+}
+function render(){
+  Shell.renderBar({page:'lesson', title:DEF.title});
+  const lesson=S.screen==='lesson';
+  document.getElementById('layout').hidden=!lesson; document.getElementById('screen').hidden=lesson; document.getElementById('screen').className='screen';
+  if(!lesson){ document.getElementById('screen').innerHTML=vScreen(); syncTimer(); return; }
+  document.getElementById('main').innerHTML = S.items[S.i].type==='explain' ? vExplain() : vTask();
+  document.getElementById('kp').innerHTML=keypad(); syncTimer();
+}
+
+/* ---------- flow ---------- */
+function advance(){
+  if(S.items[S.i].star || S.i>=S.items.length-1){
+    if(!S.starOffered && DEF.star){ S.starOffered=true; S.screen='star'; return; }
+    return endLesson(); }
+  S.i++; startItem(); if(TRANS()[S.i]) S.screen='trans';
+}
+function endLesson(){ S.screen='done'; S.reward=Shell.completeLesson(DEF.id); if(S.reward.first) Shell.addCoins(10);
+  try{ const k='mk:log:'+Shell.kid().id, l=JSON.parse(localStorage.getItem(k)||'[]'); localStorage.setItem(k,JSON.stringify([...l,...S.log].slice(-300))); }catch(e){} S.log=[]; }
+const A={
+  say(){ const p=document.querySelector('.task p'); if(p) speak(p.textContent); return false; },
+  sw(){ const T=S.exT; if(T.frozen) return; T.running=!T.running; },
+  exNext(){ if(S.step<DEF.explain.length-1){ S.step++; S.asked=null; S.rot=false; } else advance(); },
+  exBack(){ if(S.step>0){ S.step--; S.asked=null; S.rot=false; } },
+  ask(v){ S.asked=+v; },
+  rotate(){ S.rot=true; },
+  rotateF(){ S.rot=true; S.note=null; fieldDone(); return false; },
+  choose(v){ choose(+v); return false; },
+  hint(){ S.showVis=true; S.helped=true; S.note={text:S.it.hints?.[0]||''}; },
+  key(v){ if(S.locked||S.toast) return; if(S.val.length<4) S.val+=v; },
+  del(){ S.val=S.val.slice(0,-1); },
+  check(){ if(S.locked||S.toast||!S.val) return false; check(+S.val); return false; },
+  next(){ advance(); },
+  go(){ S.screen='lesson'; },
+  takeStar(){ S.items.push({type:'task',phase:'שאלות',mode:'לבד',star:true}); S.i=S.items.length-1; S.screen='lesson'; startItem(); },
+  skipStar(){ endLesson(); },
+  again(){ S.used=new Set(); S.starOffered=false; S.lastHelped=false; S.i=0; plan(); startItem(); S.screen='lesson'; }
+};
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t||t.disabled) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
+document.addEventListener('keydown',e=>{
+  if(Shell.isOpen()||S.screen!=='lesson') return;
+  if(e.key==='Enter'){ e.preventDefault();
+    if(S.items[S.i].type==='explain'){ const b=document.querySelector('[data-act=exNext]'); if(b&&!b.disabled){ A.exNext(); render(); } return; }
+    if(S.finished){ A.next(); render(); return; } A.check(); return; }
+  if(S.items[S.i].type==='explain') return;
+  if(/^[0-9]$/.test(e.key)) A.key(e.key); else if(e.key==='Backspace') A.del(); else return;
+  e.preventDefault(); render();
+});
+
+/* ---------- scratchpad ---------- */
+const cv=document.getElementById('cv'), cx=cv.getContext('2d'); let drawing=false, erasing=false;
+function clearScratch(){ cx.clearRect(0,0,cv.width,cv.height); }
+function pos(e){ const b=cv.getBoundingClientRect(); return [(e.clientX-b.left)*cv.width/b.width,(e.clientY-b.top)*cv.height/b.height]; }
+cv.addEventListener('pointerdown',e=>{ drawing=true; cv.setPointerCapture(e.pointerId); const [x,y]=pos(e); cx.beginPath(); cx.moveTo(x,y); });
+cv.addEventListener('pointermove',e=>{ if(!drawing) return; const [x,y]=pos(e); cx.globalCompositeOperation=erasing?'destination-out':'source-over'; cx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent'); cx.lineWidth=erasing?28:5; cx.lineCap='round'; cx.lineJoin='round'; cx.lineTo(x,y); cx.stroke(); });
+cv.addEventListener('pointerup',()=>{ drawing=false; });
+document.getElementById('scrToggle').addEventListener('click',e=>{ const s=document.getElementById('scr'), open=s.hidden; s.hidden=!open; e.currentTarget.setAttribute('aria-expanded',open); });
+document.getElementById('pen').addEventListener('click',()=>{ erasing=false; document.getElementById('pen').setAttribute('aria-pressed','true'); document.getElementById('eraser').setAttribute('aria-pressed','false'); });
+document.getElementById('eraser').addEventListener('click',()=>{ erasing=true; document.getElementById('pen').setAttribute('aria-pressed','false'); document.getElementById('eraser').setAttribute('aria-pressed','true'); });
+document.getElementById('clear').addEventListener('click',clearScratch);
+
+if(Shell.start({page:'lesson', title:DEF.title})){ document.title='מתמטיקידס · '+DEF.title; plan(); startItem(); render(); }
+
+</script>
+</body>
+</html>

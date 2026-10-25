@@ -235,6 +235,12 @@ const ITEMS=[
   {phase:'שאלות', mode:'לבד', type:'solo', a:357, b:218},
   {phase:'שאלות', mode:'לבד', type:'solo', a:268, b:125}
 ];
+/* the "alone" exercises are new every time, in a fixed order of difficulty: no carrying, tens carry, ones carry, ones carry */
+function genAdd(kind){ const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  for(;;){ const a=rnd(121,689), b=rnd(111,399), A=digits(a), B=digits(b); if(!A.t||!A.o||!B.t||!B.o||a+b>999) continue;
+    if(A.h===B.h||A.t===B.t||A.o===B.o) continue; const tc=A.t+B.t>=10, oc=A.o+B.o>=10;
+    if(kind==='plain'&&(tc||oc)) continue; if(kind==='tens'&&(!tc||oc)) continue; if(kind==='ones'&&(!oc||A.t+B.t+1>=10)) continue; return [a,b]; } }
+function freshSolo(){ ITEMS.filter(x=>x.type==='solo').forEach((it,i)=>{ [it.a,it.b]=genAdd(['plain','tens','ones','ones'][i]||'plain'); }); }
 const STOPS=['הסבר','ביחד','לבד','סיכום'];
 const TRANSITIONS={3:{title:'סיימת את ההסבר!', text:'עכשיו פותרות ביחד, עמודה אחרי עמודה.', stop:1}, 5:{title:'עכשיו לבד!', text:'אם צריך, הכפתור "רמז" מחזיר את הטבלה.', stop:2}};
 const ICON={
@@ -471,7 +477,7 @@ function vScreen(){
   if(S.screen==='done'){ const r=S.reward||{}; return `<div class="card"><h1>סיימנו את השיעור!</h1>${mapHtml(3)}
     <p>במקום תרגיל אחד גדול, שלושה תרגילים קטנים: מאות, עשרות, אחדות. ואז מחברים.</p>
     ${r.first?`<p class="gift">${r.chosen?(r.animal?'מישהי חדשה עברה לגור אצלך בבית! בואי לפגוש אותה.':'בבית מחכים לך 10 מטבעות בונוס.'):'בבית מחכה לך חיה ראשונה לבחור, ו-10 מטבעות בונוס.'}</p>`:''}
-    <div class="row"><a class="btn primary" href="home.html">${Shell.IC.home.replace('<svg','<svg class="bi"')}לבית</a><a class="btn" href="index.html">לשיעורים</a><button class="btn" data-act="again">עוד פעם מההתחלה</button></div></div>`; }
+    <div class="row"><a class="btn primary" href="home.html">${Shell.IC.home.replace('<svg','<svg class="bi"')}לבית</a><a class="btn" href="index.html">לשיעורים</a><button class="btn" data-act="again">עוד פעם, עם תרגילים חדשים</button></div></div>`; }
   return '';
 }
 function mapHtml(now){
@@ -520,7 +526,7 @@ const A={
   exBack(){ if(S.ex>0) S.ex--; },
   go(){ S.screen='lesson'; },
   next(){ advance(); },
-  again(){ S.i=0; startItem(); S.screen='lesson'; },
+  again(){ freshSolo(); S.i=0; startItem(); S.screen='lesson'; },
   noop(){},
   pick(v){ const W=S.W; if(!W||W.finished||W.done[v]) return; if(v==='sum' && W.cols && !colsDone(W) && ITEMS[S.i].mode==='ביחד') return; W.cur=v; },
   key(v){ if(S.locked) return; if(S.W){ const k=S.W.cur; if(S.W.val[k].length<4) S.W.val[k]+=v; } else if(S.input.length<4) S.input+=v; },
@@ -563,7 +569,7 @@ document.getElementById('pen').addEventListener('click',()=>{ erasing=false; doc
 document.getElementById('eraser').addEventListener('click',()=>{ erasing=true; document.getElementById('pen').setAttribute('aria-pressed','false'); document.getElementById('eraser').setAttribute('aria-pressed','true'); });
 document.getElementById('clear').addEventListener('click',clearScratch);
 
-if(Shell.start({page:'lesson', title:'חיבור בראש'})){ startItem(); render(); }
+if(Shell.start({page:'lesson', title:'חיבור בראש'})){ freshSolo(); startItem(); render(); }
 </script>
 </body>
 </html>
