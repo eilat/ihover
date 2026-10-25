@@ -18,16 +18,22 @@ button{font:inherit;color:inherit;cursor:pointer} button:focus-visible,a:focus-v
 .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);min-height:68px;position:relative;z-index:30}
 .bar svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .sh-me{position:relative}
-.sh-chip{display:flex;align-items:center;gap:10px;min-height:50px;padding:4px 10px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font:inherit;font-size:18px;font-weight:600;color:var(--ink);cursor:pointer}
-.sh-chip:hover,.sh-chip[aria-expanded="true"]{border-color:var(--accent)}
+.sh-gear{width:50px;height:50px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);cursor:pointer;padding:0}
+.sh-gear:hover,.sh-gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.sh-gear svg{width:26px;height:26px}
+.sh-back{display:flex;align-items:center;gap:6px;min-height:50px;padding:6px 18px 6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:17px;text-decoration:none}
+.sh-back:hover{border-color:var(--accent)}
+.sh-back svg{width:22px;height:22px}
 .sh-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;overflow:hidden;flex:none}
 .sh-av svg{width:100%;height:100%;display:block;stroke:none!important}
-.sh-down svg{width:20px;height:20px;display:block;color:var(--muted)}
-.sh-chip[aria-expanded="true"] .sh-down svg{transform:rotate(180deg)}
-.sh-nav{display:flex;align-items:center;gap:8px;min-height:50px;padding:6px 18px 6px 16px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);font-weight:600;font-size:17px;text-decoration:none;border:2px solid transparent}
-.sh-nav:hover{border-color:var(--accent)}
-.sh-nav svg{width:24px;height:24px}
-.sh-title{flex:1;text-align:center;font-family:var(--f-display);font-size:21px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-title{flex:1;margin:0;text-align:start;font-family:var(--f-display);font-size:24px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-pet{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,var(--surface));border:2px solid transparent;overflow:hidden}
+a.sh-pet:hover{border-color:var(--accent)}
+.sh-pet svg{width:52px;height:52px;display:block;stroke:none!important;transform-origin:50% 85%;animation:sh-idle 5s ease-in-out infinite}
+a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
+.sh-pet.here{background:transparent}
+@keyframes sh-idle{0%,62%,100%{transform:none}68%{transform:translateY(-3px) rotate(-7deg)}76%{transform:translateY(0) rotate(5deg)}84%{transform:rotate(-2deg)}}
+@keyframes sh-hop{0%,100%{transform:none}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(1px) scale(.98)}}
 .sh-bank{position:relative;display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600;font-size:22px;background:#FFF1C7;color:#5A4300;padding:6px 16px;border-radius:999px}
 .sh-coin{width:24px;height:24px;flex:none;stroke-width:2!important}
 .sh-bank.bump{animation:sh-bump .5s ease}
@@ -38,6 +44,7 @@ button{font:inherit;color:inherit;cursor:pointer} button:focus-visible,a:focus-v
 .sh-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 10px;border-radius:12px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;text-align:start}
 .sh-row:hover{background:var(--bg)}
 .sh-row .sh-av{width:38px;height:38px}
+.sh-now{cursor:default;font-size:19px}.sh-now:hover{background:transparent}
 .sh-parent{color:var(--muted);font-weight:400;font-size:15px}
 .sh-lock{width:38px;display:grid;place-items:center}.sh-lock svg{width:20px;height:20px}
 .sh-sep{height:1.5px;background:var(--line);margin:4px 0}
@@ -75,7 +82,7 @@ button{font:inherit;color:inherit;cursor:pointer} button:focus-visible,a:focus-v
 .sh-topics b{flex:1;min-width:150px}.sh-topics span{color:var(--muted)}
 .sh-topics button,.sh-reset{font:inherit;font-size:14px;min-height:36px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .sh-reset{margin-top:10px}
-@media (max-width:700px){.sh-nav span{display:none}.sh-title{font-size:17px}}
+@media (max-width:700px){.sh-back span{display:none}.sh-back{padding:6px 12px}.sh-title{font-size:18px}}
 
 .wrap{max-width:1180px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-direction:column;gap:22px}
 h1{margin:0;font-family:var(--f-display);font-size:30px}
@@ -130,12 +137,192 @@ button.stop:hover{background:var(--bg)}
    The parent area lives inside her name's menu, behind a question in English.
    Everything is kept in this browser (localStorage), so all pages of the prototype see the same girl. */
 const Shell = (() => {
+  // the animals' art, kept private to the shell so it can draw her animal's head in the bar on every page
+  const CH=(()=>{
+/* Shared art + logic for the three reward prototypes.
+   A character = an animal + one worn item per category. All parts share one geometry
+   (viewBox 0 0 200 240, head centre 100,100 r58, body centre 100,188), so every item fits every animal. */
+
+const ANIMALS = {
+  cat:     {name:'חתולה',     fur:'#E8A25B', light:'#F7D9B5', dark:'#B86E2C'},
+  bunny:   {name:'ארנבת',     fur:'#E9E4E0', light:'#FFFFFF', dark:'#B9AEA8'},
+  fox:     {name:'שועלה',     fur:'#E07B39', light:'#FFF4E8', dark:'#5A3420'},
+  bear:    {name:'דובה',      fur:'#A8754F', light:'#E6C7A6', dark:'#6E4A30'},
+  panda:   {name:'פנדה',      fur:'#F6F5F1', light:'#FFFFFF', dark:'#2B2B2E', body:'#2B2B2E'},
+  owl:     {name:'ינשופה',    fur:'#9C7457', light:'#F1E4D1', dark:'#6B4A35'},
+  dino:    {name:'דינוזאורית', fur:'#6CC08B', light:'#DDF3C9', dark:'#3E8E5D'},
+  unicorn: {name:'חד־קרן',    fur:'#EFE2FA', light:'#FFFFFF', dark:'#C9B8DA'},
+  squirrel:{name:'סנאית',     fur:'#C8743A', light:'#F3D6B4', dark:'#8A4B1F'}
+};
+const ANIMAL_ORDER = ['cat','bunny','fox','bear','panda','owl','dino','unicorn','squirrel'];
+
+/* parts drawn behind the body and head: tails, spikes, mane */
+function backSvg(a, A){
+  if(a==='squirrel') return `<path d="M140 226 Q206 222 196 150 Q190 104 150 96 Q176 120 168 150 Q160 182 132 196Z" fill="${A.fur}"/><path d="M150 210 Q192 200 186 154 Q182 126 160 112 Q174 136 168 160 Q162 186 142 200Z" fill="${A.light}" opacity=".55"/>`;
+  if(a==='dino') return `<path d="M140 214 Q196 214 204 176 Q184 196 148 192Z" fill="${A.fur}"/>
+    <g fill="${A.dark}"><path d="M70 50 L80 26 L90 46Z"/><path d="M90 44 L100 18 L110 44Z"/><path d="M110 46 L120 26 L130 50Z"/><path d="M130 56 L144 40 L146 64Z"/></g>`;
+  if(a==='unicorn') return `<path d="M128 52 Q170 60 166 110 Q176 140 156 162 Q150 128 136 104Z" fill="#C89BF0"/><path d="M134 66 Q160 80 156 116 Q164 136 150 150 Q146 120 136 100Z" fill="#7FC8F8"/><path d="M140 82 Q154 98 148 126" stroke="#FF9EC7" stroke-width="9" fill="none" stroke-linecap="round"/>`;
+  return '';
+}
+function earsSvg(a, A){
+  if(a==='cat') return `<path d="M50 78 L58 26 L94 54 Z" fill="${A.fur}"/><path d="M150 78 L142 26 L106 54 Z" fill="${A.fur}"/><path d="M60 66 L63 40 L82 55 Z" fill="#F4A9B8"/><path d="M140 66 L137 40 L118 55 Z" fill="#F4A9B8"/>`;
+  if(a==='bunny') return `<ellipse cx="74" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(-10 74 30)"/><ellipse cx="126" cy="30" rx="15" ry="42" fill="${A.fur}" transform="rotate(10 126 30)"/><ellipse cx="74" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(-10 74 32)"/><ellipse cx="126" cy="32" rx="7" ry="30" fill="#F4B8C4" transform="rotate(10 126 32)"/>`;
+  if(a==='fox') return `<path d="M46 84 L50 18 L96 52 Z" fill="${A.fur}"/><path d="M154 84 L150 18 L104 52 Z" fill="${A.fur}"/><path d="M50 30 L52 18 L64 28 Z M150 30 L148 18 L136 28 Z" fill="${A.dark}"/>`;
+  if(a==='bear') return `<circle cx="56" cy="56" r="22" fill="${A.fur}"/><circle cx="144" cy="56" r="22" fill="${A.fur}"/><circle cx="56" cy="56" r="11" fill="${A.light}"/><circle cx="144" cy="56" r="11" fill="${A.light}"/>`;
+  if(a==='panda') return `<circle cx="56" cy="54" r="21" fill="${A.dark}"/><circle cx="144" cy="54" r="21" fill="${A.dark}"/>`;
+  if(a==='owl') return `<path d="M52 70 L50 30 L82 52Z" fill="${A.dark}"/><path d="M148 70 L150 30 L118 52Z" fill="${A.dark}"/>`;
+  if(a==='unicorn') return `<path d="M56 70 L60 34 L86 54Z" fill="${A.fur}"/><path d="M144 70 L140 34 L114 54Z" fill="${A.fur}"/><path d="M63 62 L65 44 L78 55Z M137 62 L135 44 L122 55Z" fill="#F4B8D8"/>`;
+  if(a==='squirrel') return `<path d="M54 74 L58 30 L86 54Z" fill="${A.fur}"/><path d="M146 74 L142 30 L114 54Z" fill="${A.fur}"/><path d="M58 30 L52 18 M58 30 L62 16 M142 30 L148 18 M142 30 L138 16" stroke="${A.dark}" stroke-width="4" stroke-linecap="round"/>`;
+  return ''; // dino: no ears
+}
+function faceSvg(a, A){
+  const eyes = (r=7) => `<circle cx="78" cy="100" r="${r}" fill="#2A2225"/><circle cx="122" cy="100" r="${r}" fill="#2A2225"/><circle cx="${78+r*.35}" cy="${100-r*.35}" r="${r*.34}" fill="#fff"/><circle cx="${122+r*.35}" cy="${100-r*.35}" r="${r*.34}" fill="#fff"/>`;
+  const cheeks = `<ellipse cx="66" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/><ellipse cx="134" cy="117" rx="8" ry="5" fill="#F29BA8" opacity=".6"/>`;
+  const mouth = `<path d="M100 118 L100 124 M92 126 Q100 132 108 126" stroke="#3B2A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  const nose = c => `<path d="M94 113 Q100 119 106 113 Q100 110 94 113Z" fill="${c}"/>`;
+  if(a==='owl') return `<circle cx="78" cy="98" r="19" fill="${A.light}"/><circle cx="122" cy="98" r="19" fill="${A.light}"/>${eyes(9)}
+    <path d="M92 112 L100 128 L108 112Z" fill="#F2A33A"/>${cheeks}`;
+  if(a==='panda') return `<ellipse cx="76" cy="102" rx="15" ry="12" fill="${A.dark}" transform="rotate(-25 76 102)"/><ellipse cx="124" cy="102" rx="15" ry="12" fill="${A.dark}" transform="rotate(25 124 102)"/>
+    <circle cx="78" cy="100" r="6" fill="#fff"/><circle cx="122" cy="100" r="6" fill="#fff"/><circle cx="78" cy="100" r="3.6" fill="#2A2225"/><circle cx="122" cy="100" r="3.6" fill="#2A2225"/>
+    ${cheeks}${nose('#2A2225')}${mouth}`;
+  if(a==='dino') return `<ellipse cx="100" cy="124" rx="30" ry="18" fill="${A.light}"/>${eyes(7)}${cheeks}
+    <circle cx="92" cy="116" r="2.4" fill="${A.dark}"/><circle cx="108" cy="116" r="2.4" fill="${A.dark}"/>
+    <path d="M86 128 Q100 138 114 128" stroke="#2F5D41" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  const muzzle = a==='fox' ? `<path d="M62 112 Q100 160 138 112 Q120 104 100 108 Q80 104 62 112Z" fill="${A.light}"/>`
+               : a==='bear' ? `<ellipse cx="100" cy="122" rx="26" ry="19" fill="${A.light}"/>`
+               : a==='squirrel' ? `<ellipse cx="100" cy="122" rx="24" ry="17" fill="${A.light}"/>`
+               : a==='cat' ? `<ellipse cx="100" cy="122" rx="22" ry="15" fill="${A.light}"/>` : '';
+  const whisk = a==='cat'||a==='bunny' ? `<path d="M70 120 L46 116 M70 126 L46 128 M130 120 L154 116 M130 126 L154 128" stroke="${A.dark}" stroke-width="2" stroke-linecap="round"/>` : '';
+  const teeth = a==='squirrel' ? `<rect x="96" y="127" width="8" height="7" rx="1.5" fill="#fff" stroke="#3B2A2A" stroke-width="1.2"/>` : '';
+  return `${muzzle}${eyes(7)}${cheeks}${nose(a==='bunny'||a==='unicorn'?'#E58AA0':'#3B2A2A')}${mouth}${teeth}${whisk}`;
+}
+/* parts drawn on top of the head: horn, forelock */
+function headExtrasSvg(a, A){
+  if(a==='unicorn') return `<path d="M100 8 L90 50 L110 50Z" fill="#F7C948" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/><path d="M92 40 L108 34 M94 28 L106 24" stroke="#E0A800" stroke-width="2.4"/>
+    <path d="M80 50 Q96 40 112 50 Q100 60 86 64Z" fill="#FF9EC7"/>`;
+  if(a==='owl') return `<path d="M62 76 Q78 68 92 78 M108 78 Q122 68 138 76" stroke="${A.dark}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  return '';
+}
+/* body details */
+function bodySvg(a, A){
+  const body=A.body||A.fur;
+  let s=`<ellipse cx="100" cy="190" rx="54" ry="48" fill="${body}"/><ellipse cx="100" cy="198" rx="32" ry="30" fill="${a==='panda'?'#F6F5F1':A.light}" opacity=".95"/>`;
+  if(a==='owl') s+=`<path d="M48 176 Q40 214 70 230 Q62 200 66 172Z M152 176 Q160 214 130 230 Q138 200 134 172Z" fill="${A.dark}"/><path d="M86 188 q4 4 8 0 M106 188 q4 4 8 0 M96 204 q4 4 8 0 M86 218 q4 4 8 0 M106 218 q4 4 8 0" stroke="${A.dark}" stroke-width="2" fill="none"/>`;
+  if(a==='dino') s+=`<g fill="${A.dark}" opacity=".5"><circle cx="64" cy="186" r="6"/><circle cx="140" cy="200" r="5"/><circle cx="132" cy="176" r="4"/></g>`;
+  return s;
+}
+
+/* ---- items: [category, id, name, price, svg(A) or {back, front}] ---- */
+const CATS = [
+  {id:'outfit', name:'בגדים'}, {id:'hair', name:'תסרוקות'}, {id:'hat', name:'כובעים'},
+  {id:'glasses', name:'משקפיים'}, {id:'pet', name:'חיות מחמד'}, {id:'object', name:'חפצים'}
+];
+const ITEMS = [
+  // clothes (drawn on the body)
+  {cat:'outfit', id:'stripes', name:'חולצת פסים', price:4, svg:()=>`<path d="M52 170 Q100 150 148 170 L152 214 Q100 232 48 214Z" fill="#3E7BD8"/><path d="M50 182 Q100 166 150 182 M49 196 Q100 182 151 196 M49 210 Q100 198 151 210" stroke="#fff" stroke-width="6" fill="none"/>`},
+  {cat:'outfit', id:'dress', name:'שמלה', price:6, svg:()=>`<path d="M60 166 Q100 154 140 166 L146 186 L160 228 Q100 242 40 228 L54 186Z" fill="#E8577E"/><circle cx="80" cy="206" r="4" fill="#fff"/><circle cx="104" cy="214" r="4" fill="#fff"/><circle cx="126" cy="202" r="4" fill="#fff"/><circle cx="92" cy="186" r="4" fill="#fff"/><circle cx="118" cy="184" r="4" fill="#fff"/>`},
+  {cat:'outfit', id:'cape', name:'גלימה', price:8, svg:{back:()=>`<path d="M40 156 Q100 138 160 156 L176 236 Q100 226 24 236Z" fill="#7B4BC9"/>`, front:()=>`<path d="M66 156 L100 172 L134 156" stroke="#F2B21E" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="100" cy="172" r="7" fill="#F2B21E"/>`}},
+  {cat:'outfit', id:'overalls', name:'אוברול', price:5, svg:()=>`<path d="M58 186 L142 186 L150 224 Q100 238 50 224Z" fill="#2F9E8F"/><path d="M70 160 L74 190 M130 160 L126 190" stroke="#2F9E8F" stroke-width="9" stroke-linecap="round"/><rect x="86" y="194" width="28" height="18" rx="4" fill="#257E72"/>`},
+  // hair (on the head, between the ears)
+  {cat:'hair', id:'bangs', name:'פוני', price:3, svg:()=>`<path d="M54 82 Q60 40 100 40 Q140 40 146 82 Q132 64 120 74 Q110 58 100 72 Q88 58 80 74 Q68 62 54 82Z" fill="#4A2E22"/>`},
+  {cat:'hair', id:'curls', name:'תלתלים', price:4, svg:()=>`<g fill="#D9783A"><circle cx="70" cy="56" r="14"/><circle cx="88" cy="46" r="15"/><circle cx="108" cy="44" r="15"/><circle cx="126" cy="50" r="14"/><circle cx="138" cy="64" r="12"/><circle cx="60" cy="70" r="11"/></g>`},
+  {cat:'hair', id:'pony', name:'קוקו', price:5, svg:()=>`<path d="M60 70 Q70 42 100 42 Q130 42 140 70 Q120 56 100 58 Q80 56 60 70Z" fill="#2E2A33"/><path d="M150 70 Q186 76 178 130 Q170 110 154 100Z" fill="#2E2A33"/><circle cx="152" cy="74" r="7" fill="#E8457A"/>`},
+  {cat:'hair', id:'tuft', name:'ציצית', price:2, svg:()=>`<path d="M96 46 Q86 22 104 18 Q96 30 108 34 Q104 24 118 26 Q106 38 104 48Z" fill="#6B3E26"/>`},
+  // hats
+  {cat:'hat', id:'crown', name:'כתר', price:10, svg:()=>`<path d="M66 50 L72 18 L88 38 L100 12 L112 38 L128 18 L134 50Z" fill="#F2C230" stroke="#C99A12" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="36" r="5" fill="#E8457A"/><circle cx="80" cy="42" r="4" fill="#3E7BD8"/><circle cx="120" cy="42" r="4" fill="#3E7BD8"/>`},
+  {cat:'hat', id:'beanie', name:'כובע צמר', price:5, svg:()=>`<path d="M48 62 Q52 18 100 16 Q148 18 152 62Z" fill="#E05A47"/><rect x="44" y="56" width="112" height="16" rx="8" fill="#F5F0E6"/><circle cx="100" cy="12" r="11" fill="#F5F0E6"/>`},
+  {cat:'hat', id:'straw', name:'כובע קש', price:6, svg:()=>`<ellipse cx="100" cy="54" rx="80" ry="14" fill="#E8C66A"/><path d="M62 54 Q66 16 100 16 Q134 16 138 54Z" fill="#E8C66A"/><path d="M63 46 Q100 54 137 46 L138 54 Q100 60 62 54Z" fill="#3E9C6B"/>`},
+  {cat:'hat', id:'bow', name:'פפיון', price:3, svg:()=>`<path d="M118 48 L100 36 L102 62Z M118 48 L136 36 L134 62Z" fill="#E8457A"/><circle cx="118" cy="49" r="7" fill="#C72F63"/>`},
+  // glasses
+  {cat:'glasses', id:'round', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="4"><circle cx="78" cy="100" r="15"/><circle cx="122" cy="100" r="15"/><path d="M93 98 Q100 94 107 98"/></g>`},
+  {cat:'glasses', id:'hearts', name:'משקפי לב', price:6, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="3.5"><path d="M78 116 L62 100 Q58 86 70 86 Q76 86 78 92 Q80 86 86 86 Q98 86 94 100Z"/><path d="M122 116 L106 100 Q102 86 114 86 Q120 86 122 92 Q124 86 130 86 Q142 86 138 100Z"/></g><path d="M94 96 Q100 92 106 96" stroke="#D81B60" stroke-width="3" fill="none"/>`},
+  {cat:'glasses', id:'stars', name:'משקפי כוכב', price:7, svg:()=>{ const st=(x,y)=>`<path d="M${x} ${y-17} L${x+5} ${y-5} L${x+17} ${y-4} L${x+8} ${y+5} L${x+11} ${y+17} L${x} ${y+10} L${x-11} ${y+17} L${x-8} ${y+5} L${x-17} ${y-4} L${x-5} ${y-5}Z"/>`; return `<g fill="#FFD54F" fill-opacity=".7" stroke="#E0A800" stroke-width="3" stroke-linejoin="round">${st(78,100)}${st(122,100)}</g><path d="M94 98 Q100 94 106 98" stroke="#E0A800" stroke-width="3" fill="none"/>`; }},
+  {cat:'glasses', id:'shades', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="60" y="90" width="34" height="20" rx="8"/><rect x="106" y="90" width="34" height="20" rx="8"/></g><path d="M94 96 L106 96" stroke="#263238" stroke-width="4"/><path d="M66 95 L76 95" stroke="#fff" stroke-width="3" opacity=".6" stroke-linecap="round"/>`},
+  // pets (bottom corner)
+  {cat:'pet', id:'chick', name:'אפרוח', price:6, svg:()=>`<g transform="translate(0 0)"><ellipse cx="34" cy="222" rx="20" ry="16" fill="#FFD54F"/><circle cx="34" cy="198" r="13" fill="#FFD54F"/><circle cx="30" cy="196" r="2.4" fill="#2A2225"/><path d="M20 198 L13 201 L20 203Z" fill="#F59E0B"/><path d="M40 222 Q48 216 50 224" stroke="#F2B21E" stroke-width="3" fill="none"/></g>`},
+  {cat:'pet', id:'snail', name:'חילזון', price:5, svg:()=>`<path d="M8 234 Q40 238 64 232 Q60 222 50 224 L18 226Z" fill="#A5D6A7"/><circle cx="40" cy="214" r="18" fill="#C68B59"/><path d="M40 214 m-10 0 a10 10 0 1 1 10 10 a6 6 0 1 1 -6 -6" stroke="#8D5A35" stroke-width="3" fill="none"/><path d="M14 226 L8 210 M20 226 L18 210" stroke="#7CB342" stroke-width="3" stroke-linecap="round"/><circle cx="8" cy="208" r="3" fill="#2A2225"/><circle cx="18" cy="208" r="3" fill="#2A2225"/>`},
+  {cat:'pet', id:'puppy', name:'גור כלבים', price:9, svg:()=>`<ellipse cx="34" cy="222" rx="24" ry="15" fill="#D7B48A"/><circle cx="30" cy="198" r="16" fill="#D7B48A"/><ellipse cx="17" cy="198" rx="6" ry="12" fill="#8D6E4F"/><ellipse cx="43" cy="198" rx="6" ry="12" fill="#8D6E4F"/><circle cx="25" cy="196" r="2.6" fill="#2A2225"/><circle cx="35" cy="196" r="2.6" fill="#2A2225"/><ellipse cx="30" cy="204" rx="4" ry="3" fill="#2A2225"/><path d="M56 216 Q66 206 62 198" stroke="#D7B48A" stroke-width="5" fill="none" stroke-linecap="round"/>`},
+  {cat:'pet', id:'fish', name:'דג בצנצנת', price:7, svg:()=>`<path d="M14 196 Q10 236 36 238 Q62 236 58 196Z" fill="#B3E5FC" fill-opacity=".8" stroke="#81D4FA" stroke-width="3"/><rect x="12" y="190" width="48" height="8" rx="4" fill="#81D4FA"/><path d="M28 218 Q36 208 44 218 Q36 228 28 218Z M44 218 L52 212 L52 224Z" fill="#FF8A3D"/><circle cx="32" cy="216" r="1.8" fill="#2A2225"/>`},
+  // objects (held on the right)
+  {cat:'object', id:'balloon', name:'בלון', price:3, svg:()=>`<path d="M176 92 Q170 140 154 176" stroke="#555" stroke-width="2" fill="none"/><ellipse cx="178" cy="62" rx="20" ry="25" fill="#E8457A"/><path d="M172 87 L184 87 L178 94Z" fill="#E8457A"/><ellipse cx="171" cy="54" rx="5" ry="8" fill="#fff" opacity=".45"/>`},
+  {cat:'object', id:'wand', name:'שרביט קסמים', price:6, svg:()=>`<path d="M156 186 L182 126" stroke="#6D4C41" stroke-width="6" stroke-linecap="round"/><path d="M184 102 L189 115 L203 116 L192 124 L196 138 L184 130 L172 138 L176 124 L165 116 L179 115Z" fill="#FFD54F" stroke="#E0A800" stroke-width="2"/>`},
+  {cat:'object', id:'ball', name:'כדור', price:2, svg:()=>`<circle cx="174" cy="218" r="17" fill="#42A5F5"/><path d="M157 218 Q174 206 191 218 M174 201 Q166 218 174 235" stroke="#fff" stroke-width="4" fill="none"/>`},
+  {cat:'object', id:'flower', name:'פרח', price:4, svg:()=>`<path d="M162 186 L170 132" stroke="#43A047" stroke-width="5" stroke-linecap="round"/><g fill="#FF8AB3"><circle cx="170" cy="112" r="9"/><circle cx="184" cy="122" r="9"/><circle cx="180" cy="138" r="9"/><circle cx="162" cy="138" r="9"/><circle cx="157" cy="122" r="9"/></g><circle cx="170" cy="126" r="8" fill="#FFD54F"/>`}
+];
+const itemById = id => ITEMS.find(i=>i.id===id);
+const LAYER_ORDER = ['outfit','hair','hat','glasses','object','pet'];
+
+/* draw one character. worn = {cat: itemId}. preview = {cat: itemId} overrides (for "try on") */
+function drawChar(animal, worn={}, preview={}){
+  const A = ANIMALS[animal], w = {...worn, ...preview};
+  const it = c => w[c] ? itemById(w[c]) : null;
+  const part = (item, side) => !item ? '' : typeof item.svg === 'function' ? (side==='front' ? item.svg(A) : '') : (item.svg[side] ? item.svg[side](A) : '');
+  const out = it('outfit');
+  return `<svg viewBox="-6 -18 216 260" role="img" aria-label="${A.name}">
+    ${part(out,'back')}
+    ${backSvg(animal, A)}
+    ${bodySvg(animal, A)}
+    ${part(out,'front')}
+    ${animal==='fox' ? `<path d="M144 206 Q186 190 182 156 Q170 176 150 186Z" fill="${A.fur}"/><path d="M178 160 Q184 168 181 176 Q174 170 170 168Z" fill="#fff"/>` : ''}
+    ${animal==='bunny' ? `<circle cx="150" cy="214" r="12" fill="#fff"/>` : ''}
+    ${earsSvg(animal, A)}
+    <circle cx="100" cy="100" r="58" fill="${A.fur}"/>
+    ${faceSvg(animal, A)}
+    ${headExtrasSvg(animal, A)}
+    ${part(it('hair'),'front')}${part(it('hat'),'front')}${part(it('glasses'),'front')}${part(it('object'),'front')}${part(it('pet'),'front')}
+  </svg>`;
+}
+
+/* ---- earning: a mini lesson of 5 mental-addition questions ---- */
+const QUESTIONS = [[300,400],[60,30],[432,251],[253,172],[50,70]];
+const STARS_PER = 3, LESSON_LEN = QUESTIONS.length;
+const HINTS = {
+  '300+400':'3 מאות ועוד 4 מאות. כמה מאות זה?',
+  '60+30':'6 עשרות ועוד 3 עשרות.',
+  '432+251':'מאות: 400 + 200. עשרות: 30 + 50. אחדות: 2 + 1.',
+  '253+172':'מאות: 200 + 100. עשרות: 50 + 70 = 120. אחדות: 3 + 2.',
+  '50+70':'5 + 7 = 12, אז 50 + 70 = 120.'
+};
+
+function loadState(key){
+  const fresh = {animal:'cat', animals:['cat'], items:[], worn:{}, stars:10, lessons:0, q:0, wrong:0, gifts:0};
+  try{ const s = JSON.parse(localStorage.getItem(key)||'null'); return s ? {...fresh, ...s} : fresh; }catch(e){ return fresh; }
+}
+function saveState(key, s){ try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){} }
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const L = x => `<span class="ltr">${x}</span>`;
+const STAR = '<svg viewBox="0 0 24 24" class="star" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
+let VOICE=null;
+function pickVoice(){ try{ const he=speechSynthesis.getVoices().filter(v=>/^he|^iw/i.test(v.lang)); const s=v=>(/premium/i.test(v.name)?4:0)+(/enhanced/i.test(v.name)?3:0); VOICE=he.sort((a,b)=>s(b)-s(a))[0]||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){}
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='he-IL'; if(VOICE) u.voice=VOICE; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+
+/* answer a question; returns {ok, stars, lessonDone, unlocked} */
+function answer(S, value){
+  const [x,y] = QUESTIONS[S.q];
+  if(+value !== x+y){ S.wrong++; return {ok:false, hint: S.wrong>=2 ? HINTS[`${x}+${y}`] : 'עוד לא. נסי שוב, את יכולה.'}; }
+  S.stars += STARS_PER; S.wrong = 0; S.q++;
+  let lessonDone=false, unlocked=null;
+  if(S.q >= LESSON_LEN){
+    S.q = 0; S.lessons++; lessonDone = true;
+    const next = ANIMAL_ORDER.find(a => !S.animals.includes(a));
+    if(next){ S.animals.push(next); unlocked = next; }
+  }
+  return {ok:true, stars:STARS_PER, lessonDone, unlocked};
+}
+
+    return {ANIMALS, drawChar};
+  })();
   const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
   const FACES={
     lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
     nori:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40c-1-16 8-27 20-27s21 11 20 27c0 6-2 10-4 12H16c-2-2-4-6-4-12z" fill="#2E2A33"/><ellipse cx="32" cy="38" rx="15.5" ry="17" fill="#E9B98F"/><path d="M16 33c2-10 9-15 16-15s14 5 16 15c-6-2-11-6-14-11-3 6-10 10-18 11z" fill="#2E2A33"/><path d="M42 15l7-4-1 8z M42 15l8 3-6 4z" fill="#E8457A"/><circle cx="43.5" cy="16.5" r="2.4" fill="#C72F63"/><circle cx="26" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="38" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="22.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="41.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27.5 47c2.6 2.3 6.4 2.3 9 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
   };
   const IC={
+    gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/><circle cx="12" cy="12" r="6.6"/></svg>',
+    back:'<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+    gift:'<svg viewBox="0 0 100 100" aria-hidden="true" style="stroke:none"><rect x="16" y="42" width="68" height="46" rx="6" fill="#E8457A"/><rect x="10" y="30" width="80" height="16" rx="5" fill="#F06292"/><rect x="44" y="30" width="12" height="58" fill="#FFD54F"/><path d="M50 30 C38 10 18 16 30 28 Z M50 30 C62 10 82 16 70 28 Z" fill="#FFD54F"/></svg>',
     down:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
     home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>',
     lessons:'<svg viewBox="0 0 24 24"><path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>',
@@ -198,27 +385,36 @@ const Shell = (() => {
 
   /* ---------- top bar ---------- */
   let opts={}, menu=false, gate=null, screen=null, bumpN=0, lastCoins=null, bumpT=0;
+  /* her animal's head, gently moving, next to the coins: the way into her home */
+  function petHtml(){
+    const h=opts.pet||homeOf(kidId), here=opts.page==='home';
+    let art, label;
+    if(h.chosen && CH.ANIMALS[h.animal]){
+      const w=h.worn||{}, head={hat:w.hat, hair:w.hair, glasses:w.glasses};
+      art=CH.drawChar(h.animal, head).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"'); label=`הבית של ה${CH.ANIMALS[h.animal].name}`;
+    } else { art=IC.gift; label='הבית שלי: חיה מחכה לך'; }
+    return here ? `<span class="sh-pet here" aria-hidden="true">${art}</span>` : `<a class="sh-pet ${bumpN?'happy':''}" href="home.html" aria-label="${label}" title="${label}">${art}</a>`;
+  }
   function renderBar(){
     const bar=document.getElementById('bar'); if(!bar) return;
     const k=kid();
-    if(!k || screen){ bar.innerHTML=`<span class="sh-title" style="text-align:start">מתמטיקידס</span>`; return; }
+    if(!k || screen){ bar.innerHTML=`<span class="sh-title">מתמטיקידס</span>`; return; }
     const c=opts.coins!=null?opts.coins:coins();
-    // coins that just arrived float up next to the purse
+    // coins that just arrived float up next to the purse, and her animal hops
     if(lastCoins!=null && c>lastCoins){ bumpN=c-lastCoins; clearTimeout(bumpT); bumpT=setTimeout(()=>{ bumpN=0; renderBar(); },1500); }
     lastCoins=c;
-    const nav = opts.page==='home'
-      ? `<a class="sh-nav" href="index.html">${IC.lessons}<span>שיעורים</span></a>`
-      : `<a class="sh-nav" href="home.html">${IC.home}<span>הבית</span></a>`;
-    bar.innerHTML=`<div class="sh-me">
-        <button class="sh-chip" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true">${avatar(k)}${esc(k.name)}<span class="sh-down">${IC.down}</span></button>
-        ${menu?menuHtml(k):''}
-      </div>${nav}
-      <span class="sh-title">${opts.title||''}</span>
+    // the lessons page is the main page: settings live there. Every other page has a way back to it.
+    const start = opts.page==='lessons'
+      ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>`
+      : `<a class="sh-back" href="index.html">${IC.back}<span>חזרה</span></a>`;
+    bar.innerHTML=`${start}<h1 class="sh-title">${opts.title||''}</h1>
+      ${petHtml()}
       <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
   }
   function menuHtml(k){
     const others=KIDS.filter(x=>x.id!==k.id);
     return `<div class="sh-menu" role="menu">
+      <div class="sh-row sh-now">${avatar(k)}<span>${esc(k.name)}</span></div>
       ${others.map(x=>`<button class="sh-row" role="menuitem" data-sh="kid" data-v="${x.id}">${avatar(x)}<span>לעבור ל${esc(x.name)}</span></button>`).join('')}
       <div class="sh-sep"></div>
       <p class="sh-h">הצבע שלי</p>
@@ -310,8 +506,9 @@ function nextOf(p,strand){ // the lesson waiting for her in this strand
   return null;
 }
 function render(){
-  Shell.renderBar({page:'lessons', title:'השיעורים שלי'});
-  const k=Shell.kid(), p=Shell.progOf(k.id), CH=Shell.IC.check, LK=Shell.IC.lock;
+  const k=Shell.kid();
+  Shell.renderBar({page:'lessons', title:`מה לומדים היום, ${Shell.esc(k.name)}?`});
+  const p=Shell.progOf(k.id), CH=Shell.IC.check, LK=Shell.IC.lock;
   const picks=STRANDS.map(s=>{ const n=nextOf(p,s.id); if(!n) return '';
     const [id,name]=n.t.lessons[n.i], built=Shell.BUILT[id];
     return `<button class="pickc ${built?'':'soon'}" data-act="lesson" data-v="${id}"><span class="strand">${s.name} · ${n.t.name}</span><b>${name}</b>
@@ -327,7 +524,6 @@ function render(){
       return `<section class="topic ${open?'':'locked'}"><header><h2 style="font-size:19px">${t.name}</h2><span class="tag">${done?'סיימת! ✓':open?'':'נפתח אחרי שמסיימים את '+need}</span></header><div class="path">${stops}</div></section>`;
     }).join('')}</div>`).join('');
   document.getElementById('app').innerHTML=`
-    <div><h1>מה לומדים היום, ${Shell.esc(k.name)}?</h1><p class="meta">אפשר לבחור.</p></div>
     <div class="today">${picks||'<p>סיימת את כל השיעורים! ✓</p>'}</div>
     ${known.length?`<p class="known">כבר יודעת: ${known.map(t=>`<span>${CH}${t.name}</span>`).join('')}</p>`:''}
     <div class="map">${cols}</div>`;
@@ -345,5 +541,5 @@ const A={
 };
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && modal){ modal=null; render(); } });
-if(Shell.start({page:'lessons', title:'השיעורים שלי', onColor:render, onParentClose:render})) render();
+if(Shell.start({page:'lessons', onColor:render, onParentClose:render})) render();
 </script></body></html>

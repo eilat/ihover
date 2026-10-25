@@ -3,12 +3,20 @@
    The parent area lives inside her name's menu, behind a question in English.
    Everything is kept in this browser (localStorage), so all pages of the prototype see the same girl. */
 const Shell = (() => {
+  // the animals' art, kept private to the shell so it can draw her animal's head in the bar on every page
+  const CH=(()=>{
+/*CHARACTERS*/
+    return {ANIMALS, drawChar};
+  })();
   const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
   const FACES={
     lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
     nori:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40c-1-16 8-27 20-27s21 11 20 27c0 6-2 10-4 12H16c-2-2-4-6-4-12z" fill="#2E2A33"/><ellipse cx="32" cy="38" rx="15.5" ry="17" fill="#E9B98F"/><path d="M16 33c2-10 9-15 16-15s14 5 16 15c-6-2-11-6-14-11-3 6-10 10-18 11z" fill="#2E2A33"/><path d="M42 15l7-4-1 8z M42 15l8 3-6 4z" fill="#E8457A"/><circle cx="43.5" cy="16.5" r="2.4" fill="#C72F63"/><circle cx="26" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="38" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="22.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="41.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27.5 47c2.6 2.3 6.4 2.3 9 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
   };
   const IC={
+    gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/><circle cx="12" cy="12" r="6.6"/></svg>',
+    back:'<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+    gift:'<svg viewBox="0 0 100 100" aria-hidden="true" style="stroke:none"><rect x="16" y="42" width="68" height="46" rx="6" fill="#E8457A"/><rect x="10" y="30" width="80" height="16" rx="5" fill="#F06292"/><rect x="44" y="30" width="12" height="58" fill="#FFD54F"/><path d="M50 30 C38 10 18 16 30 28 Z M50 30 C62 10 82 16 70 28 Z" fill="#FFD54F"/></svg>',
     down:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
     home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>',
     lessons:'<svg viewBox="0 0 24 24"><path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>',
@@ -71,27 +79,36 @@ const Shell = (() => {
 
   /* ---------- top bar ---------- */
   let opts={}, menu=false, gate=null, screen=null, bumpN=0, lastCoins=null, bumpT=0;
+  /* her animal's head, gently moving, next to the coins: the way into her home */
+  function petHtml(){
+    const h=opts.pet||homeOf(kidId), here=opts.page==='home';
+    let art, label;
+    if(h.chosen && CH.ANIMALS[h.animal]){
+      const w=h.worn||{}, head={hat:w.hat, hair:w.hair, glasses:w.glasses};
+      art=CH.drawChar(h.animal, head).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"'); label=`הבית של ה${CH.ANIMALS[h.animal].name}`;
+    } else { art=IC.gift; label='הבית שלי: חיה מחכה לך'; }
+    return here ? `<span class="sh-pet here" aria-hidden="true">${art}</span>` : `<a class="sh-pet ${bumpN?'happy':''}" href="home.html" aria-label="${label}" title="${label}">${art}</a>`;
+  }
   function renderBar(){
     const bar=document.getElementById('bar'); if(!bar) return;
     const k=kid();
-    if(!k || screen){ bar.innerHTML=`<span class="sh-title" style="text-align:start">מתמטיקידס</span>`; return; }
+    if(!k || screen){ bar.innerHTML=`<span class="sh-title">מתמטיקידס</span>`; return; }
     const c=opts.coins!=null?opts.coins:coins();
-    // coins that just arrived float up next to the purse
+    // coins that just arrived float up next to the purse, and her animal hops
     if(lastCoins!=null && c>lastCoins){ bumpN=c-lastCoins; clearTimeout(bumpT); bumpT=setTimeout(()=>{ bumpN=0; renderBar(); },1500); }
     lastCoins=c;
-    const nav = opts.page==='home'
-      ? `<a class="sh-nav" href="index.html">${IC.lessons}<span>שיעורים</span></a>`
-      : `<a class="sh-nav" href="home.html">${IC.home}<span>הבית</span></a>`;
-    bar.innerHTML=`<div class="sh-me">
-        <button class="sh-chip" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true">${avatar(k)}${esc(k.name)}<span class="sh-down">${IC.down}</span></button>
-        ${menu?menuHtml(k):''}
-      </div>${nav}
-      <span class="sh-title">${opts.title||''}</span>
+    // the lessons page is the main page: settings live there. Every other page has a way back to it.
+    const start = opts.page==='lessons'
+      ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>`
+      : `<a class="sh-back" href="index.html">${IC.back}<span>חזרה</span></a>`;
+    bar.innerHTML=`${start}<h1 class="sh-title">${opts.title||''}</h1>
+      ${petHtml()}
       <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
   }
   function menuHtml(k){
     const others=KIDS.filter(x=>x.id!==k.id);
     return `<div class="sh-menu" role="menu">
+      <div class="sh-row sh-now">${avatar(k)}<span>${esc(k.name)}</span></div>
       ${others.map(x=>`<button class="sh-row" role="menuitem" data-sh="kid" data-v="${x.id}">${avatar(x)}<span>לעבור ל${esc(x.name)}</span></button>`).join('')}
       <div class="sh-sep"></div>
       <p class="sh-h">הצבע שלי</p>

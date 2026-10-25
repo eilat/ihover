@@ -71,8 +71,9 @@ function nextOf(p,strand){ // the lesson waiting for her in this strand
   return null;
 }
 function render(){
-  Shell.renderBar({page:'lessons', title:'השיעורים שלי'});
-  const k=Shell.kid(), p=Shell.progOf(k.id), CH=Shell.IC.check, LK=Shell.IC.lock;
+  const k=Shell.kid();
+  Shell.renderBar({page:'lessons', title:`מה לומדים היום, ${Shell.esc(k.name)}?`});
+  const p=Shell.progOf(k.id), CH=Shell.IC.check, LK=Shell.IC.lock;
   const picks=STRANDS.map(s=>{ const n=nextOf(p,s.id); if(!n) return '';
     const [id,name]=n.t.lessons[n.i], built=Shell.BUILT[id];
     return `<button class="pickc ${built?'':'soon'}" data-act="lesson" data-v="${id}"><span class="strand">${s.name} · ${n.t.name}</span><b>${name}</b>
@@ -88,7 +89,6 @@ function render(){
       return `<section class="topic ${open?'':'locked'}"><header><h2 style="font-size:19px">${t.name}</h2><span class="tag">${done?'סיימת! ✓':open?'':'נפתח אחרי שמסיימים את '+need}</span></header><div class="path">${stops}</div></section>`;
     }).join('')}</div>`).join('');
   document.getElementById('app').innerHTML=`
-    <div><h1>מה לומדים היום, ${Shell.esc(k.name)}?</h1><p class="meta">אפשר לבחור.</p></div>
     <div class="today">${picks||'<p>סיימת את כל השיעורים! ✓</p>'}</div>
     ${known.length?`<p class="known">כבר יודעת: ${known.map(t=>`<span>${CH}${t.name}</span>`).join('')}</p>`:''}
     <div class="map">${cols}</div>`;
@@ -106,5 +106,5 @@ const A={
 };
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && modal){ modal=null; render(); } });
-if(Shell.start({page:'lessons', title:'השיעורים שלי', onColor:render, onParentClose:render})) render();
+if(Shell.start({page:'lessons', onColor:render, onParentClose:render})) render();
 </script></body></html>

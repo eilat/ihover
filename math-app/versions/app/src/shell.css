@@ -2,16 +2,22 @@
 .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);min-height:68px;position:relative;z-index:30}
 .bar svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .sh-me{position:relative}
-.sh-chip{display:flex;align-items:center;gap:10px;min-height:50px;padding:4px 10px 4px 6px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font:inherit;font-size:18px;font-weight:600;color:var(--ink);cursor:pointer}
-.sh-chip:hover,.sh-chip[aria-expanded="true"]{border-color:var(--accent)}
+.sh-gear{width:50px;height:50px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);cursor:pointer;padding:0}
+.sh-gear:hover,.sh-gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.sh-gear svg{width:26px;height:26px}
+.sh-back{display:flex;align-items:center;gap:6px;min-height:50px;padding:6px 18px 6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:17px;text-decoration:none}
+.sh-back:hover{border-color:var(--accent)}
+.sh-back svg{width:22px;height:22px}
 .sh-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;overflow:hidden;flex:none}
 .sh-av svg{width:100%;height:100%;display:block;stroke:none!important}
-.sh-down svg{width:20px;height:20px;display:block;color:var(--muted)}
-.sh-chip[aria-expanded="true"] .sh-down svg{transform:rotate(180deg)}
-.sh-nav{display:flex;align-items:center;gap:8px;min-height:50px;padding:6px 18px 6px 16px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);font-weight:600;font-size:17px;text-decoration:none;border:2px solid transparent}
-.sh-nav:hover{border-color:var(--accent)}
-.sh-nav svg{width:24px;height:24px}
-.sh-title{flex:1;text-align:center;font-family:var(--f-display);font-size:21px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-title{flex:1;margin:0;text-align:start;font-family:var(--f-display);font-size:24px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-pet{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,var(--surface));border:2px solid transparent;overflow:hidden}
+a.sh-pet:hover{border-color:var(--accent)}
+.sh-pet svg{width:52px;height:52px;display:block;stroke:none!important;transform-origin:50% 85%;animation:sh-idle 5s ease-in-out infinite}
+a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
+.sh-pet.here{background:transparent}
+@keyframes sh-idle{0%,62%,100%{transform:none}68%{transform:translateY(-3px) rotate(-7deg)}76%{transform:translateY(0) rotate(5deg)}84%{transform:rotate(-2deg)}}
+@keyframes sh-hop{0%,100%{transform:none}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(1px) scale(.98)}}
 .sh-bank{position:relative;display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600;font-size:22px;background:#FFF1C7;color:#5A4300;padding:6px 16px;border-radius:999px}
 .sh-coin{width:24px;height:24px;flex:none;stroke-width:2!important}
 .sh-bank.bump{animation:sh-bump .5s ease}
@@ -22,6 +28,7 @@
 .sh-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 10px;border-radius:12px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;text-align:start}
 .sh-row:hover{background:var(--bg)}
 .sh-row .sh-av{width:38px;height:38px}
+.sh-now{cursor:default;font-size:19px}.sh-now:hover{background:transparent}
 .sh-parent{color:var(--muted);font-weight:400;font-size:15px}
 .sh-lock{width:38px;display:grid;place-items:center}.sh-lock svg{width:20px;height:20px}
 .sh-sep{height:1.5px;background:var(--line);margin:4px 0}
@@ -59,4 +66,4 @@
 .sh-topics b{flex:1;min-width:150px}.sh-topics span{color:var(--muted)}
 .sh-topics button,.sh-reset{font:inherit;font-size:14px;min-height:36px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .sh-reset{margin-top:10px}
-@media (max-width:700px){.sh-nav span{display:none}.sh-title{font-size:17px}}
+@media (max-width:700px){.sh-back span{display:none}.sh-back{padding:6px 12px}.sh-title{font-size:18px}}

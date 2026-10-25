@@ -59,6 +59,14 @@ h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
 .item b{font-size:15px}
 .price{display:flex;align-items:center;gap:4px;font-weight:600}
 .item .btn{min-height:38px;padding:3px 12px;font-size:14px;width:100%}
+.acts{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;margin-top:2px}
+.ib{min-height:44px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:4px;padding:0 10px;font-family:var(--f-display);font-weight:600;font-size:17px}
+.ib.eye{width:44px;padding:0;color:var(--muted)}
+.ib.eye[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ib.buy{background:var(--accent);border-color:var(--accent);color:#fff}
+.ib.buy .coin{width:18px;height:18px}
+.ib:disabled{opacity:.45;cursor:default}
+.ib:not(:disabled):hover{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .need{font-size:12px;color:var(--muted)}
 .btn{min-height:48px;padding:6px 20px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:600}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -113,19 +121,22 @@ h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
 /*SHELL*/
 /*CHARACTERS*/
 /*ROOM*/
+/*GIRL*/
 const COIN='<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#F2C230" stroke="#C99A12" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#C99A12" stroke-width="1.6"/></svg>';
 const IC={
   watch:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4M12 2v3"/></svg>',
   pause:'<svg class="ic" viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg>',
   speaker:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg>',
-  map:'<svg class="ic" viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>'
+  eye:'<svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  bag:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></svg>'
 };
 const GIFT=`<svg class="gift" viewBox="0 0 100 100" aria-hidden="true"><rect x="12" y="40" width="76" height="52" rx="6" fill="#E8457A"/><rect x="6" y="28" width="88" height="18" rx="5" fill="#F06292"/><rect x="44" y="28" width="12" height="64" fill="#FFD54F"/><path d="M50 28 C38 8 18 14 30 26 Z M50 28 C62 8 82 14 70 26 Z" fill="#FFD54F"/></svg>`;
 const STARTERS=['cat','bunny','fox'];
+const FACE=Shell.kid()?.face||'lili';
 
 /* ---------- state per girl ---------- */
 const kidId=Shell.kid()?.id;
-function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
+function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, girlWorn:{}, coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
 function load(id){ try{ const s=JSON.parse(localStorage.getItem('home:'+id)||'null'); return s?{...fresh(),...s}:fresh(); }catch(e){ return fresh(); } }
 function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); }catch(e){} }
 let S=load(kidId);
@@ -190,7 +201,7 @@ function settle(q, solved, reveal){
   if(box) openBox();
 }
 /* ---------- surprise box: choose 1 of 3 things she doesn't have yet ---------- */
-const ALL_BUY=()=>[...WALLPAPERS.filter(w=>w.price>0).map(w=>({...w,kind:'wallpaper'})), ...ROOM_ITEMS.map(i=>({...i,kind:'room'})), ...ITEMS.map(i=>({...i,kind:i.cat==='pet'||i.cat==='object'?'room':'wear'}))];
+const ALL_BUY=()=>[...WALLPAPERS.filter(w=>w.price>0).map(w=>({...w,kind:'wallpaper'})), ...ROOM_ITEMS.map(i=>({...i,kind:'room'})), ...ITEMS.map(i=>({...i,kind:i.cat==='pet'||i.cat==='object'?'room':'wear'})), ...GIRL_ITEMS.map(i=>({...i,kind:'me'}))];
 function openBox(){
   const left=ALL_BUY().filter(i=>!isOwned(i.id)); if(!left.length) return;
   offer=left.sort(()=>Math.random()-.5).slice(0,3).map(i=>i.id); modal='box';
@@ -199,6 +210,7 @@ function isOwned(id){ return S.items.includes(id) || (S.ownedWp||[]).includes(id
 function thumb(id){
   const wp=WALLPAPERS.find(w=>w.id===id); if(wp) return `<svg viewBox="0 0 120 90"><defs>${wp.def}</defs><rect width="120" height="90" rx="8" fill="${wp.fill}"/></svg>`;
   const ri=ROOM_ITEMS.find(x=>x.id===id); if(ri) return thumbRoom(ri);
+  const gi=girlItem(id); if(gi) return drawGirl(FACE,{},{[gi.cat]:id}).replace(/viewBox="[^"]*"/,`viewBox="${GIRL_CROP[gi.cat]}"`);
   const it=itemById(id); if(!it) return '';
   if(it.cat==='pet') return `<svg viewBox="0 180 72 62">${it.svg(ANIMALS[S.animal])}</svg>`;
   if(it.cat==='object'){ const s=OBJ_SPOTS[id]; return `<svg viewBox="${s[4]}">${it.svg(ANIMALS[S.animal])}</svg>`; }
@@ -212,27 +224,29 @@ function priceOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.price:0; 
 function nameOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.name:''; }
 
 /* ---------- rendering ---------- */
-function renderBar(){ Shell.renderBar({page:'home', title:S.chosen?`הבית של ה${ANIMALS[S.animal].name}`:'הבית שלי', coins:S.coins}); }
+function renderBar(){ Shell.renderBar({page:'home', title:S.chosen?`הבית של ה${ANIMALS[S.animal].name}`:'הבית שלי', coins:S.coins, pet:{chosen:S.chosen, animal:S.animal, worn:S.worn}}); }
 function shopHtml(){
-  const cats = side==='home' ? ROOM_CATS : WEAR_CATS;
+  const cats = side==='home' ? ROOM_CATS : side==='me' ? GIRL_CATS : WEAR_CATS;
   if(!cats.some(c=>c.id===tab)) tab=cats[0].id;
   let list;
   if(tab==='wallpaper') list=WALLPAPERS.map(w=>({id:w.id,name:w.name,price:w.price,cat:'wallpaper'}));
   else if(['furniture','wall','plant'].includes(tab)) list=ROOM_ITEMS.filter(i=>i.cat===tab);
+  else if(side==='me') list=GIRL_ITEMS.filter(i=>i.cat===tab);
   else list=ITEMS.filter(i=>i.cat===tab);
   const cards=list.map(i=>{
-    const own = i.price===0 || isOwned(i.id), can=S.coins>=i.price, isWp=tab==='wallpaper', isWear=side==='animal';
-    const on = isWp ? S.wallpaper===i.id : isWear ? S.worn[i.cat]===i.id : own;
+    const own = i.price===0 || isOwned(i.id), can=S.coins>=i.price, isWp=tab==='wallpaper', isWear=side!=='home';
+    const on = isWp ? S.wallpaper===i.id : side==='me' ? S.girlWorn[i.cat]===i.id : isWear ? S.worn[i.cat]===i.id : own;
     let act='';
     if(own){
       if(isWp) act = on ? '<span class="need">על הקיר</span>' : `<button class="btn primary" data-act="useWp" data-v="${i.id}">לשים על הקיר</button>`;
-      else if(isWear) act=`<button class="btn ${on?'':'primary'}" data-act="wear" data-v="${i.id}">${on?'להוריד':'ללבוש'}</button>`;
+      else if(isWear) act=`<button class="btn ${on?'':'primary'}" data-act="${side==='me'?'wearMe':'wear'}" data-v="${i.id}">${on?'להוריד':'ללבוש'}</button>`;
       else act='<span class="need">בחדר</span>';
-    } else act=`<button class="btn" data-act="preview" data-v="${i.id}">${preview===i.id?'מסתכלת עכשיו':'לראות'}</button><button class="btn primary" data-act="buy" data-v="${i.id}" ${can?'':'disabled'}>לקנות</button>${can?'':`<span class="need">עוד ${i.price-S.coins} מטבעות</span>`}`;
-    return `<div class="item ${on?'on':''} ${preview===i.id?'pv':''}"><div class="th">${thumb(i.id)}</div><b>${i.name}</b>${own?'':`<span class="price">${COIN}${i.price}</span>`}${act}</div>`;
+    } else act=`<div class="acts"><button class="ib eye" data-act="preview" data-v="${i.id}" aria-pressed="${preview===i.id}" aria-label="לראות איך זה נראה" title="לראות איך זה נראה">${IC.eye}</button>
+      <button class="ib buy" data-act="buy" data-v="${i.id}" ${can?'':'disabled'} aria-label="לקנות ב-${i.price} מטבעות" title="לקנות">${IC.bag}<span class="ltr">${i.price}</span>${COIN}</button></div>${can?'':`<span class="need">חסרים ${i.price-S.coins}</span>`}`;
+    return `<div class="item ${on?'on':''} ${preview===i.id?'pv':''}"><div class="th">${thumb(i.id)}</div><b>${i.name}</b>${act}</div>`;
   }).join('');
   return `<section class="card"><h2>החנות</h2>
-    <div class="seg"><button data-act="side" data-v="home" aria-pressed="${side==='home'}">לבית</button><button data-act="side" data-v="animal" aria-pressed="${side==='animal'}">ל${ANIMALS[S.animal].name}</button></div>
+    <div class="seg"><button data-act="side" data-v="home" aria-pressed="${side==='home'}">לבית</button><button data-act="side" data-v="animal" aria-pressed="${side==='animal'}">ל${ANIMALS[S.animal].name}</button><button data-act="side" data-v="me" aria-pressed="${side==='me'}">לעצמי</button></div>
     <div class="tabs" role="tablist">${cats.map(c=>`<button class="tab" role="tab" aria-selected="${tab===c.id}" data-act="tab" data-v="${c.id}">${c.name}</button>`).join('')}</div>
     <div class="grid">${cards}</div></section>`;
 }
@@ -262,8 +276,8 @@ function render(){
   const anim=ANIMAL_ORDER.map(a=>{ const has=S.animals.includes(a); return `<button class="an ${has?'':'locked'}" ${has?`data-act="animal" data-v="${a}"`:'disabled'} aria-pressed="${S.animal===a}">${drawChar(a)}<span>${has?ANIMALS[a].name:'אחרי שיעור'}</span></button>`; }).join('');
   document.getElementById('app').innerHTML=`
     <div class="col">
-      <div class="room">${roomSvg({animal:S.animal, worn:S.worn, wallpaper:S.wallpaper, items:S.items, friends, preview})}</div>
-      ${preview?`<p class="meta"><span class="preview-tag">מסתכלת</span> ככה זה ייראה. לקנות או ללחוץ שוב על "לראות" כדי לבטל.</p>`:''}
+      <div class="room">${roomSvg({animal:S.animal, worn:S.worn, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
+      ${preview?`<p class="meta"><span class="preview-tag">מסתכלת</span> ככה זה ייראה. לקנות, או ללחוץ שוב על העין כדי לבטל.</p>`:''}
       <section class="card"><h2>החיות שלי</h2><p class="meta">כל שיעור שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p><div class="animals" style="margin-top:8px">${anim}</div></section>
       ${shopHtml()}
     </div>
@@ -278,6 +292,7 @@ function render(){
 /* ---------- actions ---------- */
 function grant(id){
   if(WALLPAPERS.some(w=>w.id===id)){ (S.ownedWp ||= []).push(id); S.wallpaper=id; }
+  else if(girlItem(id)){ S.items.push(id); S.girlWorn[girlItem(id).cat]=id; }
   else { S.items.push(id); const it=itemById(id); if(it && ['outfit','hair','hat','glasses'].includes(it.cat)) S.worn[it.cat]=id; }
 }
 const A={
@@ -286,19 +301,20 @@ const A={
     const n=S.pendingAnimals||0; S.pendingAnimals=0; const came=ANIMAL_ORDER.filter(a=>a!==v).slice(0,n); S.animals.push(...came);
     if(came.length) welcome(came[came.length-1]);
     nextQ(); save(); },
-  side(v){ side=v; preview=null; tab = v==='home' ? 'wallpaper' : 'outfit'; },
+  side(v){ side=v; preview=null; tab = v==='home' ? 'wallpaper' : v==='me' ? 'g-outfit' : 'outfit'; },
   tab(v){ tab=v; },
   preview(v){ preview = preview===v ? null : v; window.scrollTo({top:0,behavior:'smooth'}); },
   buy(v){ const p=priceOf(v); if(S.coins<p) return; S.coins-=p; grant(v); preview=null; msg={ok:true,text:`קנית: ${nameOf(v)}!`}; save(); },
   useWp(v){ S.wallpaper=v; save(); },
   wear(v){ const it=itemById(v); S.worn[it.cat] = S.worn[it.cat]===v ? undefined : v; save(); },
+  wearMe(v){ const c=girlItem(v).cat; S.girlWorn[c] = S.girlWorn[c]===v ? undefined : v; save(); },
   animal(v){ S.animal=v; save(); },
   sw(){ if(T.running){ T.ms+=Date.now()-T.from; T.from=null; T.running=false; } else { T.from=Date.now(); T.running=true; T.used=true; } },
   check(){ check(); return false; },
   say(){ const q=S.challenge||S.q; if(q) speak(`כמה זה ${q.a} ועוד ${q.b}?`); return false; },
   takeCh(){ const [a,b]=CHALLENGES[r(0,CHALLENGES.length-1)]; S.challenge={a,b,wrong:0,level:5}; S.pendingChallenge=false; msg=null; save(); },
   skipCh(){ S.pendingChallenge=false; const [a,b]=LEVELS[S.level].gen(); S.q={a,b,wrong:0,level:S.level}; msg=null; save(); },
-  pick(v){ grant(v); offer=null; modal=`<div class="th" style="width:200px;height:170px">${thumb(v)}</div><h2>${nameOf(v)}!</h2><p class="meta">זה שלך עכשיו${ITEMS.some(i=>i.id===v&&['outfit','hair','hat','glasses'].includes(i.cat))?', וכבר על החיה':', וכבר בבית'}.</p>`; save(); },
+  pick(v){ grant(v); offer=null; modal=`<div class="th" style="width:200px;height:170px">${thumb(v)}</div><h2>${nameOf(v)}!</h2><p class="meta">זה שלך עכשיו${girlItem(v)?', וכבר עלייך':ITEMS.some(i=>i.id===v&&['outfit','hair','hat','glasses'].includes(i.cat))?', וכבר על החיה':', וכבר בבית'}.</p>`; save(); },
   close(){ modal=null; },
   simLesson(){ const next=ANIMAL_ORDER.find(a=>!S.animals.includes(a)); if(!next){ modal='<h2>כל החיות כבר בבית!</h2>'; return; } S.animals.push(next); save();
     modal=`<h2>סיימת שיעור!</h2>${drawChar(next).replace('<svg','<svg style="width:170px;height:204px"')}<p><b>${ANIMALS[next].name}</b> עוברת לגור אצלך בבית!</p>`; },

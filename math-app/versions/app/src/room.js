@@ -45,9 +45,9 @@ const WEAR_CATS = [{id:'outfit',name:'בגדים'},{id:'hair',name:'תסרוקו
 /* where pets and held objects go in the room (they're drawn in the character frame, so we crop and place them) */
 const PET_SPOTS=[[96,330],[560,346],[236,356],[660,350]];
 const OBJ_SPOTS={balloon:[200,40,70,150,'140 20 70 160'], ball:[470,350,60,60,'150 196 50 44'], wand:[650,150,46,110,'150 100 56 100'], flower:[580,190,50,110,'150 100 50 100']};
-const FRIEND_SPOTS=[[520,232,84],[248,236,78],[600,262,70],[170,270,70],[440,282,58],[680,286,60],[60,290,60],[360,296,52]];
+const FRIEND_SPOTS=[[660,236,76],[248,236,78],[600,262,70],[170,270,70],[440,282,58],[680,286,60],[60,290,60],[360,296,52]];
 
-function roomSvg({animal, worn, wallpaper, items, friends, preview}){
+function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
   const A = ANIMALS[animal];
   const wp = WALLPAPERS.find(w=>w.id===wallpaper) || WALLPAPERS[0];
   const show = new Set(items); if(preview && !WALLPAPERS.some(w=>w.id===preview)) show.add(preview);
@@ -75,6 +75,7 @@ function roomSvg({animal, worn, wallpaper, items, friends, preview}){
     <path d="M0 340 H800 M0 378 H800 M0 416 H800 M120 306 V340 M420 306 V340 M720 306 V340 M260 340 V378 M560 340 V378 M80 378 V416 M380 378 V416 M680 378 V416" stroke="#C9A378" stroke-width="3"/>
     ${under}${back}${objs}
     <svg x="300" y="104" width="200" height="240" viewBox="-6 -18 216 260">${strip(drawChar(animal, wearOnly, preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {}))}</svg>
+    ${girl?`<ellipse cx="580" cy="342" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="506" y="66" width="150" height="280" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}))}</svg>`:''}
     ${fr}${pets}
   </svg>`;
 }
