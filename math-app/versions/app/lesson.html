@@ -264,6 +264,10 @@ a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
 .sh-diag span{display:inline-block;border-radius:6px;padding:0 6px;margin-inline-end:4px;direction:ltr}
 .sh-diag .ok{background:#DDF2E7;color:#1F7A4D}.sh-diag .no{background:#FFF1C9;color:#7A5B00}
 .sh-row2{display:flex;gap:8px;flex-wrap:wrap}
+.sh-cloud{margin:0;font-size:14px;font-weight:600;color:var(--muted)}.sh-cloud.on{color:#1F7A4D}
+.sh-wipe{margin-top:14px;padding-top:12px;border-top:1.5px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sh-wipe p{margin:0;flex-basis:100%;color:var(--ink)}
+.sh-reset.danger{border-color:#C0392B;color:#C0392B}
 
 .screen .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 a.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)} a.btn.primary{color:#fff}
@@ -295,8 +299,44 @@ a.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:
 /* Shell: what every page shares. Who is learning, her colour, her coins, which lessons are open,
    and the top bar: [her name ▾] [home/lessons] .... title .... [coins].
    The parent area lives inside her name's menu, behind a question in English.
-   Everything is kept in this browser (localStorage), so all pages of the prototype see the same girl. */
+   Everything is kept in this browser (localStorage) for speed, and mirrored to the artifact's database
+   so each girl's progress follows her to any computer where the link is opened. */
 const Shell = (() => {
+  /* ---------- saving: browser first, then the artifact's database ----------
+     Synced keys: everything under mk: and home:, except which girl sits at this computer (mk:kid).
+     Each key is one document {v: the stored text, t: when it changed}; the newer side wins.
+     Pages without the database (or a signed-out view) keep working from the browser alone, and the
+     next page that has it catches up in both directions. */
+  const SCHEMA='3'; // raising this starts everyone from zero (asked for on 2026-10-26)
+  const LOCAL=/^mk:(kid|schema|ts:.*)$/, SYNC=k=>/^(mk:|home:)/.test(k)&&!LOCAL.test(k);
+  const rawSet=Storage.prototype.setItem, rawDel=Storage.prototype.removeItem;
+  try{ if(localStorage.getItem('mk:schema')!==SCHEMA){ Object.keys(localStorage).filter(k=>/^(mk:|home:)/.test(k)).forEach(k=>rawDel.call(localStorage,k)); rawSet.call(localStorage,'mk:schema',SCHEMA); } }catch(e){}
+  let DB=null, cloud='checking', quiet=false, pushT=0; const pending=new Set(), inflight=new Set();
+  const tsOf=k=>{ try{ return +(localStorage.getItem('mk:ts:'+k)||0); }catch(e){ return 0; } };
+  Storage.prototype.setItem=function(k,v){ rawSet.call(this,k,v); if(this===localStorage&&SYNC(k)&&!quiet){ rawSet.call(this,'mk:ts:'+k,String(Date.now())); pending.add(k); clearTimeout(pushT); pushT=setTimeout(push,700); } };
+  async function push(){ if(!DB) return;
+    for(const k of [...pending]){ if(inflight.has(k)) continue; pending.delete(k); inflight.add(k); // one write at a time per document
+      const v=localStorage.getItem(k); if(v==null){ inflight.delete(k); continue; }
+      try{ await DB.collection('store').doc(k).set({v, t:tsOf(k), s:SCHEMA}); } catch(e){ if(e?.code==='unavailable') pending.add(k); }
+      inflight.delete(k); }
+    if(pending.size){ clearTimeout(pushT); pushT=setTimeout(push,1500); } }
+  addEventListener('pagehide',()=>{ clearTimeout(pushT); push(); });
+  async function fullSync(){
+    let snap; try{ snap=await DB.collection('store').get(); }catch(e){ cloud='off'; return; }
+    const remote={}; const stale=[]; snap.docs.forEach(d=>{ const x=d.data(); if(x&&typeof x.v==='string'&&x.s===SCHEMA) remote[d.id]=x; else stale.push(d.id); });
+    for(const id of stale){ try{ await DB.collection('store').doc(id).delete(); }catch(e){} } // left from before a fresh start
+    let changed=false; quiet=true;
+    for(const [k,r] of Object.entries(remote)) if(SYNC(k) && r.t>tsOf(k)){ rawSet.call(localStorage,k,r.v); rawSet.call(localStorage,'mk:ts:'+k,String(r.t)); changed=true; }
+    quiet=false; cloud='on';
+    Object.keys(localStorage).filter(SYNC).forEach(k=>{ if(!remote[k]||tsOf(k)>remote[k].t) pending.add(k); }); push();
+    // newer progress came from another computer: start this page again from it (once; the next sync finds nothing newer)
+    if(changed) location.reload();
+  }
+  async function wipeAll(){ // the parent's "start everything over"
+    const keys=Object.keys(localStorage).filter(k=>/^(mk:|home:)/.test(k)&&k!=='mk:schema');
+    if(DB){ try{ const snap=await DB.collection('store').get(); for(const d of snap.docs) await DB.collection('store').doc(d.id).delete(); }catch(e){} }
+    keys.forEach(k=>rawDel.call(localStorage,k)); location.replace('index.html'); }
+  try{ window.claude?.use?.('db').then(db=>{ DB=db; if(db) fullSync(); else cloud='off'; }).catch(()=>{ cloud='off'; }); }catch(e){ cloud='off'; }
   // the animals' art, kept private to the shell so it can draw her animal's head in the bar on every page
   const CH=(()=>{
 /* Shared art + logic for the three reward prototypes.
@@ -610,7 +650,8 @@ function answer(S, value){
     </div></div>`;
   }
   function parentHtml(){
-    return `<p class="sh-note">"ידוע מהבדיקה" = ענתה נכון בבדיקת הידע. כדאי לשבת לידן בבדיקה: תשובה נכונה יכולה להיות גם ספירה על האצבעות, ואז אפשר לנעול כאן ידנית (בדיקה מחדש). מסך ההורה המלא יחובר בהמשך.</p>
+    const cl = cloud==='on' ? 'נשמר בענן: ההתקדמות זמינה בכל מחשב שבו פותחים את הקישור.' : cloud==='checking' ? 'בודק שמירה בענן...' : 'בעמוד הזה ההתקדמות נשמרת בדפדפן, ותעלה לענן כשחוזרים למפת השיעורים.';
+    return `<p class="sh-cloud ${cloud}">☁ ${cl}</p><p class="sh-note">"ידוע מהבדיקה" = ענתה נכון בבדיקת הידע. כדאי לשבת לידן בבדיקה: תשובה נכונה יכולה להיות גם ספירה על האצבעות, ואז אפשר לנעול כאן ידנית (בדיקה מחדש). מסך ההורה המלא יחובר בהמשך.</p>
       <div class="sh-pcols">${KIDS.map(k=>{ const p=progOf(k.id);
         const diag = p.diag ? `<p class="sh-diag">בדיקת ידע: ${p.diag.date} · נכונות ${p.diag.answers.filter(a=>a.ok).length} מתוך ${p.diag.answers.length}<br>${p.diag.answers.map(a=>`<span class="${a.ok?'ok':'no'}">${a.q}: ${a.given}</span>`).join(' ')}</p>` : '<p class="sh-diag">עוד לא עשתה בדיקת ידע.</p>';
         return `<section><h3>${avatar(k)}${esc(k.name)} <span class="sh-coins">${COIN}${coins(k.id)}</span></h3>${diag}<ul class="sh-topics">${TOPICS.map(t=>{
@@ -620,9 +661,12 @@ function answer(S, value){
             ? `<button data-sh="unopen" data-v="${k.id}|${t.id}">לבטל פתיחה</button>`
             : open ? '' : `<button data-sh="open" data-v="${k.id}|${t.id}">לפתוח עכשיו</button>`;
           return `<li><b>${t.name}</b><span>${st}</span>${btn}</li>`; }).join('')}</ul>
-          <div class="sh-row2"><button class="sh-reset" data-sh="rediag" data-v="${k.id}">בדיקת ידע מחדש</button>${p.diag?'':`<button class="sh-reset" data-sh="skipDiag" data-v="${k.id}">לדלג על הבדיקה</button>`}<button class="sh-reset" data-sh="resetProg" data-v="${k.id}">לאפס התקדמות</button></div></section>`; }).join('')}</div>`;
+          <div class="sh-row2"><button class="sh-reset" data-sh="rediag" data-v="${k.id}">בדיקת ידע מחדש</button>${p.diag?'':`<button class="sh-reset" data-sh="skipDiag" data-v="${k.id}">לדלג על הבדיקה</button>`}<button class="sh-reset" data-sh="resetProg" data-v="${k.id}">לאפס התקדמות</button></div></section>`; }).join('')}</div>
+      <div class="sh-wipe">${wipeAsk?`<p>למחוק הכל לשתי הבנות? שיעורים, בדיקת ידע, הבית, החיות והמטבעות. אי אפשר לבטל.</p><button class="sh-reset danger" data-sh="wipe">כן, להתחיל הכל מהתחלה</button><button class="sh-reset" data-sh="wipeNo">ביטול</button>`:`<button class="sh-reset" data-sh="wipeAsk">להתחיל הכל מהתחלה (שתי הבנות)</button>`}</div>`;
   }
+  let wipeAsk=false;
   const ACT={
+    wipeAsk(){ wipeAsk=true; }, wipeNo(){ wipeAsk=false; }, wipe(){ wipeAll(); return 'stop'; },
     menu(){ menu=!menu; },
     kid(v){ put('mk:kid',v); location.reload(); return 'stop'; },
     color(v){ kid().color=v; put('mk:kids',KIDS); applyAccent(); opts.onColor?.(); },

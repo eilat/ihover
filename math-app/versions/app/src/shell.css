@@ -71,3 +71,7 @@ a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
 .sh-diag span{display:inline-block;border-radius:6px;padding:0 6px;margin-inline-end:4px;direction:ltr}
 .sh-diag .ok{background:#DDF2E7;color:#1F7A4D}.sh-diag .no{background:#FFF1C9;color:#7A5B00}
 .sh-row2{display:flex;gap:8px;flex-wrap:wrap}
+.sh-cloud{margin:0;font-size:14px;font-weight:600;color:var(--muted)}.sh-cloud.on{color:#1F7A4D}
+.sh-wipe{margin-top:14px;padding-top:12px;border-top:1.5px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sh-wipe p{margin:0;flex-basis:100%;color:var(--ink)}
+.sh-reset.danger{border-color:#C0392B;color:#C0392B}
