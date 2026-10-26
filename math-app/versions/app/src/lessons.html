@@ -48,6 +48,10 @@ h2{margin:0;font-family:var(--f-display);font-size:22px}
 .stop.open{color:var(--ink);font-weight:600}
 .stop.open .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 20%,transparent);animation:pulse 2s ease-in-out infinite}
 .stop.locked .dot{border-style:dashed;color:var(--muted)}
+.stop.known .dot{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.diagc{max-width:620px;margin:40px auto;background:var(--surface);border-radius:24px;padding:36px 28px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;border:3px solid var(--accent)}
+.diagc h1{font-size:30px}.diagc p{margin:0;color:var(--muted);font-size:19px;max-width:44ch}.diagc .big{font-size:54px}
+.diagc .go{margin-top:8px;background:var(--accent);color:#fff;border-radius:999px;padding:12px 34px;font-weight:600;font-size:20px;text-decoration:none}
 button.stop:hover{background:var(--bg)}
 @keyframes pulse{50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--accent) 10%,transparent)}}
 .scrim{position:fixed;inset:0;background:rgba(10,15,30,.45);display:grid;place-items:center;z-index:50;padding:16px}
@@ -78,16 +82,23 @@ function render(){
     const [id,name]=n.t.lessons[n.i], built=Shell.BUILT[id];
     return `<button class="pickc ${built?'':'soon'}" data-act="lesson" data-v="${id}"><span class="strand">${s.name} · ${n.t.name}</span><b>${name}</b>
       <span class="meta">שיעור ${n.i+1} מתוך ${n.t.lessons.length}</span><span class="go">${built?'להתחיל':'עוד בהכנה'}</span></button>`; }).join('');
-  const known=Shell.TOPICS.filter(t=>p.placed.includes(t.id));
-  const cols=STRANDS.map(s=>`<div class="strandcol"><h2>${s.name}</h2>${Shell.TOPICS.filter(t=>t.strand===s.id && !p.placed.includes(t.id)).map(t=>{
+  // topics she already knew from the check (and didn't need to study) collapse into chips
+  const knownAll=t=>t.lessons.every(([l])=>p.known[l]&&!p.done[l]);
+  const known=Shell.TOPICS.filter(knownAll);
+  const cols=STRANDS.map(s=>`<div class="strandcol"><h2>${s.name}</h2>${Shell.TOPICS.filter(t=>t.strand===s.id && !knownAll(t)).map(t=>{
       const open=Shell.topicOpen(p,t), done=Shell.topicDone(p,t);
       const need=t.after.filter(a=>!Shell.topicDone(p,Shell.TOPICS.find(x=>x.id===a))).map(a=>`"${Shell.TOPICS.find(x=>x.id===a).name}"`).join(' ואת ');
       const stops=t.lessons.map(([id,name],i)=>{ const st=Shell.lessonState(p,t,i);
-        const dot = st==='done'?CH : st==='locked'?LK : i+1;
+        const dot = st==='done'||st==='known'?CH : st==='locked'?LK : i+1;
         const inner=`<span class="dot">${dot}</span><span>${name}</span>`;
         return st==='locked' ? `<div class="stop locked" aria-label="${name}, נעול">${inner}</div>` : `<button class="stop ${st}" data-act="lesson" data-v="${id}">${inner}</button>`; }).join('');
       return `<section class="topic ${open?'':'locked'}"><header><h2 style="font-size:19px">${t.name}</h2><span class="tag">${done?'סיימת! ✓':open?'':'נפתח אחרי שמסיימים את '+need}</span></header><div class="path">${stops}</div></section>`;
     }).join('')}</div>`).join('');
+  if(!p.diag){ // first time: a short knowledge check before anything else
+    document.getElementById('app').innerHTML=`<section class="diagc"><div class="big">🔍</div><h1>לפני שמתחילות: בדיקה קצרה</h1>
+      <p>כמה שאלות, כדי שנדע מאיפה להתחיל. אין פה ציונים ואין טעויות: מה שעוד לא למדת, נלמד ביחד.</p>
+      <a class="go" href="diag.html">מתחילות</a></section>`;
+    document.getElementById('overlay').innerHTML=''; return; }
   document.getElementById('app').innerHTML=`
     <div class="today">${picks||'<p>סיימת את כל השיעורים! ✓</p>'}</div>
     ${known.length?`<p class="known">כבר יודעת: ${known.map(t=>`<span>${CH}${t.name}</span>`).join('')}</p>`:''}

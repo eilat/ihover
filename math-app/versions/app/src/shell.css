@@ -67,3 +67,7 @@ a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
 .sh-topics button,.sh-reset{font:inherit;font-size:14px;min-height:36px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .sh-reset{margin-top:10px}
 @media (max-width:700px){.sh-back span{display:none}.sh-back{padding:6px 12px}.sh-title{font-size:18px}}
+.sh-diag{margin:0 0 8px;font-size:14px;color:var(--muted);line-height:1.8}
+.sh-diag span{display:inline-block;border-radius:6px;padding:0 6px;margin-inline-end:4px;direction:ltr}
+.sh-diag .ok{background:#DDF2E7;color:#1F7A4D}.sh-diag .no{background:#FFF1C9;color:#7A5B00}
+.sh-row2{display:flex;gap:8px;flex-wrap:wrap}

@@ -194,6 +194,10 @@ a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
 .sh-topics button,.sh-reset{font:inherit;font-size:14px;min-height:36px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .sh-reset{margin-top:10px}
 @media (max-width:700px){.sh-back span{display:none}.sh-back{padding:6px 12px}.sh-title{font-size:18px}}
+.sh-diag{margin:0 0 8px;font-size:14px;color:var(--muted);line-height:1.8}
+.sh-diag span{display:inline-block;border-radius:6px;padding:0 6px;margin-inline-end:4px;direction:ltr}
+.sh-diag .ok{background:#DDF2E7;color:#1F7A4D}.sh-diag .no{background:#FFF1C9;color:#7A5B00}
+.sh-row2{display:flex;gap:8px;flex-wrap:wrap}
 
 @media (max-width:1180px){.mid .room{flex:none;aspect-ratio:800/440;min-height:0}.wrap{grid-template-columns:340px minmax(0,1fr)}.shop{grid-row:span 2;max-height:calc(100vh - 101px);position:sticky;top:16px}.practice{grid-column:2}}
 @media (max-width:760px){.wrap{grid-template-columns:minmax(0,1fr)}.shop{grid-row:auto;max-height:70vh;position:static}.practice{grid-column:auto}}
@@ -415,9 +419,17 @@ function answer(S, value){
     {id:'כ2',strand:'mul',name:'לוח הכפל: העוגנים',after:['כ1','ח2'],lessons:[['כ2.1','כפול 2, 10, 1, 0'],['כ2.2','כפול 5']]},
     {id:'כ3',strand:'mul',name:'לוח הכפל: בונות מהעוגנים',after:['כ2','ח3'],lessons:[['כ3.1','כפול 4 וכפול 8'],['כ3.2','כפול 3 וכפול 6'],['כ3.3','כפול 9'],['כ3.4','מה שנשאר, ואיזו דרך?']]}
   ];
-  const BUILT={'ח4.1':'lesson.html','ח4.2':'play.html#h4.2','ח4.3':'play.html#h4.3','כ1.1':'play.html#k1.1','כ1.2':'play.html#k1.2','כ1.3':'play.html#k1.3'};
-  // until the diagnostic exists, the prototype acts as if it placed both girls after ח3
-  const PLACED=['ח1','ח2','ח3'];
+  const BUILT={'ח3.3':'play.html#h3.3','ח4.1':'lesson.html','ח4.2':'play.html#h4.2','ח4.3':'play.html#h4.3','כ1.1':'play.html#k1.1','כ1.2':'play.html#k1.2','כ1.3':'play.html#k1.3'};
+  /* the diagnostic (SKILLS-MAP.md §4): each answer that is right marks lessons as known, together with the
+     lessons before them in the same line. Method lessons (ח3.3, ח4.2 and on, כ1.3) only open in order. */
+  const DIAG_LINES={add:['ח1.1','ח1.2','ח2.1','ח2.2','ח3.1','ח3.2','ח4.1'], mul:['כ1.1','כ1.2','כ2.1','כ2.2']};
+  function placeFrom(right){ // right: set of question numbers answered right
+    const known=new Set(), R=q=>right.has(q);
+    const marks={'ח1.1':R(1)&&R(2),'ח1.2':R(3)&&R(4),'ח2.1':R(5),'ח2.2':R(6)&&R(7),'ח3.1':R(8),'ח3.2':R(9),'ח4.1':R(9)&&R(10),'כ1.1':R(11),'כ1.2':R(11),'כ2.1':R(12),'כ2.2':R(12)};
+    for(const line of Object.values(DIAG_LINES)) line.forEach((l,i)=>{ if(marks[l]) line.slice(0,i+1).forEach(x=>known.add(x)); });
+    return [...known];
+  }
+  function saveDiag(id,answers,right){ const p=progOf(id); p.known={}; placeFrom(right).forEach(l=>p.known[l]=true); p.diag={date:new Date().toISOString().slice(0,10), answers}; saveProg(id,p); return p; }
 
   const get=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?d:v; }catch(e){ return d; } };
   const put=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
@@ -433,16 +445,17 @@ function answer(S, value){
   const coins=(id=kidId)=>{ const h=homeOf(id); return h.coins==null?12:h.coins; };
   function addCoins(n,id=kidId){ const h=homeOf(id); h.coins=(h.coins==null?12:h.coins)+n; put('home:'+id,h); renderBar(); }
 
-  const progOf=id=>({done:{},placed:PLACED.slice(),opened:[],...get('mk:prog:'+id,{})});
+  const progOf=id=>{ const p={done:{},known:{},opened:[],diag:null,...get('mk:prog:'+id,{})}; delete p.placed; return p; };
   const saveProg=(id,p)=>put('mk:prog:'+id,p);
-  const topicDone=(p,t)=>p.placed.includes(t.id)||t.lessons.every(([l])=>p.done[l]);
-  const topicOpen=(p,t)=>p.placed.includes(t.id)||p.opened.includes(t.id)||t.after.every(a=>topicDone(p,TOPICS.find(x=>x.id===a)));
+  const has=(p,l)=>p.done[l]||p.known[l];
+  const topicDone=(p,t)=>t.lessons.every(([l])=>has(p,l));
+  const topicOpen=(p,t)=>p.opened.includes(t.id)||t.lessons.some(([l])=>has(p,l))||t.after.every(a=>topicDone(p,TOPICS.find(x=>x.id===a)));
   function lessonState(p,t,i){
     const id=t.lessons[i][0];
     if(p.done[id]) return 'done';
-    if(p.placed.includes(t.id)) return 'known';
+    if(p.known[id]) return 'known';
     if(!topicOpen(p,t)) return 'locked';
-    return i===0||p.done[t.lessons[i-1][0]] ? 'open' : 'locked';
+    return i===0||has(p,t.lessons[i-1][0]) ? 'open' : 'locked';
   }
   function completeLesson(lessonId,id=kidId){
     const p=progOf(id); const first=!p.done[lessonId]; p.done[lessonId]=true; saveProg(id,p);
@@ -513,16 +526,17 @@ function answer(S, value){
     </div></div>`;
   }
   function parentHtml(){
-    return `<p class="sh-note">בגרסת הניסיון: כאילו האבחון מיקם את שתיהן אחרי "חיבור דו־ספרתי בראש". מסך ההורה המלא (סיכומים, הגדרות) יחובר בהמשך.</p>
+    return `<p class="sh-note">"ידוע מהבדיקה" = ענתה נכון בבדיקת הידע. כדאי לשבת לידן בבדיקה: תשובה נכונה יכולה להיות גם ספירה על האצבעות, ואז אפשר לנעול כאן ידנית (בדיקה מחדש). מסך ההורה המלא יחובר בהמשך.</p>
       <div class="sh-pcols">${KIDS.map(k=>{ const p=progOf(k.id);
-        return `<section><h3>${avatar(k)}${esc(k.name)} <span class="sh-coins">${COIN}${coins(k.id)}</span></h3><ul class="sh-topics">${TOPICS.map(t=>{
-          const done=topicDone(p,t), open=topicOpen(p,t), n=t.lessons.filter(([l])=>p.done[l]).length;
-          const st = p.placed.includes(t.id) ? 'ידוע מהאבחון' : done ? 'הושלם' : open ? `פתוח · ${n} מתוך ${t.lessons.length}` : 'נעול';
-          const btn = p.placed.includes(t.id) || done ? '' : p.opened.includes(t.id)
+        const diag = p.diag ? `<p class="sh-diag">בדיקת ידע: ${p.diag.date} · נכונות ${p.diag.answers.filter(a=>a.ok).length} מתוך ${p.diag.answers.length}<br>${p.diag.answers.map(a=>`<span class="${a.ok?'ok':'no'}">${a.q}: ${a.given}</span>`).join(' ')}</p>` : '<p class="sh-diag">עוד לא עשתה בדיקת ידע.</p>';
+        return `<section><h3>${avatar(k)}${esc(k.name)} <span class="sh-coins">${COIN}${coins(k.id)}</span></h3>${diag}<ul class="sh-topics">${TOPICS.map(t=>{
+          const done=topicDone(p,t), open=topicOpen(p,t), n=t.lessons.filter(([l])=>p.done[l]).length, kn=t.lessons.filter(([l])=>p.known[l]&&!p.done[l]).length;
+          const st = done ? (n?'הושלם':'ידוע מהבדיקה') : open ? `פתוח · ${n} מתוך ${t.lessons.length}${kn?` · ${kn} ידועים מהבדיקה`:''}` : 'נעול';
+          const btn = done ? '' : p.opened.includes(t.id)
             ? `<button data-sh="unopen" data-v="${k.id}|${t.id}">לבטל פתיחה</button>`
             : open ? '' : `<button data-sh="open" data-v="${k.id}|${t.id}">לפתוח עכשיו</button>`;
           return `<li><b>${t.name}</b><span>${st}</span>${btn}</li>`; }).join('')}</ul>
-          <button class="sh-reset" data-sh="resetProg" data-v="${k.id}">לאפס התקדמות בשיעורים</button></section>`; }).join('')}</div>`;
+          <div class="sh-row2"><button class="sh-reset" data-sh="rediag" data-v="${k.id}">בדיקת ידע מחדש</button>${p.diag?'':`<button class="sh-reset" data-sh="skipDiag" data-v="${k.id}">לדלג על הבדיקה</button>`}<button class="sh-reset" data-sh="resetProg" data-v="${k.id}">לאפס התקדמות</button></div></section>`; }).join('')}</div>`;
   }
   const ACT={
     menu(){ menu=!menu; },
@@ -535,7 +549,9 @@ function answer(S, value){
     gOk(){ if(+gate.input===gate.n) gate.open=true; else { gate=newGate(); gate.msg='לא מתאים. הנה מספר אחר.'; } },
     open(v){ const [id,t]=v.split('|'), p=progOf(id); p.opened.push(t); saveProg(id,p); },
     unopen(v){ const [id,t]=v.split('|'), p=progOf(id); p.opened=p.opened.filter(x=>x!==t); saveProg(id,p); },
-    resetProg(v){ saveProg(v,{done:{},placed:PLACED.slice(),opened:[]}); },
+    resetProg(v){ saveProg(v,{done:{},known:{},opened:[],diag:null}); },
+    rediag(v){ const p=progOf(v); p.diag=null; p.known={}; saveProg(v,p); if(v===kidId){ location.href='diag.html'; return 'stop'; } },
+    skipDiag(v){ const p=progOf(v); p.diag={date:new Date().toISOString().slice(0,10), answers:[], skipped:true}; saveProg(v,p); },
     pick(v){ kidId=v; put('mk:kid',v); if(kid().color){ location.reload(); return 'stop'; } screen='color'; },
     first(v){ kid().color=v; put('mk:kids',KIDS); location.reload(); return 'stop'; }
   };
@@ -568,7 +584,7 @@ function answer(S, value){
   }
   const isOpen=()=>menu||!!gate;
   return {start, renderBar:o=>{ Object.assign(opts,o||{}); renderBar(); }, kid, accentOf, coins, addCoins, completeLesson,
-    TOPICS, BUILT, progOf, topicDone, topicOpen, lessonState, isOpen, esc, COIN, IC};
+    TOPICS, BUILT, progOf, topicDone, topicOpen, lessonState, saveDiag, isOpen, esc, COIN, IC};
 })();
 
 /* Shared art + logic for the three reward prototypes.
