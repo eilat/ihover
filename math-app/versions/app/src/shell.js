@@ -47,6 +47,7 @@ const Shell = (() => {
   const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
   const FACES={
     lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+    test:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8l6.5 14 15.2 1.7-11.3 10.3 3.2 15L32 41.4 18.4 49l3.2-15L10.3 23.7 25.5 22z" fill="#FFD54F" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/><circle cx="27" cy="31" r="2.3" fill="#2B2B2B"/><circle cx="37" cy="31" r="2.3" fill="#2B2B2B"/><path d="M28 37c2.4 2.2 5.6 2.2 8 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
     nori:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40c-1-16 8-27 20-27s21 11 20 27c0 6-2 10-4 12H16c-2-2-4-6-4-12z" fill="#2E2A33"/><ellipse cx="32" cy="38" rx="15.5" ry="17" fill="#E9B98F"/><path d="M16 33c2-10 9-15 16-15s14 5 16 15c-6-2-11-6-14-11-3 6-10 10-18 11z" fill="#2E2A33"/><path d="M42 15l7-4-1 8z M42 15l8 3-6 4z" fill="#E8457A"/><circle cx="43.5" cy="16.5" r="2.4" fill="#C72F63"/><circle cx="26" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="38" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="22.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="41.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27.5 47c2.6 2.3 6.4 2.3 9 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
   };
   const IC={
@@ -88,6 +89,8 @@ const Shell = (() => {
   const get=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?d:v; }catch(e){ return d; } };
   const put=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
   let KIDS=get('mk:kids',[{id:'lili',name:'לילי',color:null,face:'lili'},{id:'nori',name:'נורי',color:null,face:'nori'}]);
+  // a trial user for the parent: its own progress, home and coins, so trying things never touches the girls' data
+  if(!KIDS.some(k=>k.id==='test')) KIDS.push({id:'test',name:'ניסיון',color:'orange',face:'test',trial:true});
   let kidId=get('mk:kid',null);
   const kid=()=>KIDS.find(k=>k.id===kidId)||null;
   const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
@@ -168,7 +171,7 @@ const Shell = (() => {
   function newGate(){ const t=2+Math.floor(Math.random()*8), o=1+Math.floor(Math.random()*9); return {n:t*10+o, words:`${TENSW[t]}-${ONES[o]}`, input:'', msg:'', open:false}; }
   function renderOv(){
     let ov=document.getElementById('sh-ov'); if(!ov){ ov=document.createElement('div'); ov.id='sh-ov'; document.body.appendChild(ov); }
-    if(screen==='who'){ ov.innerHTML=`<div class="sh-full"><div class="sh-card"><h1>מי לומדת היום?</h1><div class="sh-who">${KIDS.map(k=>`<button class="sh-whocard" style="--c:${k.color?accentOf(k):'var(--line)'}" data-sh="pick" data-v="${k.id}">${avatar(k)}${esc(k.name)}</button>`).join('')}</div></div></div>`; return; }
+    if(screen==='who'){ ov.innerHTML=`<div class="sh-full"><div class="sh-card"><h1>מי לומדת היום?</h1><div class="sh-who">${KIDS.map(k=>`<button class="sh-whocard" style="--c:${k.color?accentOf(k):'var(--line)'}" data-sh="pick" data-v="${k.id}">${avatar(k)}${esc(k.name)}${k.trial?'<small>לאמא, לניסיון</small>':''}</button>`).join('')}</div></div></div>`; return; }
     if(screen==='color'){ const k=kid(); ov.innerHTML=`<div class="sh-full"><div class="sh-card"><h1>שלום ${esc(k.name)}! איזה צבע את רוצה?</h1><p>אפשר להחליף אותו מתי שרוצים, בלחיצה על השם שלך למעלה.</p><div class="sh-sws big">${COLORS.map(c=>`<button class="sh-sw" style="--c:${c.c}" data-sh="first" data-v="${c.id}" aria-label="צבע ${c.name}"></button>`).join('')}</div></div></div>`; return; }
     if(!gate){ ov.innerHTML=''; return; }
     if(gate.open){ ov.innerHTML=`<div class="sh-scrim"><div class="sh-modal wide" role="dialog" aria-label="אזור הורים"><button class="sh-x" data-sh="gateClose" aria-label="סגירה">${IC.close}</button><h2>אזור הורים</h2>${parentHtml()}</div></div>`; return; }
