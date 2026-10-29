@@ -803,13 +803,48 @@ function jumpLine({max,k,count,landings=true,pendingNext=false,numbered=false}){
     <path d="M14 ${Y} H746" stroke="var(--line)" stroke-width="4"/><text x="${X(0)}" y="${Y-18}" text-anchor="middle" class="nl-s">התחלה</text>${t}${a}</svg>`;
 }
 /* an array of dots: rows go across, like lines in a notebook */
-function dotArray({rows,cols,lit=-1,sums=false,spin=false}){
-  const g=26, gap=c=>c>=5?10:0, W=cols*g+(cols>5?10:0)+(sums?70:20), H=rows*g+16;
+/* an array of dots: rows go across, like lines in a notebook.
+   split: {rows:k} or {cols:k} cuts it in two parts (second part orange) — for building a hard fact from two easy ones.
+   cover: n hides the last n columns under a card — for ×9 as ×10 minus one column. */
+function dotArray({rows,cols,lit=-1,sums=false,spin=false,split=null,cover=0}){
+  const g=26, gx=j=>18+j*g+(j>=5&&cols>5?10:0)+(split?.cols!=null&&j>=split.cols?12:0), gy=i=>20+i*g+(split?.rows!=null&&i>=split.rows?12:0);
+  const W=gx(cols-1)+(sums?82:22), H=gy(rows-1)+22;
   let d=''; for(let i=0;i<rows;i++){ const on=i<=lit;
-    if(on) d+=`<rect x="4" y="${8+i*g}" width="${cols*g+(cols>5?10:0)+4}" height="${g-2}" rx="11" fill="color-mix(in srgb,var(--accent) 18%,transparent)"/>`;
-    for(let j=0;j<cols;j++) d+=`<circle cx="${18+j*g+(j>=5?gap(cols):0)}" cy="${20+i*g}" r="9" fill="${on?'var(--accent)':'#5B8DEF'}"/>`;
-    if(sums&&on) d+=`<text x="${cols*g+(cols>5?10:0)+30}" y="${27+i*g}" class="nl-n strong">${(i+1)*cols}</text>`; }
+    if(on) d+=`<rect x="4" y="${gy(i)-12}" width="${gx(cols-1)+10}" height="${g-2}" rx="11" fill="color-mix(in srgb,var(--accent) 18%,transparent)"/>`;
+    for(let j=0;j<cols;j++){ const second=(split?.rows!=null&&i>=split.rows)||(split?.cols!=null&&j>=split.cols);
+      d+=`<circle cx="${gx(j)}" cy="${gy(i)}" r="9" fill="${on?'var(--accent)':second?'#E8833A':'#5B8DEF'}"/>`; }
+    if(sums&&on) d+=`<text x="${gx(cols-1)+28}" y="${gy(i)+7}" class="nl-n strong">${(i+1)*cols}</text>`; }
+  if(split?.rows!=null) d+=`<path d="M4 ${gy(split.rows)-19} H${gx(cols-1)+14}" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+  if(split?.cols!=null) d+=`<path d="M${gx(split.cols)-19} 4 V${gy(rows-1)+16}" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+  if(cover) d+=`<rect x="${gx(cols-cover)-14}" y="4" width="${gx(cols-1)-gx(cols-cover)+28}" height="${gy(rows-1)+12}" rx="8" fill="#FFD54F" opacity=".92"/>`;
   return `<svg class="pic arr ${spin?'spin':''}" viewBox="0 0 ${W} ${H}" style="max-width:${Math.min(96,W/4.2)}%" role="img" aria-label="${rows} שורות, ${cols} בכל שורה">${d}</svg>`;
+}
+/* ten frames: the first number in blue, the second in orange. fill:true moves orange dots up to complete the first frame. */
+function tenFrame({a,b=0,fill=false,frames=null,mark=-1}){
+  const cells=[]; // colours, frame after frame
+  if(fill){ for(let i=0;i<a;i++) cells.push('a'); for(let i=0;i<b;i++) cells.push('b'); }
+  else { for(let i=0;i<a;i++) cells.push('a'); while(b&&cells.length%10) cells.push(null); for(let i=0;i<b;i++) cells.push('b'); }
+  const n=frames||Math.max(1,Math.ceil(cells.length/10)), cw=42, fw=5*cw+12, W=n*fw+(n-1)*24+8;
+  let s=''; for(let f=0;f<n;f++){ const x0=4+f*(fw+24);
+    s+=`<rect x="${x0}" y="4" width="${fw}" height="${2*cw+12}" rx="8" fill="#fff" stroke="var(--ink)" stroke-width="3"/>`;
+    for(let k=0;k<10;k++){ const cx=x0+6+(k%5)*cw+cw/2, cy=10+Math.floor(k/5)*cw+cw/2, c=cells[f*10+k];
+      s+=`<rect x="${cx-cw/2}" y="${cy-cw/2}" width="${cw}" height="${cw}" fill="none" stroke="#C9D2DE" stroke-width="1.5"/>`;
+      if(c) s+=`<circle cx="${cx}" cy="${cy}" r="15" fill="${c==='a'?'#3A6FD8':'#E8833A'}" ${f*10+k===mark?'stroke="var(--ink)" stroke-width="3"':''}/>`; } }
+  return `<svg class="pic" viewBox="0 0 ${W} ${2*cw+20}" style="max-width:${Math.min(96,n*44)}%" role="img" aria-label="מסגרת עשר">${s}</svg>`;
+}
+/* base ten: hundred squares, ten sticks, one dots. bundleT / bundleO draw a frame around 10 of them (10 tens = a hundred, 10 ones = a ten). */
+function baseTen({h=0,t=0,o=0,bundleT=false,bundleO=false,label=true}){
+  let x=6, s='';
+  for(let i=0;i<h;i++){ s+=`<rect x="${x}" y="8" width="70" height="70" fill="#2F5BD3"/><path d="${Array(9).fill(0).map((_,k)=>`M${x+7*(k+1)} 8 V78 M${x} ${8+7*(k+1)} H${x+70}`).join(' ')}" stroke="rgba(255,255,255,.4)" stroke-width="1"/>`; x+=80; }
+  if(h) x+=10;
+  const tx=x; for(let i=0;i<t;i++){ s+=`<rect x="${x}" y="8" width="11" height="70" rx="3" fill="#D9980A"/>`; x+=15; }
+  if(bundleT&&t>=10) s+=`<rect x="${tx-5}" y="2" width="${10*15+5}" height="82" rx="8" fill="none" stroke="var(--ink)" stroke-width="3"/><text x="${tx+72}" y="100" text-anchor="middle" class="nl-s" style="font-weight:600">100</text>`;
+  if(t) x+=12;
+  const ox=x; for(let i=0;i<o;i++){ s+=`<circle cx="${x+9+(i%5)*20}" cy="${22+Math.floor(i/5)*20}" r="7.5" fill="#23895A"/>`; if(i%5===4) x+=0; }
+  const oc=Math.min(o,5)*20; x+=oc+(bundleO&&o>=10?36:8);
+  if(bundleO&&o>=10) s+=`<rect x="${ox-2}" y="10" width="104" height="44" rx="8" fill="none" stroke="var(--ink)" stroke-width="3"/><text x="${ox+112}" y="38" class="nl-s" style="font-weight:600">10</text>`;
+  const W=Math.max(120,x+4), H=o>10?Math.max(104,22+Math.ceil(o/5)*20+10):104;
+  return `<svg class="pic" viewBox="0 0 ${W} ${H}" style="max-width:${Math.min(96,W/4)}%" role="img" aria-label="${h} מאות, ${t} עשרות, ${o} אחדות">${s}</svg>`;
 }
 const decomp=(n,a,b,ca='var(--accent)',cb='#D9980A')=>`<p class="decomp ltr">${n} = <span style="color:${ca}">${a}</span> + <span style="color:${cb}">${b}</span></p>`;
 
