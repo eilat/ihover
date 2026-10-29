@@ -82,7 +82,7 @@ const hintsNow=()=>typeof S.it.hints==='function'?S.it.hints(S.picked||{}):(S.it
 function choose(i){ const fd=curField(); if(!fd?.choice||S.locked) return; const o=fd.choice[i];
   if(o.soft && S.softPick!==`${S.f}:${i}`){ S.softPick=`${S.f}:${i}`; S.note={text:o.soft}; render(); return; }
   if(o.ok||o.soft){ (S.picked ||= {})[S.f]=o.key??i; S.softPick=null;
-    if(fd.then){ const nx=fd.then(o.key??i); S.it.fields=[...S.it.fields.slice(0,S.f+1),...nx.fields]; if(nx.hints) S.it.hints=nx.hints; if(nx.vis) S.it.vis=nx.vis; if(nx.eq) S.it.eq=nx.eq; }
+    if(fd.then){ const nx=fd.then(o.key??i); S.it.fields=[...S.it.fields.slice(0,S.f+1),...nx.fields]; if(nx.hints) S.it.hints=nx.hints; if(nx.vis) S.it.vis=nx.vis; if(nx.eq) S.it.eq=nx.eq; if(nx.end) S.it.end=nx.end; }
     fieldDone(); if(o.note){ S.note={ok:true,text:o.note}; render(); } return; }
   S.totalWrong=(S.totalWrong||0)+1; S.wrong[S.f]=(S.wrong[S.f]||0)+1; S.note={text:fd.wrongText?fd.wrongText(i):'עוד לא. נסי שוב.'}; render(); }
 
