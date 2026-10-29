@@ -1,0 +1,580 @@
+<title>העוגה של נורי</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Rubik:wght@400;500;700&display=swap">
+<style>
+/* Layout: one centered column on a night sky. Headline, countdown tiles, the cake stage, then a small parents' corner. */
+:root {
+  --night: #0d2b30;
+  --night-2: #123a40;
+  --tile: #17464c;
+  --tile-line: #24626a;
+  --gold: #ffc94a;
+  --pink: #ff7aa8;
+  --cream: #fff4e2;
+  --mint: #7fe0b5;
+  --ink: #eaf6f2;
+  --muted: #a3c9c2;
+  --display: "Secular One", "Rubik", "Arial Hebrew", sans-serif;
+  --body: "Rubik", "Arial Hebrew", "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; overflow-x: clip; }
+body {
+  background: radial-gradient(120% 70% at 50% 0%, var(--night-2), var(--night) 70%) fixed, var(--night);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  direction: rtl;
+  overflow-x: hidden;
+}
+.sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star {
+  position: absolute; width: 3px; height: 3px; border-radius: 50%;
+  background: var(--cream); opacity: .6;
+  animation: twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle { 50% { opacity: .15; transform: scale(.6); } }
+
+.wrap {
+  position: relative; z-index: 1;
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 22px;
+  text-align: center;
+  overflow-x: clip;
+}
+.eyebrow {
+  font-size: 14px; letter-spacing: .08em; color: var(--mint); font-weight: 500;
+}
+h1 {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(46px, 13vw, 80px); line-height: 1;
+  margin: 6px 0 0; color: var(--gold); text-wrap: balance;
+  text-shadow: 0 4px 0 #b8731c;
+}
+.sub { margin: 10px 0 0; color: var(--muted); font-size: 17px; text-wrap: balance; }
+
+.clock {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
+  width: 100%; max-width: 440px;
+}
+.tile {
+  background: var(--tile); border: 1px solid var(--tile-line); border-radius: 16px;
+  padding: 12px 4px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.tile b {
+  font-family: var(--display); font-weight: 400; font-size: clamp(30px, 9vw, 46px);
+  line-height: 1.05; color: var(--cream); font-variant-numeric: tabular-nums;
+}
+.tile span { font-size: 13px; color: var(--muted); letter-spacing: .04em; }
+.tile.days b { color: var(--gold); }
+.nights { margin: 0; font-size: 18px; color: var(--ink); }
+.nights strong { color: var(--pink); font-family: var(--display); font-weight: 400; font-size: 22px; }
+
+/* ---------- Cake stage ---------- */
+.stage {
+  position: relative; width: min(340px, 84vw); aspect-ratio: 300 / 330; max-width: 100%;
+  margin-top: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.stage:focus-visible { outline: 3px solid var(--gold); outline-offset: 8px; border-radius: 20px; }
+.stage svg { display: block; overflow: visible; }
+.cake-back, .cake-front { position: absolute; left: 0; bottom: 0; width: 100%; }
+.cake-back { z-index: 1; }
+.cake-front { z-index: 3; pointer-events: none; }
+.pop {
+  position: absolute; z-index: 2; left: 0; right: 0;
+  top: -40%; bottom: 57.6%; overflow: hidden;
+}
+.dragon {
+  position: absolute; bottom: 0; left: 5%; width: 56%;
+  transform: translateY(105%);
+  transition: transform .7s cubic-bezier(.3, 1.6, .5, 1);
+}
+.dragon svg { width: 100%; height: auto; }
+.candle {
+  position: absolute; bottom: 0; right: 11%; width: 17%;
+  transform: translateY(105%);
+  transition: transform .6s cubic-bezier(.3, 1.5, .5, 1);
+}
+.candle svg { width: 100%; height: auto; }
+.lid {
+  position: absolute; z-index: 4; left: 0; bottom: 47%; width: 100%;
+  transform-origin: 15% 70%;
+  transition: transform .5s ease;
+}
+.eyes { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+
+.flame { transform-box: fill-box; transform-origin: 50% 100%; opacity: 0; transition: opacity .3s; }
+.lit .flame { opacity: 1; animation: flicker .25s ease-in-out infinite alternate; }
+@keyframes flicker { from { transform: scale(1, 1) rotate(-3deg); } to { transform: scale(.9, 1.1) rotate(3deg); } }
+.smoke { opacity: 0; }
+.puff .smoke { animation: smoke 1.4s ease-out forwards; }
+@keyframes smoke { 0% { opacity: .8; transform: translateY(0) scale(.6); } 100% { opacity: 0; transform: translateY(-40px) scale(1.6); } }
+.smoke { transform-box: fill-box; transform-origin: center; }
+
+/* idle: something is moving inside */
+.stage.idle .lid { animation: rattle 5s ease-in-out infinite; }
+@keyframes rattle {
+  0%, 82%, 100% { transform: none; }
+  85% { transform: translateY(-5%) rotate(-3deg); }
+  88% { transform: translateY(0) rotate(0); }
+  91% { transform: translateY(-4%) rotate(3deg); }
+  94% { transform: none; }
+}
+.stage.peek .lid { animation: none; transform: translate(-3%, -42%) rotate(-12deg); }
+.stage.peek .dragon { transform: translateY(66%); transition-duration: .4s; }
+
+.stage.shake { animation: shake .8s ease-in-out; }
+@keyframes shake {
+  0%, 100% { transform: none; }
+  15% { transform: translateX(-6px) rotate(-2deg); }
+  30% { transform: translateX(6px) rotate(2deg); }
+  45% { transform: translateX(-5px) rotate(-1.5deg); }
+  60% { transform: translateX(5px) rotate(1.5deg); }
+  75% { transform: translateX(-3px); }
+}
+.stage.open .lid {
+  animation: none;
+  transform: translate(-28%, -260%) rotate(-38deg);
+  opacity: 0; transition: transform .9s cubic-bezier(.2, .7, .4, 1), opacity .9s ease .3s;
+}
+.stage.open .dragon { transform: translateY(17%); }
+.stage.open .dragon svg { animation: bob 2.4s ease-in-out 1s infinite; }
+@keyframes bob { 50% { transform: translateY(-5%); } }
+.stage.candle-up .candle { transform: translateY(14%); }
+
+.breath {
+  position: absolute; z-index: 5; height: 22px; left: 0; top: 0;
+  transform-origin: 0 50%; pointer-events: none; opacity: 0;
+  background: radial-gradient(closest-side, #fff6c2, #ffb22e 55%, rgba(255, 90, 40, .0));
+  border-radius: 50%;
+}
+.breath.go { animation: breath .9s ease-out forwards; }
+@keyframes breath {
+  0% { opacity: 1; clip-path: inset(0 100% 0 0); }
+  60% { opacity: 1; clip-path: inset(0 0 0 0); }
+  100% { opacity: 0; clip-path: inset(0 0 0 0); }
+}
+
+.bubble {
+  position: absolute; z-index: 6; top: 2%; left: 50%; transform: translate(-50%, 0) scale(.6);
+  background: var(--cream); color: var(--night); font-weight: 700; font-size: 16px;
+  padding: 8px 14px; border-radius: 14px; white-space: nowrap; opacity: 0;
+  transition: opacity .2s, transform .25s cubic-bezier(.3, 1.6, .5, 1); pointer-events: none;
+}
+.bubble.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+.hint { margin: 0; color: var(--muted); font-size: 15px; max-width: 34ch; text-wrap: balance; }
+
+/* ---------- Party ---------- */
+body:not(.party) .party-only { display: none !important; }
+body.party .count-only { display: none !important; }
+.party-head { display: flex; flex-direction: column; align-items: center; }
+.party-head h1 { font-size: clamp(44px, 12.5vw, 78px); }
+.party-head h1 .name { color: var(--pink); text-shadow: 0 4px 0 #b13d68; }
+.party-head h1.pop-in { animation: popin .7s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes popin { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+.age {
+  font-family: var(--display); font-size: 20px; color: var(--cream); margin-top: 10px;
+}
+.age em { font-style: normal; color: var(--gold); font-size: 28px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.btn {
+  font: 500 16px var(--body); border-radius: 999px; padding: 11px 20px; cursor: pointer;
+  background: var(--gold); color: #3a2400; border: 0;
+  box-shadow: 0 4px 0 #b8731c; transition: transform .1s, box-shadow .1s;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #b8731c; }
+.btn:focus-visible, .link:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
+.parents {
+  margin-top: 14px; padding-top: 16px; border-top: 1px dashed var(--tile-line);
+  width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.parents p { margin: 0; font-size: 13px; color: var(--muted); }
+.link {
+  font: 500 14px var(--body); background: none; border: 1px solid var(--tile-line);
+  color: var(--ink); border-radius: 999px; padding: 7px 16px; cursor: pointer;
+}
+.link:hover { border-color: var(--mint); }
+
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star, .stage.idle .lid, .eyes, .stage.open .dragon svg { animation: none; }
+  .lit .flame { animation: none; }
+}
+</style>
+
+<div class="sky" id="sky" aria-hidden="true"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<main class="wrap">
+  <header class="count-only">
+    <div class="eyebrow" id="dateLine">4 בדצמבר</div>
+    <h1>נורי בת <span id="ageTop">8</span></h1>
+    <p class="sub">יש הפתעה בתוך העוגה. היא תיפתח ביום ההולדת.</p>
+  </header>
+
+  <header class="party-only party-head">
+    <div class="eyebrow">היום, 4 בדצמבר</div>
+    <h1 id="partyTitle">מזל טוב <span class="name">נורי!</span></h1>
+    <div class="age">היום את בת <em id="ageParty">8</em></div>
+  </header>
+
+  <section class="clock count-only" aria-label="ספירה לאחור">
+    <div class="tile days"><b id="d">00</b><span>ימים</span></div>
+    <div class="tile"><b id="h">00</b><span>שעות</span></div>
+    <div class="tile"><b id="m">00</b><span>דקות</span></div>
+    <div class="tile"><b id="s">00</b><span>שניות</span></div>
+  </section>
+  <p class="nights count-only">עוד <strong id="nights">0</strong> <span id="nightsWord">לילות</span> שינה</p>
+
+  <div class="stage idle" id="stage" role="button" tabindex="0" aria-label="העוגה של נורי">
+    <div class="bubble" id="bubble">עוד לא!</div>
+
+    <svg class="cake-back" viewBox="0 0 300 210" aria-hidden="true">
+      <ellipse cx="150" cy="20" rx="135" ry="20" fill="#5a2c1c"/>
+      <ellipse cx="150" cy="24" rx="118" ry="14" fill="#3f1d12"/>
+    </svg>
+
+    <div class="pop">
+      <div class="dragon" id="dragon">
+        <svg viewBox="0 0 200 220" aria-hidden="true">
+          <path d="M62 196 Q22 206 20 176 Q18 156 34 166" fill="none" stroke="#4fae46" stroke-width="12" stroke-linecap="round"/>
+          <path d="M58 122 Q8 72 14 130 Q30 118 36 142 Q46 126 60 142 Z" fill="#ff9f43"/>
+          <path d="M142 120 Q192 68 188 128 Q172 116 166 140 Q156 124 142 140 Z" fill="#ff9f43"/>
+          <ellipse cx="100" cy="162" rx="52" ry="56" fill="#6cc551"/>
+          <ellipse cx="104" cy="170" rx="32" ry="40" fill="#ffe08a"/>
+          <path d="M78 152 Q104 160 130 152 M76 172 Q104 180 132 172 M80 192 Q104 200 128 192" stroke="#e8b85a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <ellipse cx="60" cy="152" rx="10" ry="16" fill="#5bb447" transform="rotate(25 60 152)"/>
+          <ellipse cx="144" cy="150" rx="10" ry="16" fill="#5bb447" transform="rotate(-30 144 150)"/>
+          <path d="M72 50 L80 28 L90 46 L98 24 L108 44 L118 26 L124 48 Z" fill="#ff9f43"/>
+          <path d="M72 54 Q58 32 64 20 Q76 36 86 50 Z" fill="#fff4e2"/>
+          <path d="M130 50 Q138 28 150 22 Q146 40 140 54 Z" fill="#fff4e2"/>
+          <ellipse cx="104" cy="84" rx="50" ry="42" fill="#6cc551"/>
+          <ellipse cx="140" cy="100" rx="30" ry="21" fill="#8bd86f"/>
+          <circle cx="150" cy="94" r="3" fill="#2f6b2a"/>
+          <circle cx="162" cy="96" r="3" fill="#2f6b2a"/>
+          <path d="M126 108 Q144 122 164 106" stroke="#2f6b2a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <path d="M148 114 l4 7 l4 -8 z" fill="#fff"/>
+          <ellipse cx="116" cy="108" rx="8" ry="5" fill="#ff7aa8" opacity=".7"/>
+          <g class="eyes">
+            <circle cx="86" cy="76" r="14" fill="#fff"/>
+            <circle cx="90" cy="78" r="7" fill="#1d2a2b"/>
+            <circle cx="93" cy="74" r="2.5" fill="#fff"/>
+            <circle cx="121" cy="72" r="13" fill="#fff"/>
+            <circle cx="125" cy="74" r="6.5" fill="#1d2a2b"/>
+            <circle cx="128" cy="70" r="2.3" fill="#fff"/>
+          </g>
+          <circle id="mouth" cx="168" cy="104" r="2" fill="transparent"/>
+        </svg>
+      </div>
+
+      <div class="candle" id="candle">
+        <svg viewBox="0 0 60 160" aria-hidden="true">
+          <circle class="smoke" cx="30" cy="16" r="8" fill="#cfd8d6"/>
+          <path class="flame" d="M30 2 C40 14 40 24 30 28 C20 24 20 14 30 2 Z" fill="#ffb22e"/>
+          <path class="flame" d="M30 11 C35 17 35 23 30 26 C25 23 25 17 30 11 Z" fill="#fff6c2"/>
+          <line x1="30" y1="27" x2="30" y2="40" stroke="#3b2a20" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="25" y="128" width="10" height="32" fill="#5ec8ff"/>
+          <circle cx="30" cy="62" r="18" fill="none" stroke="#5ec8ff" stroke-width="14"/>
+          <circle cx="30" cy="105" r="22" fill="none" stroke="#5ec8ff" stroke-width="14"/>
+          <circle cx="30" cy="62" r="18" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="6 7"/>
+          <circle cx="30" cy="105" r="22" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="6 7"/>
+          <circle id="wick" cx="30" cy="27" r="1.5" fill="transparent"/>
+        </svg>
+      </div>
+    </div>
+
+    <svg class="cake-front" viewBox="0 0 300 210" aria-hidden="true">
+      <ellipse cx="150" cy="198" rx="150" ry="12" fill="#e9eef0"/>
+      <ellipse cx="150" cy="196" rx="138" ry="8" fill="#cfd9dc"/>
+      <path d="M15 20 A135 20 0 0 0 285 20 V182 A135 16 0 0 1 15 182 Z" fill="#ff7aa8"/>
+      <path d="M15 158 A135 16 0 0 0 285 158 V182 A135 16 0 0 1 15 182 Z" fill="#e85c8e"/>
+      <path id="drips" fill="#fff4e2" d=""/>
+      <g id="sprinkles"></g>
+      <g id="dots"></g>
+      <text x="150" y="136" text-anchor="middle" font-family="Secular One, Rubik, sans-serif" font-size="48" fill="#fff4e2" stroke="#c9437a" stroke-width="2" paint-order="stroke">נורי</text>
+    </svg>
+
+    <div class="lid" id="lid">
+      <svg viewBox="0 0 300 90" aria-hidden="true">
+        <path d="M15 30 V55 A135 20 0 0 0 285 55 V30 Z" fill="#ffb3cc"/>
+        <ellipse cx="150" cy="30" rx="135" ry="20" fill="#fff4e2"/>
+        <path d="M15 30 V40 Q24 52 32 42 Q40 58 50 46 Q60 54 70 48 A135 20 0 0 1 15 30 Z" fill="#fff4e2" opacity="0"/>
+        <g fill="#fff4e2" stroke="#f3d9bf" stroke-width="1.5">
+          <circle cx="42" cy="30" r="9"/><circle cx="78" cy="40" r="9"/><circle cx="118" cy="45" r="9"/>
+          <circle cx="160" cy="45" r="9"/><circle cx="200" cy="42" r="9"/><circle cx="238" cy="36" r="9"/><circle cx="264" cy="28" r="8"/>
+        </g>
+        <g fill="#ff7aa8"><circle cx="60" cy="36" r="3"/><circle cx="98" cy="43" r="3"/><circle cx="139" cy="46" r="3"/><circle cx="180" cy="45" r="3"/><circle cx="220" cy="40" r="3"/><circle cx="252" cy="32" r="3"/></g>
+        <path d="M150 14 Q156 0 168 -2" stroke="#3f7a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="150" cy="20" r="12" fill="#e8344e"/>
+        <circle cx="146" cy="16" r="3.5" fill="#ff8a99"/>
+      </svg>
+    </div>
+
+    <div class="breath" id="breath"></div>
+  </div>
+
+  <p class="hint count-only" id="hint">לחצי על העוגה. אולי מישהו יציץ החוצה...</p>
+  <p class="hint party-only" id="partyHint">לחצי על הלהבה כדי לכבות את הנר ולבקש משאלה</p>
+
+  <div class="actions party-only">
+    <button class="btn" id="song" type="button">נגני את השיר</button>
+    <button class="btn" id="again" type="button">עוד קונפטי!</button>
+  </div>
+
+  <div class="parents count-only" id="parents">
+    <p>להורים: רוצים לראות מה יקרה ביום ההולדת? בלי שנורי תראה!</p>
+    <button class="link" id="previewBtn" type="button">הצצה להפתעה</button>
+  </div>
+  <div class="parents party-only" id="backWrap" hidden>
+    <p>זו הייתה הצצה. ביום ההולדת זה יקרה מעצמו.</p>
+    <button class="link" id="backBtn" type="button">חזרה לספירה</button>
+  </div>
+</main>
+
+<script>
+(() => {
+  const BIRTH_YEAR = 2018, MONTH = 11, DAY = 4; // 4 December
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), dragon = $('dragon'), candle = $('candle'), breath = $('breath');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 150) : ms));
+
+  /* ----- sky ----- */
+  const sky = $('sky');
+  for (let i = 0; i < 46; i++) {
+    const s = document.createElement('i');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = (Math.random() * 3).toFixed(2) + 's';
+    if (Math.random() < .25) { s.style.width = s.style.height = '4px'; s.style.background = '#ffc94a'; }
+    sky.appendChild(s);
+  }
+
+  /* ----- cake decorations ----- */
+  const edge = x => 20 + 20 * Math.sqrt(Math.max(0, 1 - ((x - 150) / 135) ** 2));
+  let d = 'M15 20 A135 20 0 0 0 285 20 L285 ' + (edge(285) + 10).toFixed(1);
+  const depths = [6, 22, 8, 30, 5, 16, 26, 7, 20, 9, 28, 6, 18, 24, 8];
+  for (let i = 0, x = 285; x > 15; i++, x -= 18) {
+    const nx = Math.max(15, x - 18), mid = (x + nx) / 2, dep = depths[i % depths.length];
+    d += ` Q${mid} ${(edge(mid) + 10 + dep * 2).toFixed(1)} ${nx} ${(edge(nx) + 10).toFixed(1)}`;
+  }
+  $('drips').setAttribute('d', d + ' L15 20 Z');
+
+  const colors = ['#ffc94a', '#7fe0b5', '#5ec8ff', '#fff4e2', '#b98cff'];
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const sp = $('sprinkles'); let made = 0;
+  while (made < 34) {
+    const x = 28 + rnd() * 244, y = edge(x) + 38 + rnd() * (150 - edge(x) - 38);
+    if (x > 88 && x < 212 && y > 92 && y < 148) continue;
+    const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', 9); r.setAttribute('height', 3.4);
+    r.setAttribute('rx', 1.7); r.setAttribute('fill', colors[made % colors.length]);
+    r.setAttribute('transform', `rotate(${Math.round(rnd() * 180)} ${x + 4.5} ${y + 1.7})`);
+    sp.appendChild(r); made++;
+  }
+  const dots = $('dots');
+  for (let x = 30; x <= 270; x += 20) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const t = (x - 150) / 135;
+    c.setAttribute('cx', x); c.setAttribute('cy', (170 + 14 * Math.sqrt(Math.max(0, 1 - t * t))).toFixed(1));
+    c.setAttribute('r', 5); c.setAttribute('fill', '#fff4e2');
+    dots.appendChild(c);
+  }
+
+  /* ----- dates ----- */
+  const isBirthday = n => n.getMonth() === MONTH && n.getDate() === DAY;
+  const target = n => {
+    let t = new Date(n.getFullYear(), MONTH, DAY);
+    if (n >= new Date(n.getFullYear(), MONTH, DAY + 1)) t = new Date(n.getFullYear() + 1, MONTH, DAY);
+    return t;
+  };
+  const pad = v => String(v).padStart(2, '0');
+  const now0 = new Date();
+  const tgt = target(now0);
+  const age = tgt.getFullYear() - BIRTH_YEAR;
+  $('ageTop').textContent = age; $('ageParty').textContent = age;
+  $('dateLine').textContent = `4 בדצמבר ${tgt.getFullYear()}`;
+
+  let partyStarted = false, timer = null, daysLeft = 0;
+  function tick() {
+    const n = new Date();
+    if (isBirthday(n)) { startParty(false); return; }
+    const ms = tgt - n;
+    if (ms <= 0) { startParty(false); return; }
+    const s = Math.floor(ms / 1000);
+    daysLeft = Math.floor(s / 86400);
+    $('d').textContent = daysLeft;
+    $('h').textContent = pad(Math.floor(s / 3600) % 24);
+    $('m').textContent = pad(Math.floor(s / 60) % 60);
+    $('s').textContent = pad(s % 60);
+    const today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    const nights = Math.round((tgt - today) / 86400000);
+    $('nights').textContent = nights;
+    $('nightsWord').textContent = nights === 1 ? 'לילה' : 'לילות';
+  }
+
+  /* ----- peek before the day ----- */
+  const bubble = $('bubble');
+  let peekTimer = null;
+  function peek() {
+    if (partyStarted) return;
+    clearTimeout(peekTimer);
+    stage.classList.remove('peek'); void stage.offsetWidth;
+    stage.classList.add('peek');
+    const days = daysLeft + 1;
+    bubble.textContent = days <= 1 ? 'עוד לא! מחר!' : `עוד לא! עוד ${days} ימים`;
+    bubble.classList.add('show');
+    peekTimer = setTimeout(() => { stage.classList.remove('peek'); bubble.classList.remove('show'); }, 1500);
+  }
+
+  /* ----- fire & candle ----- */
+  function center(el) {
+    const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    return { x: r.left + r.width / 2 - s.left, y: r.top + r.height / 2 - s.top };
+  }
+  let busy = false;
+  async function breatheFire() {
+    const a = center($('mouth')), b = center($('wick'));
+    const dx = b.x - a.x, dy = b.y - a.y;
+    breath.style.width = Math.hypot(dx, dy) + 'px';
+    breath.style.left = a.x + 'px';
+    breath.style.top = (a.y - 11) + 'px';
+    breath.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+    breath.classList.remove('go'); void breath.offsetWidth; breath.classList.add('go');
+    await wait(550);
+    candle.classList.add('lit'); candle.classList.remove('puff');
+  }
+  function blowOut() {
+    if (!candle.classList.contains('lit') || busy) return;
+    candle.classList.remove('lit'); candle.classList.add('puff');
+    burst(220);
+    $('partyHint').textContent = 'המשאלה בדרך! לחצי על הדרקון כדי להדליק את הנר שוב';
+  }
+  async function relight() {
+    if (busy || candle.classList.contains('lit')) { burst(40); return; }
+    busy = true; await breatheFire(); busy = false;
+    $('partyHint').textContent = 'לחצי על הלהבה כדי לכבות את הנר ולבקש משאלה';
+  }
+
+  /* ----- the big moment ----- */
+  async function startParty(preview) {
+    if (partyStarted) return;
+    partyStarted = true; busy = true;
+    clearInterval(timer);
+    clearTimeout(peekTimer); stage.classList.remove('peek', 'idle'); bubble.classList.remove('show');
+    document.body.classList.add('party');
+    $('backWrap').hidden = !preview;
+    stage.setAttribute('aria-label', 'העוגה נפתחה ודרקון קפץ החוצה');
+    await wait(300);
+    stage.classList.add('shake');
+    await wait(850);
+    stage.classList.remove('shake');
+    stage.classList.add('open');
+    await wait(700);
+    stage.classList.add('candle-up');
+    await wait(900);
+    await breatheFire();
+    const t = $('partyTitle'); t.classList.remove('pop-in'); void t.offsetWidth; t.classList.add('pop-in');
+    burst(320); stream(4500);
+    busy = false;
+  }
+
+  stage.addEventListener('click', e => {
+    if (!partyStarted) return peek();
+    if (busy) return;
+    const p = e.composedPath();
+    if (p.includes(candle)) blowOut();
+    else if (p.includes(dragon)) relight();
+    else burst(60);
+  });
+  stage.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    if (!partyStarted) peek();
+    else if (candle.classList.contains('lit')) blowOut();
+    else relight();
+  });
+  $('again').addEventListener('click', () => { burst(260); stream(2000); });
+  $('previewBtn').addEventListener('click', () => { location.hash = 'party'; });
+  $('backBtn').addEventListener('click', () => { history.replaceState(null, '', location.pathname + location.search); location.reload(); });
+  addEventListener('hashchange', () => { if (location.hash === '#party') startParty(true); });
+
+  /* ----- confetti ----- */
+  const cv = $('confetti'), ctx = cv.getContext('2d');
+  const palette = ['#ffc94a', '#ff7aa8', '#7fe0b5', '#5ec8ff', '#fff4e2', '#b98cff', '#ff9f43'];
+  let parts = [], raf = null, streamUntil = 0, dpr = 1;
+  function size() { dpr = Math.min(devicePixelRatio || 1, 2); cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; }
+  size(); addEventListener('resize', size);
+  function add(x, y, vx, vy) {
+    parts.push({ x, y, vx, vy, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3,
+      w: 6 + Math.random() * 6, h: 4 + Math.random() * 6, c: palette[(Math.random() * palette.length) | 0],
+      round: Math.random() < .3, life: 0 });
+  }
+  function burst(n) {
+    if (reduce) n = Math.round(n / 4);
+    const s = stage.getBoundingClientRect(), cx = s.left + s.width / 2, cy = s.top + s.height * .35;
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI / 2 + (Math.random() - .5) * 2.2, sp = 6 + Math.random() * 11;
+      add(cx, cy, Math.cos(a) * sp, Math.sin(a) * sp);
+    }
+    loop();
+  }
+  function stream(ms) { if (!reduce) { streamUntil = performance.now() + ms; loop(); } }
+  function loop() { if (!raf) raf = requestAnimationFrame(frame); }
+  function frame(t) {
+    raf = null;
+    if (t < streamUntil) for (let i = 0; i < 3; i++) add(Math.random() * innerWidth, -10, (Math.random() - .5) * 2, 2 + Math.random() * 2);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    parts = parts.filter(p => p.y < innerHeight + 30 && p.life < 600);
+    for (const p of parts) {
+      p.vy += .25; p.vx *= .985; p.vy *= .985; p.x += p.vx + Math.sin(p.life / 9) * .6; p.y += p.vy; p.r += p.vr; p.life++;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
+      if (p.round) { ctx.beginPath(); ctx.arc(0, 0, p.w / 2.4, 0, 7); ctx.fill(); }
+      else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.life / 6)) + 1);
+      ctx.restore();
+    }
+    if (parts.length || t < streamUntil) loop();
+  }
+
+  /* ----- happy birthday tune ----- */
+  let audio = null, playing = false;
+  $('song').addEventListener('click', () => {
+    if (playing) return;
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+    audio.resume();
+    const N = { G4: 392, A4: 440, B4: 493.9, C5: 523.3, D5: 587.3, E5: 659.3, F5: 698.5, G5: 784 };
+    const song = [['G4', .75], ['G4', .25], ['A4', 1], ['G4', 1], ['C5', 1], ['B4', 2],
+      ['G4', .75], ['G4', .25], ['A4', 1], ['G4', 1], ['D5', 1], ['C5', 2],
+      ['G4', .75], ['G4', .25], ['G5', 1], ['E5', 1], ['C5', 1], ['B4', 1], ['A4', 2],
+      ['F5', .75], ['F5', .25], ['E5', 1], ['C5', 1], ['D5', 1], ['C5', 2.5]];
+    const beat = .42; let t = audio.currentTime + .05;
+    for (const [n, len] of song) {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = 'triangle'; o.frequency.value = N[n];
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.22, t + .02);
+      g.gain.exponentialRampToValueAtTime(.001, t + len * beat * .95);
+      o.connect(g).connect(audio.destination); o.start(t); o.stop(t + len * beat);
+      t += len * beat;
+    }
+    playing = true; $('song').textContent = 'שרים!';
+    setTimeout(() => { playing = false; $('song').textContent = 'נגני שוב'; burst(200); }, (t - audio.currentTime) * 1000);
+  });
+
+  /* ----- go ----- */
+  if (isBirthday(new Date())) startParty(false);
+  else if (location.hash === '#party') startParty(true);
+  else { tick(); timer = setInterval(tick, 1000); }
+})();
+</script>
