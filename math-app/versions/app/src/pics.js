@@ -51,13 +51,14 @@ function jumpLine({max,k,count,landings=true,pendingNext=false,numbered=false}){
 /* an array of dots: rows go across, like lines in a notebook.
    split: {rows:k} or {cols:k} cuts it in two parts (second part orange) — for building a hard fact from two easy ones.
    cover: n hides the last n columns under a card — for ×9 as ×10 minus one column. */
-function dotArray({rows,cols,lit=-1,sums=false,spin=false,split=null,cover=0}){
-  const g=26, gx=j=>18+j*g+(j>=5&&cols>5?10:0)+(split?.cols!=null&&j>=split.cols?12:0), gy=i=>20+i*g+(split?.rows!=null&&i>=split.rows?12:0);
+function dotArray({rows,cols,lit=-1,sums=false,spin=false,split=null,cover=0,fade=null}){
+  // the small gap after 5 helps reading 6-10 columns, but a cut takes its place (one gap only)
+  const g=26, gx=j=>18+j*g+(j>=5&&cols>5&&split?.cols==null?10:0)+(split?.cols!=null&&j>=split.cols?12:0), gy=i=>20+i*g+(split?.rows!=null&&i>=split.rows?12:0);
   const W=gx(cols-1)+(sums?82:22), H=gy(rows-1)+22;
   let d=''; for(let i=0;i<rows;i++){ const on=i<=lit;
     if(on) d+=`<rect x="4" y="${gy(i)-12}" width="${gx(cols-1)+10}" height="${g-2}" rx="11" fill="color-mix(in srgb,var(--accent) 18%,transparent)"/>`;
     for(let j=0;j<cols;j++){ const second=(split?.rows!=null&&i>=split.rows)||(split?.cols!=null&&j>=split.cols);
-      d+=`<circle cx="${gx(j)}" cy="${gy(i)}" r="9" fill="${on?'var(--accent)':second?'#E8833A':'#5B8DEF'}"/>`; }
+      d+=`<circle cx="${gx(j)}" cy="${gy(i)}" r="9" fill="${on?'var(--accent)':second?'#E8833A':'#5B8DEF'}" ${fade!=null&&j>=fade?'opacity=".22"':''}/>`; }
     if(sums&&on) d+=`<text x="${gx(cols-1)+28}" y="${gy(i)+7}" class="nl-n strong">${(i+1)*cols}</text>`; }
   if(split?.rows!=null) d+=`<path d="M4 ${gy(split.rows)-19} H${gx(cols-1)+14}" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 5"/>`;
   if(split?.cols!=null) d+=`<path d="M${gx(split.cols)-19} 4 V${gy(rows-1)+16}" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 5"/>`;

@@ -5,7 +5,7 @@ import os, sys
 SRC=os.path.dirname(os.path.abspath(__file__))
 OUT=sys.argv[1] if len(sys.argv)>1 else os.path.join(SRC,'..')
 rd=lambda f: open(os.path.join(SRC,f),encoding='utf8').read()
-parts={'/*SHELL_CSS*/':rd('shell.css'),'/*SHELL*/':rd('shell.js'),'/*CHARACTERS*/':rd('characters.js'),'/*ROOM*/':rd('room.js'),'/*GIRL*/':rd('girl.js'),'/*PICS*/':rd('pics.js'),'/*PLAY*/':rd('play.js'),'/*DIAG*/':rd('diag.js')}
+parts={'/*SHELL_CSS*/':rd('shell.css'),'/*SHELL*/':rd('shell.js'),'/*CHARACTERS*/':rd('characters.js'),'/*ROOM*/':rd('room.js'),'/*GIRL*/':rd('girl.js'),'/*PICS*/':rd('pics.js'),'/*PLAY*/':rd('play.js'),'/*LESSONS_ADD*/':rd('lessons-add.js'),'/*LESSONS_MUL*/':rd('lessons-mul.js'),'/*ENGINE*/':rd('engine.js'),'/*DIAG*/':rd('diag.js')}
 for src,out in [('lessons.html','index.html'),('lesson.html','lesson.html'),('home.html','home.html'),('play.html','play.html'),('diag.html','diag.html')]:
     t=rd(src)
     for k,v in parts.items(): t=t.replace(k,v)

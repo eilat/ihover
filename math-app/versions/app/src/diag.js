@@ -17,7 +17,7 @@ const QS=[
   {n:4, line:'add', say:'כמה זה?', eq:['9 + 7 =',0], fields:[{ans:16}]},
   {n:5, line:'add', say:'4 עשרות ו-12 אחדות. איזה מספר זה?', vis:()=>sticks(4,12), eq:['=',0], fields:[{ans:52}]},
   {n:6, line:'add', say:'13 עשרות. איזה מספר זה?', vis:()=>sticks(13,0), eq:['=',0], fields:[{ans:130}]},
-  {n:7, line:'add', say:'במספר 305: כמה מאות, כמה עשרות וכמה אחדות?', fields:[{label:'מאות',ans:3},{label:'עשרות',ans:0},{label:'אחדות',ans:5}]},
+  {n:7, line:'add', say:'במספר 305: כמה מאות, כמה עשרות וכמה אחדות?', fields:[{label:'מאות',ans:3},{label:'עשרות',ans:0,alt:[30]},{label:'אחדות',ans:5}]},
   {n:8, line:'add', say:'שני תרגילים.', fields:[{label:'70 + 50 =',ans:120},{label:'47 + 30 =',ans:77}]},
   {n:9, line:'add', say:'כמה זה?', eq:['46 + 38 =',0], fields:[{ans:84}]},
   {n:10, line:'add', say:'כמה זה?', eq:['573 + 340 =',0], fields:[{ans:913}]},
@@ -42,7 +42,7 @@ function submit(v){
   if(v===''||v==null) return;
   S.vals[S.f]=+v; S.val=''; S.f++;
   if(S.f<q.fields.length){ render(); return; }
-  const ok=q.fields.every((f,i)=>S.vals[i]===f.ans);
+  const ok=q.fields.every((f,i)=>S.vals[i]===f.ans||f.alt?.includes(S.vals[i])); // 30 tens in 305 is also right
   record(q.fields.map((f,i)=>f.choice?f.choice[S.vals[i]]:S.vals[i]).join(', '), ok);
 }
 function finish(){

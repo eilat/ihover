@@ -303,6 +303,11 @@ a.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:
 .picbtn:hover{border-color:var(--accent)}
 .picbtn .pic{max-width:100%!important}
 .choices{display:flex;gap:12px;justify-content:center}
+.stepf>span.heb{direction:rtl}
+.cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.cardbtn{min-width:150px;min-height:64px;padding:10px 16px;border-radius:14px;border:3px solid var(--line);background:var(--surface);font-weight:600;font-size:19px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.cardbtn small{font-weight:400;font-size:14px;color:var(--muted)}
+.cardbtn:hover{border-color:var(--accent)} .cardbtn.soft{border-color:#E7B416;background:var(--hint-bg)}
 .btn.good{background:var(--good);border-color:var(--good);color:#fff}
 .btn.meh{border-color:#E7B416;background:var(--hint-bg)}
 .btn svg{width:22px;height:22px;vertical-align:-5px;margin-inline-end:6px}
@@ -806,13 +811,14 @@ function jumpLine({max,k,count,landings=true,pendingNext=false,numbered=false}){
 /* an array of dots: rows go across, like lines in a notebook.
    split: {rows:k} or {cols:k} cuts it in two parts (second part orange) — for building a hard fact from two easy ones.
    cover: n hides the last n columns under a card — for ×9 as ×10 minus one column. */
-function dotArray({rows,cols,lit=-1,sums=false,spin=false,split=null,cover=0}){
-  const g=26, gx=j=>18+j*g+(j>=5&&cols>5?10:0)+(split?.cols!=null&&j>=split.cols?12:0), gy=i=>20+i*g+(split?.rows!=null&&i>=split.rows?12:0);
+function dotArray({rows,cols,lit=-1,sums=false,spin=false,split=null,cover=0,fade=null}){
+  // the small gap after 5 helps reading 6-10 columns, but a cut takes its place (one gap only)
+  const g=26, gx=j=>18+j*g+(j>=5&&cols>5&&split?.cols==null?10:0)+(split?.cols!=null&&j>=split.cols?12:0), gy=i=>20+i*g+(split?.rows!=null&&i>=split.rows?12:0);
   const W=gx(cols-1)+(sums?82:22), H=gy(rows-1)+22;
   let d=''; for(let i=0;i<rows;i++){ const on=i<=lit;
     if(on) d+=`<rect x="4" y="${gy(i)-12}" width="${gx(cols-1)+10}" height="${g-2}" rx="11" fill="color-mix(in srgb,var(--accent) 18%,transparent)"/>`;
     for(let j=0;j<cols;j++){ const second=(split?.rows!=null&&i>=split.rows)||(split?.cols!=null&&j>=split.cols);
-      d+=`<circle cx="${gx(j)}" cy="${gy(i)}" r="9" fill="${on?'var(--accent)':second?'#E8833A':'#5B8DEF'}"/>`; }
+      d+=`<circle cx="${gx(j)}" cy="${gy(i)}" r="9" fill="${on?'var(--accent)':second?'#E8833A':'#5B8DEF'}" ${fade!=null&&j>=fade?'opacity=".22"':''}/>`; }
     if(sums&&on) d+=`<text x="${gx(cols-1)+28}" y="${gy(i)+7}" class="nl-n strong">${(i+1)*cols}</text>`; }
   if(split?.rows!=null) d+=`<path d="M4 ${gy(split.rows)-19} H${gx(cols-1)+14}" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 5"/>`;
   if(split?.cols!=null) d+=`<path d="M${gx(split.cols)-19} 4 V${gy(rows-1)+16}" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 5"/>`;
@@ -1067,6 +1073,9 @@ LESSONS['h3.3']={id:'ח3.3', title:'קפיצות על הציר', explain:[
  parent:'קפיצות על ציר ריק הן הדרך שהכי עוזרת לחשב בראש. אפשר לשאול: "מאיפה קפצת, ולאן?"'
 };
 
+
+
+
 /* ---------- state ---------- */
 const DEF=LESSONS[decodeURIComponent(location.hash.slice(1))]||LESSONS['h4.2'];
 const COINS_PER=3;
@@ -1079,7 +1088,7 @@ const TRANS=()=>({1:{title:'סיימת את ההסבר!', text:'עכשיו פו�
 const STOPS=['הסבר','ביחד','לבד','סיכום'];
 
 function startItem(){
-  const P=S.items[S.i]; S.f=0; S.val=''; S.wrong={}; S.done=0; S.finished=false; S.helped=false; S.note=null; S.locked=false; S.step=0; S.asked=null; S.rot=false; S.totalWrong=0;
+  const P=S.items[S.i]; S.f=0; S.val=''; S.wrong={}; S.done=0; S.picked={}; S.softPick=null; S.finished=false; S.helped=false; S.note=null; S.locked=false; S.step=0; S.asked=null; S.rot=false; S.totalWrong=0;
   S.exT={ms:0,from:null,frozen:false,running:false};
   if(P.type==='explain'){ S.it=null; return; }
   if(P.mode==='ביחד') S.it=P.make();
@@ -1137,14 +1146,22 @@ function check(x){
   if(custom && custom.soft){ S.note={text:custom.text}; S.val=''; render(); return; } // the right idea, different order: not a mistake
   S.wrong[S.f]=(S.wrong[S.f]||0)+1; S.totalWrong=(S.totalWrong||0)+1; S.val=''; const w=S.wrong[S.f];
   if(typeof custom==='string') (S.tags ||= []).push(custom.slice(0,30));
-  const H=S.it.hints||[];
+  const H=hintsNow();
   if(w>=2){ S.helped=true; if(S.it.showVis==='hint') S.showVis=true; }
   if(w>=3){ S.note={text:`התשובה היא ${fd.ans}. ${H[2]||''}`}; S.locked=true; setTimeout(()=>{ S.locked=false; S.done++; S.f++; if(S.f>=S.it.fields.length){ finish(); S.note={text:`התשובה היא ${fd.ans}. נמשיך.`}; } render(); },2200); render(); return; }
   S.note={text: custom || (fd.q && w===1 ? 'עוד לא. נסי שוב.' : H[Math.min(w-1,1)] || 'עוד לא. נסי שוב.')};
   render();
 }
-function choose(i){ const fd=curField(); if(!fd?.choice||S.locked) return;
-  if(fd.choice[i].ok){ S.note=null; fieldDone(); return; }
+/* hints can depend on what she chose earlier in the exercise (e.g. the method card) */
+const hintsNow=()=>typeof S.it.hints==='function'?S.it.hints(S.picked||{}):(S.it.hints||[]);
+/* a choice can be right (ok, maybe with a note), "soft" (a reasonable choice that doesn't fit so well here:
+   ask to think again, never counted as a mistake, a second click on it goes on), or not right.
+   A choice may also decide the rest of the exercise: then(i) returns the fields (and hints) that follow. */
+function choose(i){ const fd=curField(); if(!fd?.choice||S.locked) return; const o=fd.choice[i];
+  if(o.soft && S.softPick!==`${S.f}:${i}`){ S.softPick=`${S.f}:${i}`; S.note={text:o.soft}; render(); return; }
+  if(o.ok||o.soft){ (S.picked ||= {})[S.f]=o.key??i; S.softPick=null;
+    if(fd.then){ const nx=fd.then(o.key??i); S.it.fields=[...S.it.fields.slice(0,S.f+1),...nx.fields]; if(nx.hints) S.it.hints=nx.hints; if(nx.vis) S.it.vis=nx.vis; if(nx.eq) S.it.eq=nx.eq; }
+    fieldDone(); if(o.note){ S.note={ok:true,text:o.note}; render(); } return; }
   S.totalWrong=(S.totalWrong||0)+1; S.wrong[S.f]=(S.wrong[S.f]||0)+1; S.note={text:fd.wrongText?fd.wrongText(i):'עוד לא. נסי שוב.'}; render(); }
 
 /* ---------- rendering ---------- */
@@ -1180,8 +1197,9 @@ function vTask(){
   const q = !S.finished && fd?.q ? fd.q : it.say;
   const eq = it.eq.length ? `<div class="anchor ltr ${it.eq.length>3?'sm':''}">${it.eq.map(p=>typeof p==='string'?`<span>${p}</span>`:p.sum!=null?`<span class="slot"><span class="box big ${S.finished?'done':'wait'}">${S.finished?p.sum:'?'}</span></span>`:boxHtml(p.f,true)).join('')}</div>` : '';
   const rows = it.fields.map((fd,i)=>({fd,i})).filter(({fd,i})=>!inEq.has(i)&&!fd.choice&&!fd.rotate&&fd.label);
-  const steps = rows.length ? `<div class="steps ltr">${rows.map(({fd,i})=>`<div class="stepf ${i===S.f&&!S.finished?'on':''}"><span>${fd.label}</span>${boxHtml(i)}</div>`).join('')}</div>` : '';
-  const choice = fd?.choice && !S.finished ? `<div class="pics">${fd.choice.map((o,i)=>`<button class="picbtn" data-act="choose" data-v="${i}" aria-label="תמונה ${i+1}">${o.html}</button>`).join('')}</div>` : '';
+  const steps = rows.length ? `<div class="steps ltr">${rows.map(({fd,i})=>`<div class="stepf ${i===S.f&&!S.finished?'on':''}"><span class="${/[א-ת]/.test(fd.label)?'heb':''}">${fd.label}</span>${boxHtml(i)}</div>`).join('')}</div>` : '';
+  const choice = fd?.choice && !S.finished ? (fd.choice.some(o=>o.html) ? `<div class="pics">${fd.choice.map((o,i)=>`<button class="picbtn" data-act="choose" data-v="${i}" aria-label="תמונה ${i+1}">${o.html}</button>`).join('')}</div>`
+    : `<div class="cards">${fd.choice.map((o,i)=>`<button class="cardbtn ${S.softPick===`${S.f}:${i}`?'soft':''}" data-act="choose" data-v="${i}">${o.text}${o.sub?`<small class="ltr">${o.sub}</small>`:''}</button>`).join('')}</div>`) : '';
   const rot = fd?.rotate && !S.finished ? `<div class="choices"><button class="btn primary" data-act="rotateF">${ICON.rotate}לסובב</button></div>` : '';
   const vis = it.vis && S.showVis ? `<div class="vis">${it.vis(stV())}</div>` : '';
   const hint = S.items[S.i].mode==='לבד' && !S.helped && !S.finished && it.hints ? `<div class="hintrow"><button class="hintbtn" data-act="hint">${ICON.bulb}רמז</button></div>` : '';
@@ -1230,7 +1248,7 @@ const A={
   rotate(){ S.rot=true; },
   rotateF(){ S.rot=true; S.note=null; fieldDone(); return false; },
   choose(v){ choose(+v); return false; },
-  hint(){ S.showVis=true; S.helped=true; S.note={text:S.it.hints?.[0]||''}; },
+  hint(){ S.showVis=true; S.helped=true; S.note={text:hintsNow()[0]||''}; },
   key(v){ if(S.locked||S.toast) return; if(S.val.length<4) S.val+=v; },
   del(){ S.val=S.val.slice(0,-1); },
   check(){ if(S.locked||S.toast||!S.val) return false; check(+S.val); return false; },
