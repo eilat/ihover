@@ -7,3 +7,4 @@ client/index.html
 
 .DS_Store
 npm-debug.log
+math-app/versions/app/.publish/
