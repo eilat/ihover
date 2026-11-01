@@ -504,14 +504,16 @@ function answer(S, value){
     return i===0||has(p,t.lessons[i-1][0]) ? 'open' : 'locked';
   }
   function completeLesson(lessonId,id=kidId){
+    const p0=progOf(id), t=TOPICS.find(t=>t.lessons.some(([l])=>l===lessonId)), wasDone=t&&topicDone(p0,t);
     const p=progOf(id); const first=!p.done[lessonId]; p.done[lessonId]=true; saveProg(id,p);
     const h=homeOf(id); let animal=null;
-    if(first){
+    const topicNow=t&&!wasDone&&topicDone(p,t), left=t?t.lessons.filter(([l])=>!has(p,l)).length:0;
+    if(first && topicNow){ // a new animal moves in when a whole topic is finished, not after every lesson
       if(h.chosen){ animal=ANIMALS.find(a=>!(h.animals||[]).includes(a)); if(animal){ (h.animals ||= []).push(animal); h.newAnimal=animal; } }
       else h.pendingAnimals=(h.pendingAnimals||0)+1;
       put('home:'+id,h);
     }
-    return {first, animal, chosen:!!h.chosen};
+    return {first, animal, chosen:!!h.chosen, topic:topicNow?t.name:null, left};
   }
 
   /* ---------- top bar ---------- */
@@ -861,7 +863,7 @@ const FRIEND_SPOTS=[[660,236,76],[248,236,78],[600,262,70],[170,270,70],[440,282
 
 // wooden planks: rows every 38, joints staggered row by row
 const FLOOR=(()=>{ let d=''; for(let k=0,y=306;y<1200;k++,y+=38){ d+=`M-800 ${y+34} H1600 `; for(let x=-780+(k%3)*140;x<1600;x+=300) d+=`M${x} ${y} V${y+34} `; } return d; })();
-function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
+function roomSvg({animal, worn, wornBy={}, wallpaper, items, friends, preview, girl}){
   const A = ANIMALS[animal];
   const wp = WALLPAPERS.find(w=>w.id===wallpaper) || WALLPAPERS[0];
   const show = new Set(items); if(preview && !WALLPAPERS.some(w=>w.id===preview)) show.add(preview);
@@ -875,7 +877,7 @@ function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
     return `<ellipse cx="${x+45}" cy="${y+74}" rx="38" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="90" height="78" viewBox="0 180 72 62">${i.svg(A)}</svg>`; }).join('');
   const strip = s => s.replace(/^<svg[^>]*>|<\/svg>$/g,'');
   const fr = (friends||[]).slice(0,8).map((a,k)=>{ const [x,y,w]=FRIEND_SPOTS[k];
-    return `<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${x}" y="${y}" width="${w}" height="${w*1.2}" viewBox="-6 -18 216 260">${strip(drawChar(a,{}))}</svg></g>`; }).join('');
+    return `<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${x}" y="${y}" width="${w}" height="${w*1.2}" viewBox="-6 -18 216 260">${strip(drawChar(a,Object.fromEntries(Object.entries(wornBy[a]||{}).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)))))}</svg></g>`; }).join('');
   const wearOnly = Object.fromEntries(Object.entries(worn).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
   return `<svg class="scene" viewBox="0 0 800 440" preserveAspectRatio="xMidYMax meet" role="img" aria-label="החדר של ה${A.name}">
     <defs>${WALLPAPERS.map(w=>w.def).join('')}</defs>
@@ -978,8 +980,11 @@ const FACE=Shell.kid()?.face||'lili';
 
 /* ---------- state per girl ---------- */
 const kidId=Shell.kid()?.id;
-function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, girlWorn:{}, coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
-function load(id){ try{ const s=JSON.parse(localStorage.getItem('home:'+id)||'null'); return s?{...fresh(),...s}:fresh(); }catch(e){ return fresh(); } }
+function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, wornBy:{}, girlWorn:{}, coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
+/* every animal has its own clothes (wornBy); S.worn is the main animal's, kept in step on load, save and switch */
+function load(id){ let s; try{ s=JSON.parse(localStorage.getItem('home:'+id)||'null'); }catch(e){} s=s?{...fresh(),...s}:fresh();
+  s.wornBy ||= {}; if(!Object.keys(s.wornBy).length && Object.keys(s.worn||{}).length) s.wornBy[s.animal]=s.worn; // from before
+  s.worn=s.wornBy[s.animal] ||= {}; return s; }
 const tsNow=()=>{ try{ return +(localStorage.getItem('mk:ts:home:'+kidId)||0); }catch(e){ return 0; } };
 let seenTs=0;
 function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); seenTs=tsNow(); }catch(e){} }
@@ -1127,18 +1132,18 @@ function render(){
   renderBar();
   if(!S.chosen){
     document.getElementById('app').innerHTML='';
-    document.getElementById('overlay').innerHTML=`<div class="scrim"><div class="modal"><h2>שלום ${Shell.esc(Shell.kid().name)}! איזו חיה תגור איתך?</h2><p class="meta">עוד חיות יצטרפו אחרי כל שיעור.</p>
+    document.getElementById('overlay').innerHTML=`<div class="scrim"><div class="modal"><h2>שלום ${Shell.esc(Shell.kid().name)}! איזו חיה תגור איתך?</h2><p class="meta">עוד חיות יצטרפו אחרי כל נושא שמסיימים.</p>
       <div class="starters">${STARTERS.map(a=>`<button data-act="start" data-v="${a}">${drawChar(a)}${ANIMALS[a].name}</button>`).join('')}</div></div></div>`; return;
   }
   const friends=S.animals.filter(a=>a!==S.animal);
-  const anim=ANIMAL_ORDER.map(a=>{ const has=S.animals.includes(a); return `<button class="an ${has?'':'locked'}" ${has?`data-act="animal" data-v="${a}"`:'disabled'} aria-pressed="${S.animal===a}">${drawChar(a)}<span>${has?ANIMALS[a].name:'אחרי שיעור'}</span></button>`; }).join('');
+  const anim=ANIMAL_ORDER.map(a=>{ const has=S.animals.includes(a); return `<button class="an ${has?'':'locked'}" ${has?`data-act="animal" data-v="${a}"`:'disabled'} aria-pressed="${S.animal===a}">${drawChar(a)}<span>${has?ANIMALS[a].name:'אחרי נושא'}</span></button>`; }).join('');
   // keep where she was in the shop and in the animals strip: re-rendering must not move anything under her finger
   const keep={shop:tab===lastTab?document.querySelector('.shop .scroll')?.scrollTop:0, an:document.querySelector('.animals')?.scrollLeft}; lastTab=tab;
   document.getElementById('app').innerHTML=`
     ${shopHtml()}
     <div class="col mid">
-      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
-      <section class="card"><h2>החיות שלי</h2><p class="meta">כל שיעור שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
+      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wornBy:S.wornBy, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
+      <section class="card"><h2>החיות שלי</h2><p class="meta">כל נושא שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
         <div class="carousel"><button class="arrow" data-act="scrollAn" data-v="-1" aria-label="חיות קודמות">${IC.next}</button><div class="animals">${anim}</div><button class="arrow" data-act="scrollAn" data-v="1" aria-label="עוד חיות">${IC.prev}</button></div></section>
     </div>
     <aside class="col practice">${practiceHtml()}${Shell.kid()?.trial?`<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div>`:''}</aside>`;
@@ -1159,7 +1164,7 @@ function grant(id){
   else { S.items.push(id); const it=itemById(id); if(it && ['outfit','hair','hat','glasses'].includes(it.cat)) S.worn[it.cat]=id; }
 }
 const A={
-  start(v){ S.chosen=true; S.animal=v; S.animals=[v];
+  start(v){ S.chosen=true; S.animal=v; S.animals=[v]; S.worn=S.wornBy[v] ||= {};
     // lessons finished before the home existed: their animals move in now
     const n=S.pendingAnimals||0; S.pendingAnimals=0; const came=ANIMAL_ORDER.filter(a=>a!==v).slice(0,n); S.animals.push(...came);
     if(came.length) welcome(came[came.length-1]);
@@ -1174,7 +1179,7 @@ const A={
   useWp(v){ S.wallpaper=v; save(); },
   wear(v){ const it=itemById(v); S.worn[it.cat] = S.worn[it.cat]===v ? undefined : v; save(); },
   wearMe(v){ const c=girlItem(v).cat; S.girlWorn[c] = S.girlWorn[c]===v ? undefined : v; save(); },
-  animal(v){ S.animal=v; save(); },
+  animal(v){ S.wornBy[S.animal]=S.worn; S.animal=v; S.worn=S.wornBy[v] ||= {}; save(); },
   sw(){ if(T.running){ T.ms+=Date.now()-T.from; T.from=null; T.running=false; } else { T.from=Date.now(); T.running=true; T.used=true; } },
   check(){ check(); return false; },
   say(){ const q=S.challenge||S.q; if(q) speak(`כמה זה ${q.a} ועוד ${q.b}?`); return false; },
@@ -1183,12 +1188,12 @@ const A={
   pick(v){ grant(v); offer=null; modal=`<div class="th" style="width:200px;height:170px">${thumb(v)}</div><h2>${nameOf(v)}!</h2><p class="meta">זה שלך עכשיו${girlItem(v)?', וכבר עלייך':ITEMS.some(i=>i.id===v&&['outfit','hair','hat','glasses'].includes(i.cat))?', וכבר על החיה':', וכבר בבית'}.</p>`; save(); },
   close(){ modal=null; },
   simLesson(){ if(!Shell.kid()?.trial) return; const next=ANIMAL_ORDER.find(a=>!S.animals.includes(a)); if(!next){ modal='<h2>כל החיות כבר בבית!</h2>'; return; } S.animals.push(next); save();
-    modal=`<h2>סיימת שיעור!</h2>${drawChar(next).replace('<svg','<svg style="width:170px;height:204px"')}<p><b>${ANIMALS[next].name}</b> עוברת לגור אצלך בבית!</p>`; },
+    modal=`<h2>סיימת נושא!</h2>${drawChar(next).replace('<svg','<svg style="width:170px;height:204px"')}<p><b>${ANIMALS[next].name}</b> עוברת לגור אצלך בבית!</p>`; },
   reset(){ if(!Shell.kid()?.trial) return; S=fresh(); save(); preview=null; msg=null; modal=null; }
 };
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t||t.disabled) return; if(refresh()){ render(); return; } if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
 document.addEventListener('keydown',e=>{ if(Shell.isOpen()) return; if(e.key==='Enter' && e.target.id==='ans'){ e.preventDefault(); check(); } if(e.key==='Escape' && modal && modal!=='box'){ modal=null; render(); } });
-function welcome(a){ modal=`<h2>יש לך שותפה חדשה בבית!</h2>${drawChar(a).replace('<svg','<svg style="width:170px;height:204px"')}<p><b>${ANIMALS[a].name}</b> עברה לגור אצלך, כי סיימת שיעור.</p>`; }
+function welcome(a){ modal=`<h2>יש לך שותפה חדשה בבית!</h2>${drawChar(a).replace('<svg','<svg style="width:170px;height:204px"')}<p><b>${ANIMALS[a].name}</b> עברה לגור אצלך, כי סיימת נושא שלם.</p>`; }
 if(Shell.start({page:'home', title:'הבית שלי', onParentClose:render})){
   if(S.newAnimal){ welcome(S.newAnimal); S.newAnimal=null; save(); }
   if(S.chosen && !S.q && !S.pendingChallenge && !S.challenge) nextQ();

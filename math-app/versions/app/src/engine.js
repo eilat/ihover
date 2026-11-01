@@ -140,7 +140,7 @@ function vScreen(){
   if(S.screen==='trans'){ const t=TRANS()[S.i]; return `<div class="card"><h1>${t.title}</h1>${mapHtml(t.stop)}<p>${t.text}</p><button class="btn primary" data-act="go">ממשיכות</button></div>`; }
   if(S.screen==='star') return `<div class="card"><h1>⭐ רוצה שאלת אתגר?</h1><p>שאלה קשה במיוחד. מי שפותרת מקבלת 8 מטבעות. אפשר גם לסיים עכשיו.</p><div class="row"><button class="btn primary" data-act="takeStar">לנסות!</button><button class="btn" data-act="skipStar">לסיים את השיעור</button></div></div>`;
   if(S.screen==='done'){ const r=S.reward||{}; return `<div class="card"><h1>סיימנו את השיעור!</h1>${mapHtml(3)}<p>סיימת את השיעור "${DEF.title}". כל הכבוד על ההתמדה!</p>
-    ${r.first?`<p class="gift">${r.chosen?(r.animal?'מישהי חדשה עברה לגור אצלך בבית! בואי לפגוש אותה.':'בבית מחכים לך 10 מטבעות בונוס.'):'בבית מחכה לך חיה ראשונה לבחור, ו-10 מטבעות בונוס.'}</p>`:''}
+    ${r.first?`<p class="gift">${r.topic?`סיימת את כל הנושא "${r.topic}"! `:''}${r.chosen?(r.animal?'מישהי חדשה עברה לגור אצלך בבית! בואי לפגוש אותה.':`בבית מחכים לך 10 מטבעות בונוס.${r.left?` עוד ${r.left===1?'שיעור אחד':r.left+' שיעורים'} בנושא, ואז חיה חדשה עוברת לגור אצלך.`:''}`):'בבית מחכה לך חיה ראשונה לבחור, ו-10 מטבעות בונוס.'}</p>`:''}
     <div class="row"><a class="btn primary" href="home.html">לבית שלי</a><a class="btn" href="index.html">לשיעורים</a><button class="btn" data-act="again">עוד פעם, עם תרגילים חדשים</button></div></div>`; }
   return '';
 }

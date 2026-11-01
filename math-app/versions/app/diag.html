@@ -634,14 +634,16 @@ function answer(S, value){
     return i===0||has(p,t.lessons[i-1][0]) ? 'open' : 'locked';
   }
   function completeLesson(lessonId,id=kidId){
+    const p0=progOf(id), t=TOPICS.find(t=>t.lessons.some(([l])=>l===lessonId)), wasDone=t&&topicDone(p0,t);
     const p=progOf(id); const first=!p.done[lessonId]; p.done[lessonId]=true; saveProg(id,p);
     const h=homeOf(id); let animal=null;
-    if(first){
+    const topicNow=t&&!wasDone&&topicDone(p,t), left=t?t.lessons.filter(([l])=>!has(p,l)).length:0;
+    if(first && topicNow){ // a new animal moves in when a whole topic is finished, not after every lesson
       if(h.chosen){ animal=ANIMALS.find(a=>!(h.animals||[]).includes(a)); if(animal){ (h.animals ||= []).push(animal); h.newAnimal=animal; } }
       else h.pendingAnimals=(h.pendingAnimals||0)+1;
       put('home:'+id,h);
     }
-    return {first, animal, chosen:!!h.chosen};
+    return {first, animal, chosen:!!h.chosen, topic:topicNow?t.name:null, left};
   }
 
   /* ---------- top bar ---------- */

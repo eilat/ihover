@@ -49,7 +49,7 @@ const FRIEND_SPOTS=[[660,236,76],[248,236,78],[600,262,70],[170,270,70],[440,282
 
 // wooden planks: rows every 38, joints staggered row by row
 const FLOOR=(()=>{ let d=''; for(let k=0,y=306;y<1200;k++,y+=38){ d+=`M-800 ${y+34} H1600 `; for(let x=-780+(k%3)*140;x<1600;x+=300) d+=`M${x} ${y} V${y+34} `; } return d; })();
-function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
+function roomSvg({animal, worn, wornBy={}, wallpaper, items, friends, preview, girl}){
   const A = ANIMALS[animal];
   const wp = WALLPAPERS.find(w=>w.id===wallpaper) || WALLPAPERS[0];
   const show = new Set(items); if(preview && !WALLPAPERS.some(w=>w.id===preview)) show.add(preview);
@@ -63,7 +63,7 @@ function roomSvg({animal, worn, wallpaper, items, friends, preview, girl}){
     return `<ellipse cx="${x+45}" cy="${y+74}" rx="38" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="90" height="78" viewBox="0 180 72 62">${i.svg(A)}</svg>`; }).join('');
   const strip = s => s.replace(/^<svg[^>]*>|<\/svg>$/g,'');
   const fr = (friends||[]).slice(0,8).map((a,k)=>{ const [x,y,w]=FRIEND_SPOTS[k];
-    return `<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${x}" y="${y}" width="${w}" height="${w*1.2}" viewBox="-6 -18 216 260">${strip(drawChar(a,{}))}</svg></g>`; }).join('');
+    return `<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${x}" y="${y}" width="${w}" height="${w*1.2}" viewBox="-6 -18 216 260">${strip(drawChar(a,Object.fromEntries(Object.entries(wornBy[a]||{}).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)))))}</svg></g>`; }).join('');
   const wearOnly = Object.fromEntries(Object.entries(worn).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
   return `<svg class="scene" viewBox="0 0 800 440" preserveAspectRatio="xMidYMax meet" role="img" aria-label="החדר של ה${A.name}">
     <defs>${WALLPAPERS.map(w=>w.def).join('')}</defs>
