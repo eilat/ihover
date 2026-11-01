@@ -48,6 +48,21 @@ h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
 .room{border-radius:16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .room svg.scene{display:block;width:100%;height:auto}
 .friend{cursor:pointer}
+.curtain{cursor:pointer}
+svg.arranging g.ent{cursor:grab}
+svg.arranging g.ent:active{cursor:grabbing}
+.roomtools{position:absolute;bottom:12px;inset-inline-start:12px;z-index:2;display:flex;gap:8px;flex-wrap:wrap}
+.rt{min-height:44px;min-width:44px;padding:0 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.rt.wide{padding:0 16px}.rt.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.rt[aria-pressed="true"]{background:#1E2A5A;border-color:#1E2A5A;color:#FFF3C4}
+.card.hide{display:none}
+.arrange .arr-row{justify-content:flex-start;align-items:center;margin-top:8px}
+.arrange .btn{min-height:42px;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+.btn.ghost{border-style:dashed;color:var(--muted);margin-inline-start:auto}
+.store{display:flex;gap:8px;overflow-x:auto;padding:4px 2px}
+.stbtn{flex:none;width:84px;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;font-size:12px}
+.stbtn .th{width:70px;height:56px}
+.stbtn:hover{border-color:var(--accent)}
 .preview-tag{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:2px 12px;font-size:14px;font-weight:600}
 /* animals */
 .carousel{display:flex;align-items:center;gap:6px}
@@ -433,6 +448,121 @@ function answer(S, value){
 
     return {ANIMALS, drawChar};
   })();
+  // the girls' own drawing (hair styles and colours), private too: the small faces follow her look
+  const GL=(()=>{
+/* The girl herself, standing in her home next to her animal, dressed from the shop's "לעצמי" side.
+   One geometry for both girls (viewBox 0 0 120 224: head centre 60,56 r34, shoulders y98, feet y214);
+   only hair and skin differ, so every item fits both. Items are drawn in fixed layers. */
+const GIRLS={lili:{skin:'#F6CFAE'}, nori:{skin:'#E9B98F'}, test:{skin:'#F1C9A5'}};
+/* her look: a hairstyle and a hair colour (free), plus happy colours and specials bought in the shop.
+   Every style is a back part (behind the head and body) and a front part (over the forehead), drawn for the
+   same head (centre 60,56 r34), so hats, ears, the flower and glasses sit on top of any of them. */
+const HAIR_STYLES=[
+  {id:'long', name:'פזור ארוך', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L98 106 Q60 114 22 106Z"/>`,
+    front:`<path d="M26 56 C28 30 44 21 60 21 C78 21 92 32 94 56 C80 52 70 42 66 33 C60 44 44 52 26 56Z"/>`, ties:[]},
+  {id:'buns', name:'שתי בובות', back:`<circle cx="28" cy="30" r="14"/><circle cx="92" cy="30" r="14"/>`,
+    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C90 46 80 40 70 40 C66 46 58 48 50 44 C40 44 30 48 26 58Z"/>`, ties:[[35,38],[85,38]]},
+  {id:'pony', name:'קוקו', back:`<path d="M84 34 C114 34 116 72 104 100 C100 82 96 62 82 44Z"/><circle cx="90" cy="33" r="9"/>`,
+    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C88 44 76 36 60 36 C46 36 34 44 26 58Z"/>`, ties:[[92,34]]},
+  {id:'braid', name:'צמה', back:`<path d="M26 60 C24 30 42 20 60 20 C78 20 96 30 94 60Z"/>${[[91,64],[94,78],[96,92],[97,106]].map(([x,y],k)=>`<ellipse cx="${x}" cy="${y}" rx="8" ry="8.5" transform="rotate(${k%2?-18:18} ${x} ${y})"/>`).join('')}<path d="M95 116 l4 10 l3-10z"/>`,
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[97,114]]},
+  {id:'curly', name:'תלתלים', back:[[30,30,13],[44,19,13],[60,15,13],[76,19,13],[90,30,13],[97,46,12],[23,46,12],[98,63,11],[22,63,11],[96,79,10],[24,79,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''),
+    front:[[33,42,8],[45,33,8.5],[60,30,9],[75,33,8.5],[87,42,8]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''), ties:[]},
+  {id:'short', name:'קצר', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L97 84 Q91 91 84 83 L36 83 Q29 91 23 84Z"/>`,
+    front:`<path d="M26 54 C25 30 42 20 60 20 C78 20 95 30 94 54 C80 46 40 46 26 54Z"/>`, ties:[]},
+  {id:'pigtails', name:'קוקיות', back:`<path d="M24 48 C6 58 6 92 16 106 C21 88 26 72 31 58Z"/><path d="M96 48 C114 58 114 92 104 106 C99 88 94 72 89 58Z"/>`,
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[27,52],[93,52]]}
+];
+const HAIR_COLORS=[
+  {id:'black', name:'שחור', fill:'#1F1B24', price:0},{id:'dark', name:'כהה', fill:'#2E2A33', price:0},
+  {id:'darkbrown', name:'חום כהה', fill:'#4A2C1D', price:0},{id:'brown', name:'חום', fill:'#6B3E26', price:0},
+  {id:'lightbrown', name:'חום בהיר', fill:'#A0673A', price:0},{id:'blonde', name:'בלונדיני', fill:'#E2B85C', price:0},
+  {id:'ginger', name:'ג׳ינג׳י', fill:'#C2562A', price:0},
+  {id:'pink', name:'ורוד', fill:'#F28DB2', price:8},{id:'purple', name:'סגול', fill:'#9B6BD6', price:8},{id:'sky', name:'תכלת', fill:'#7CC6F0', price:8}
+];
+const HAIR_SPECIALS=[
+  {id:'rainbow', name:'שיער בצבע קשת', price:15, kind:'color'},
+  {id:'glitter', name:'נצנצים בשיער', price:10, kind:'toggle'},
+  {id:'ribbon', name:'קוקו עם סרט', price:8, kind:'toggle'},
+  {id:'bow', name:'פפיון ורוד', price:6, kind:'toggle'}
+];
+const DEFAULT_LOOKS={lili:{hair:'buns',color:'brown',owned:[]}, nori:{hair:'long',color:'dark',bow:true,owned:['bow']}, test:{hair:'long',color:'pink',owned:['pink']}};
+const lookFor=(face,look)=>({...(DEFAULT_LOOKS[face]||DEFAULT_LOOKS.lili),...(look||{})});
+let hairGrad=0;
+function hairSvg(look){ // returns {defs, back, front, top}
+  const st=HAIR_STYLES.find(h=>h.id===look.hair)||HAIR_STYLES[0];
+  let fill=(HAIR_COLORS.find(c=>c.id===look.color)||HAIR_COLORS[3]).fill, defs='';
+  if(look.color==='rainbow'){ const id='hrb'+(++hairGrad); fill=`url(#${id})`;
+    defs=`<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">${['#F25C5C','#F5A142','#F2D24B','#5CC97B','#4FA3E8','#9B6BD6'].map((c,k)=>`<stop offset="${k/5}" stop-color="${c}"/>`).join('')}</linearGradient>`; }
+  const ribbon=(x,y)=>`<path d="M${x} ${y} l-13 -9 l1 18z M${x} ${y} l13 -9 l-1 18z" fill="#E8457A"/><circle cx="${x}" cy="${y}" r="4.2" fill="#C72F63"/>`;
+  const ties=st.ties.map(([x,y])=>look.ribbon?ribbon(x,y):`<circle cx="${x}" cy="${y}" r="4.5" fill="#F2B21E"/>`).join('');
+  const bow=look.bow&&!(look.ribbon&&st.ties.length)?`<path d="M82 24 l9-6 -1 11z M82 24 l11 3 -8 6z" fill="#E8457A"/><circle cx="84" cy="26" r="3" fill="#C72F63"/>`:'';
+  const spark=(x,y)=>`<path d="M${x} ${y-4} L${x+1.2} ${y-1.2} L${x+4} ${y} L${x+1.2} ${y+1.2} L${x} ${y+4} L${x-1.2} ${y+1.2} L${x-4} ${y} L${x-1.2} ${y-1.2}Z" fill="#fff"/>`;
+  const glitter=look.glitter?[[40,28],[58,23],[78,27],[33,44],[88,42],[50,36],[70,35]].map(([x,y])=>spark(x,y)).join(''):'';
+  return {defs, back:`<g fill="${fill}">${st.back}</g>`, front:`<g fill="${fill}">${st.front}</g>${ties}${bow}${glitter}`};
+}
+const GIRL_CATS=[{id:'g-outfit',name:'בגדים'},{id:'g-shoes',name:'נעליים'},{id:'g-head',name:'לראש'},{id:'g-glasses',name:'משקפיים'}];
+const sleeves=c=>`<path d="M38 98 L27 118 L35 122 L45 106Z M82 98 L93 118 L85 122 L75 106Z" fill="${c}"/>`;
+const longSleeves=c=>`<path d="M40 100 L28 146 M80 100 L92 146" stroke="${c}" stroke-width="12" stroke-linecap="round"/>`;
+const GIRL_ITEMS=[
+  // clothes: replace the default t-shirt and shorts
+  {cat:'g-outfit', id:'g-dress', name:'שמלה פרחונית', price:6, svg:()=>`${sleeves('#F06292')}<path d="M40 96 Q60 90 80 96 L84 118 L98 176 Q60 186 22 176 L36 118Z" fill="#F06292"/>
+    ${[[46,128],[70,134],[56,156],[36,162],[80,160]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="#fff"/><circle cx="${x}" cy="${y}" r="2" fill="#FFD54F"/>`).join('')}`},
+  {cat:'g-outfit', id:'g-overalls', name:'סרבל ג׳ינס', price:6, svg:()=>`${sleeves('#FFD54F')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#FFD54F"/>
+    <path d="M40 118 H80 L84 172 H63 L60 152 L57 172 H36Z" fill="#3F6FB5"/><path d="M45 99 L46 120 M75 99 L74 120" stroke="#3F6FB5" stroke-width="5"/><rect x="51" y="124" width="18" height="12" rx="3" fill="#335C99"/>`},
+  {cat:'g-outfit', id:'g-tutu', name:'שמלת נסיכה', price:10, svg:()=>`${sleeves('#B39DDB')}<path d="M42 98 Q60 92 78 98 L80 132 H40Z" fill="#B39DDB"/>
+    <path d="M40 128 H80 L106 168 Q60 182 14 168Z" fill="#E1BEE7"/><path d="M40 128 H80 L96 160 Q60 172 24 160Z" fill="#F3E5F5"/>
+    <g fill="#fff">${[[30,164],[52,170],[76,168],[94,162],[62,150]].map(([x,y])=>`<path d="M${x} ${y-4} L${x+1.5} ${y-1} L${x+4} ${y} L${x+1.5} ${y+1} L${x} ${y+4} L${x-1.5} ${y+1} L${x-4} ${y} L${x-1.5} ${y-1}Z"/>`).join('')}</g>
+    <path d="M52 100 L60 108 L68 100" stroke="#F2C230" stroke-width="3" fill="none"/>`},
+  {cat:'g-outfit', id:'g-sport', name:'חליפת ספורט', price:7, svg:()=>`${longSleeves('#26A69A')}<path d="M36 98 Q60 90 84 98 L86 142 H34Z" fill="#26A69A"/>
+    <path d="M60 96 V142" stroke="#fff" stroke-width="2.5"/><path d="M36 140 H84 L84 204 H64 L60 160 L56 204 H36Z" fill="#26A69A"/><path d="M38 144 L38 202 M82 144 L82 202" stroke="#fff" stroke-width="3"/>`},
+  {cat:'g-outfit', id:'g-hoodie', name:'קפוצ׳ון', price:7, svg:()=>`${longSleeves('#FF8A65')}<path d="M40 144 H80 L80 204 H64 L60 160 L56 204 H40Z" fill="#455A64"/>
+    <path d="M34 98 Q60 88 86 98 L88 148 H32Z" fill="#FF8A65"/><path d="M44 128 H76 L72 144 H48Z" fill="#F4724B"/><path d="M54 98 L54 114 M66 98 L66 114" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`},
+  {cat:'g-outfit', id:'g-skirt', name:'חולצה וחצאית', price:5, svg:()=>`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff"/>
+    <path d="M37 108 H83 M36 120 H84 M36 132 H84" stroke="#E8577E" stroke-width="5"/><path d="M36 136 H84 L94 170 H26Z" fill="#7444C9"/>`},
+  // shoes
+  {cat:'g-shoes', id:'g-sneakers', name:'נעלי ספורט', price:4, svg:()=>`<g><path d="M36 214 Q36 202 46 202 Q56 202 58 214Z M62 214 Q64 202 74 202 Q84 202 84 214Z" fill="#fff" stroke="#9AA6B8" stroke-width="1.5"/><path d="M40 208 H54 M66 208 H80" stroke="#E8457A" stroke-width="3"/></g>`},
+  {cat:'g-shoes', id:'g-boots', name:'מגפיים', price:5, svg:()=>`<g fill="#E05A47"><rect x="39" y="186" width="16" height="26" rx="4"/><rect x="65" y="186" width="16" height="26" rx="4"/><path d="M37 214 Q37 206 47 206 Q59 206 59 214Z M63 214 Q63 206 73 206 Q85 206 85 214Z"/></g>`},
+  {cat:'g-shoes', id:'g-sparkle', name:'נעליים נוצצות', price:6, svg:()=>`<path d="M36 214 Q36 203 46 203 Q57 203 58 214Z M62 214 Q63 203 74 203 Q84 203 84 214Z" fill="#F2C230"/><g fill="#fff"><circle cx="44" cy="208" r="1.6"/><circle cx="51" cy="210" r="1.6"/><circle cx="70" cy="208" r="1.6"/><circle cx="77" cy="210" r="1.6"/></g>`},
+  // on the head
+  {cat:'g-head', id:'g-crown', name:'כתר', price:8, svg:()=>`<path d="M40 26 L42 6 L52 18 L60 2 L68 18 L78 6 L80 26Z" fill="#F2C230" stroke="#C99A12" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="16" r="3" fill="#E8457A"/>`},
+  {cat:'g-head', id:'g-headband', name:'קשת', price:3, svg:()=>`<path d="M27 50 Q30 18 60 17 Q90 18 93 50" stroke="#E8457A" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="34" cy="28" r="5" fill="#FFD54F"/>`},
+  {cat:'g-head', id:'g-cap', name:'כובע מצחייה', price:4, svg:()=>`<path d="M25 42 Q28 12 60 12 Q92 12 95 42Z" fill="#3E7BD8"/><path d="M25 42 Q8 42 4 48 Q20 50 40 44Z" fill="#2F5BD3"/><circle cx="60" cy="13" r="3" fill="#2F5BD3"/>`},
+  {cat:'g-head', id:'g-catears', name:'אוזני חתול', price:4, svg:()=>`<path d="M28 34 L30 6 L48 22Z M92 34 L90 6 L72 22Z" fill="#2E2A33"/><path d="M33 26 L34 14 L42 21Z M87 26 L86 14 L78 21Z" fill="#F4A9B8"/><path d="M27 40 Q30 18 60 17 Q90 18 93 40" stroke="#2E2A33" stroke-width="4" fill="none"/>`},
+  {cat:'g-head', id:'g-flower', name:'פרח בשיער', price:3, svg:()=>`<g fill="#FF8AB3"><circle cx="30" cy="30" r="6"/><circle cx="39" cy="26" r="6"/><circle cx="40" cy="36" r="6"/><circle cx="31" cy="40" r="6"/><circle cx="25" cy="35" r="6"/></g><circle cx="33" cy="34" r="4.5" fill="#FFD54F"/>`},
+  // glasses (eyes at 47,60 and 73,60)
+  {cat:'g-glasses', id:'g-round', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="2.5"><circle cx="47" cy="60" r="9"/><circle cx="73" cy="60" r="9"/><path d="M56 59 Q60 56 64 59"/></g>`},
+  {cat:'g-glasses', id:'g-hearts', name:'משקפי לב', price:5, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="2"><path d="M47 70 L37 60 Q34 51 41 51 Q45 51 47 55 Q49 51 53 51 Q60 51 57 60Z"/><path d="M73 70 L63 60 Q60 51 67 51 Q71 51 73 55 Q75 51 79 51 Q86 51 83 60Z"/></g><path d="M57 57 Q60 55 63 57" stroke="#D81B60" stroke-width="2" fill="none"/>`},
+  {cat:'g-glasses', id:'g-shades', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="36" y="54" width="21" height="13" rx="5"/><rect x="63" y="54" width="21" height="13" rx="5"/></g><path d="M57 58 H63" stroke="#263238" stroke-width="2.5"/><path d="M40 57 H46" stroke="#fff" stroke-width="2" opacity=".6" stroke-linecap="round"/>`}
+];
+const girlItem=id=>GIRL_ITEMS.find(i=>i.id===id);
+/* where each category is cropped for shop thumbnails */
+const GIRL_CROP={'g-outfit':'4 90 112 126','g-shoes':'22 176 76 44','g-head':'0 -2 120 72','g-glasses':'24 30 72 52'};
+/* look: {hair, color, glitter, ribbon, bow}; leave it out to get her default look */
+function drawGirl(face, worn={}, preview={}, look=null){
+  const H=hairSvg(lookFor(face,look)), G={...(GIRLS[face]||GIRLS.lili), back:H.defs?`<defs>${H.defs}</defs>${H.back}`:H.back, front:H.front}, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
+  const outfit=it('g-outfit'), shoes=it('g-shoes');
+  return `<svg viewBox="0 0 120 224" role="img" aria-label="אני">
+    ${G.back}
+    <rect x="42" y="160" width="12" height="48" rx="5" fill="${sk}"/><rect x="66" y="160" width="12" height="48" rx="5" fill="${sk}"/>
+    ${shoes?shoes.svg():`<path d="M36 214 Q36 204 46 204 Q56 204 57 214Z M63 214 Q64 204 74 204 Q84 204 84 214Z" fill="#5A6577"/>`}
+    <path d="M40 100 L29 146 M80 100 L91 146" stroke="${sk}" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="29" cy="149" r="6" fill="${sk}"/><circle cx="91" cy="149" r="6" fill="${sk}"/>
+    ${outfit?outfit.svg():`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff" stroke="#E3E7EE" stroke-width="1.5"/><path d="M36 138 H84 L86 168 H63 L60 152 L57 168 H34Z" fill="#3E7BD8"/>`}
+    <rect x="54" y="84" width="12" height="14" rx="4" fill="${sk}"/>
+    <circle cx="60" cy="56" r="34" fill="${sk}"/>
+    <circle cx="47" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="73" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="48.2" cy="58.8" r="1.1" fill="#fff"/><circle cx="74.2" cy="58.8" r="1.1" fill="#fff"/>
+    <ellipse cx="40" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/><ellipse cx="80" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/>
+    <path d="M53 73 Q60 79 67 73" stroke="#2B2B2B" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    ${G.front}
+    ${it('g-head')?it('g-head').svg():''}${it('g-glasses')?it('g-glasses').svg():''}
+  </svg>`;
+}
+/* her head alone, for the small round faces in menus */
+function drawGirlHead(face, look=null){ return drawGirl(face,{},{},look).replace(/viewBox="[^"]*"/,'viewBox="12 2 96 96"'); }
+
+    return {drawGirlHead, lookFor, HAIR_COLORS, HAIR_SPECIALS};
+  })();
   const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
   const FACES={
     lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
@@ -484,7 +614,14 @@ function answer(S, value){
   const kid=()=>KIDS.find(k=>k.id===kidId)||null;
   const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const avatar=k=>`<span class="sh-av" style="background:${accentOf(k)}">${FACES[k.face]||FACES.lili}</span>`;
+  /* her look (hair style, colour, specials she bought) is kept per girl and synced like everything under mk: */
+  const lookOf=(id=kidId)=>{ const k=KIDS.find(x=>x.id===id); return GL.lookFor(k?.face||id, get('mk:look:'+id,null)); };
+  const saveLook=(look,id=kidId)=>{ put('mk:look:'+id,look); renderBar(); renderOv(); };
+  function buyLook(itemId,id=kidId){ // a happy colour or a special: pay once, then it's hers
+    const it=[...GL.HAIR_COLORS,...GL.HAIR_SPECIALS].find(x=>x.id===itemId); const L=lookOf(id);
+    if(!it||L.owned.includes(itemId)) return true; if(coins(id)<it.price) return false;
+    addCoins(-it.price,id); saveLook({...L, owned:[...L.owned,itemId]},id); return true; }
+  const avatar=k=>`<span class="sh-av" style="background:${accentOf(k)}">${GL.drawGirlHead(k.face,lookOf(k.id))}</span>`;
 
   /* coins live in the girl's home, so the home and the lessons share one purse */
   const homeOf=id=>get('home:'+id,{});
@@ -539,7 +676,7 @@ function answer(S, value){
     // the lessons page is the main page: settings live there. Every other page has a way back to it.
     const start = opts.page==='lessons'
       ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>`
-      : `<a class="sh-back" href="index.html">${IC.back}<span>חזרה</span></a>`;
+      : `<a class="sh-back" href="${opts.back||'index.html'}">${IC.back}<span>חזרה</span></a>`;
     bar.innerHTML=`${start}<h1 class="sh-title">${opts.title||''}</h1>
       ${petHtml()}
       <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
@@ -635,7 +772,7 @@ function answer(S, value){
     renderBar(); renderOv(); return true;
   }
   const isOpen=()=>menu||!!gate;
-  return {start, renderBar:o=>{ Object.assign(opts,o||{}); renderBar(); }, kid, accentOf, coins, addCoins, completeLesson,
+  return {start, renderBar:o=>{ Object.assign(opts,o||{}); renderBar(); }, kid, accentOf, coins, addCoins, completeLesson, lookOf, saveLook, buyLook,
     TOPICS, BUILT, progOf, topicDone, topicOpen, lessonState, saveDiag, isOpen, esc, COIN, IC};
 })();
 
@@ -832,7 +969,7 @@ const ROOM_ITEMS = [
     <rect x="10" y="52" width="200" height="40" rx="10" fill="#F7F3EE"/><rect x="62" y="44" width="152" height="52" rx="12" fill="#6FA8DC"/>
     <path d="M62 60 H214 M62 76 H214" stroke="#5B93C7" stroke-width="3"/><rect x="18" y="34" width="52" height="26" rx="12" fill="#fff"/>
     <rect x="6" y="92" width="210" height="14" rx="5" fill="#B5845C"/></g>`},
-  {cat:'furniture', id:'desk', name:'שולחן ומנורה', price:10, svg:()=>`<g transform="translate(600 210)">
+  {cat:'furniture', id:'desk', name:'שולחן ומנורה', price:10, glow:()=>`<circle cx="664" cy="204" r="80" fill="url(#glow)"/>`, svg:()=>`<g transform="translate(600 210)">
     <rect x="0" y="40" width="170" height="14" rx="4" fill="#C08A5A"/><rect x="10" y="54" width="10" height="70" fill="#A8744A"/><rect x="150" y="54" width="10" height="70" fill="#A8744A"/>
     <rect x="96" y="54" width="54" height="40" rx="4" fill="#B37D50"/><circle cx="123" cy="74" r="3" fill="#7A5232"/>
     <path d="M30 40 L30 8 L54 -6" stroke="#5A6577" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M46 -18 L76 -4 L62 10 Z" fill="#F2B21E"/><ellipse cx="30" cy="40" rx="14" ry="4" fill="#5A6577"/></g>`},
@@ -848,65 +985,177 @@ const ROOM_ITEMS = [
     <rect x="70" y="8" width="14" height="32" transform="rotate(12 77 24)" fill="#7444C9"/><circle cx="122" cy="28" r="12" fill="#FF8A3D"/></g>`},
   {cat:'wall', id:'clock', name:'שעון קיר', price:4, svg:()=>`<g transform="translate(250 40)"><circle cx="24" cy="24" r="24" fill="#fff" stroke="#5A6577" stroke-width="5"/><path d="M24 24 V10 M24 24 L34 30" stroke="#2A2225" stroke-width="3.5" stroke-linecap="round"/></g>`},
   {cat:'wall', id:'garland', name:'שרשרת דגלים', price:4, svg:()=>`<path d="M20 22 Q200 70 380 22" stroke="#9C6B45" stroke-width="2" fill="none"/>${[0,1,2,3,4,5,6].map(k=>{const x=40+k*48,y=22+Math.sin((k+.5)/7*Math.PI)*34;return `<path d="M${x-12} ${y} L${x+12} ${y} L${x} ${y+24}Z" fill="${['#E8577E','#F2B21E','#3E7BD8','#6CC08B'][k%4]}"/>`}).join('')}`},
+  {cat:'furniture', id:'nightlamp', name:'מנורת לילה', price:6, svg:()=>`<g transform="translate(296 286)"><ellipse cx="22" cy="72" rx="20" ry="5" fill="rgba(0,0,0,.12)"/><rect x="18" y="30" width="8" height="40" rx="3" fill="#9C6B45"/><rect x="8" y="66" width="28" height="7" rx="3" fill="#7A5232"/><path d="M4 32 Q22 -6 40 32Z" fill="#FFE29A" stroke="#E0A800" stroke-width="2"/></g>`,
+    glow:()=>`<circle cx="318" cy="306" r="70" fill="url(#glow)"/>`},
   // plants
   {cat:'plant', id:'plant', name:'עציץ', price:4, svg:()=>`<g transform="translate(250 250)"><path d="M6 50 L42 50 L36 84 L12 84Z" fill="#C8743A"/><path d="M24 50 Q8 20 22 0 Q30 24 24 50Z M24 50 Q40 18 54 16 Q46 40 24 50Z M24 50 Q2 34 -6 16 Q18 22 24 50Z" fill="#43A047"/></g>`},
   {cat:'plant', id:'cactus', name:'קקטוס', price:3, svg:()=>`<g transform="translate(726 196)"><rect x="0" y="40" width="34" height="18" rx="3" fill="#E8577E"/><rect x="10" y="4" width="14" height="40" rx="7" fill="#4CAF50"/><path d="M10 22 H2 V12" stroke="#4CAF50" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M24 26 H32 V16" stroke="#4CAF50" stroke-width="8" fill="none" stroke-linecap="round"/></g>`},
   {cat:'plant', id:'sunflower', name:'חמנייה', price:5, svg:()=>`<g transform="translate(530 196)"><path d="M18 120 V30" stroke="#43A047" stroke-width="5"/><path d="M18 80 Q4 70 2 58 Q16 62 18 80Z" fill="#43A047"/><g fill="#FFC107">${[0,1,2,3,4,5,6,7].map(k=>`<ellipse cx="18" cy="12" rx="6" ry="13" transform="rotate(${k*45} 18 26)"/>`).join('')}</g><circle cx="18" cy="26" r="9" fill="#795548"/><path d="M4 120 H32 L28 140 H8Z" fill="#9C6B45"/></g>`}
 ];
-const ROOM_CATS = [{id:'wallpaper',name:'טפטים'},{id:'furniture',name:'רהיטים'},{id:'wall',name:'לקיר'},{id:'plant',name:'צמחים'},{id:'object',name:'חפצים'},{id:'pet',name:'חיות מחמד'}];
+const ROOM_CATS = [{id:'wallpaper',name:'טפטים'},{id:'floor',name:'רצפות'},{id:'curtain',name:'וילונות'},{id:'furniture',name:'רהיטים'},{id:'wall',name:'לקיר'},{id:'plant',name:'צמחים'},{id:'object',name:'חפצים'},{id:'pet',name:'חיות מחמד'}];
 const WEAR_CATS = [{id:'outfit',name:'בגדים'},{id:'hair',name:'תסרוקות'},{id:'hat',name:'כובעים'},{id:'glasses',name:'משקפיים'}];
 
-/* where pets and held objects go in the room (they're drawn in the character frame, so we crop and place them) */
+/* where things stand by default: a box (x, y, w, h) in room coordinates for each item.
+   Anything can be dragged later; its offset is kept per item in the home's state (pos[id] = {dx, dy, flip}). */
+const ITEM_BOX={bed:[8,210,230,120],desk:[590,180,190,160],armchair:[136,256,120,110],'rug-round':[200,330,400,100],picture:[100,50,130,100],bookshelf:[550,80,170,70],clock:[244,34,60,60],garland:[10,10,380,70],plant:[236,244,80,96],cactus:[720,190,46,70],sunflower:[520,180,60,160],nightlamp:[296,280,48,84]};
 const PET_SPOTS=[[96,330],[560,346],[236,356],[660,350]];
 const OBJ_SPOTS={balloon:[200,40,70,150,'140 20 70 160'], ball:[470,350,60,60,'150 196 50 44'], wand:[650,150,46,110,'150 100 56 100'], flower:[580,190,50,110,'150 100 50 100']};
 const FRIEND_SPOTS=[[660,236,76],[248,236,78],[600,262,70],[170,270,70],[440,282,58],[680,286,60],[60,290,60],[360,296,52]];
+const MAIN_BOX=[378,200,122,146], GIRL_BOX=[506,66,150,280];
 
+/* curtains and floors: one free of each kind, the special ones in the shop */
+const CURTAINS=[
+  {id:'cu-pink',name:'וילון ורוד',price:0,color:'#F4A9B8'},
+  {id:'cu-blue',name:'וילון תכלת',price:0,color:'#9CC9F0'},
+  {id:'cu-yellow',name:'וילון צהוב',price:0,color:'#FFD873'},
+  {id:'cu-stars',name:'וילון כוכבים',price:6,color:'#7E6BC4',def:'<pattern id="pcu-stars" width="26" height="26" patternUnits="userSpaceOnUse"><rect width="26" height="26" fill="#7E6BC4"/><path d="M8 3l1.6 3.4 3.7.4-2.8 2.5.8 3.6L8 11.1l-3.3 1.8.8-3.6L2.7 6.8l3.7-.4z" fill="#FFE082"/><circle cx="20" cy="19" r="1.8" fill="#fff"/></pattern>'},
+  {id:'cu-flowers',name:'וילון פרחים',price:6,color:'#B7E4C7',def:'<pattern id="pcu-flowers" width="28" height="28" patternUnits="userSpaceOnUse"><rect width="28" height="28" fill="#B7E4C7"/><g fill="#F48FB1"><circle cx="9" cy="6" r="3"/><circle cx="13" cy="10" r="3"/><circle cx="9" cy="14" r="3"/><circle cx="5" cy="10" r="3"/></g><circle cx="9" cy="10" r="2.4" fill="#FFD54F"/><circle cx="22" cy="22" r="2.4" fill="#fff"/></pattern>'},
+  {id:'cu-rainbow',name:'וילון קשת',price:9,color:'#F4A9B8',def:'<pattern id="pcu-rainbow" width="12" height="60" patternUnits="userSpaceOnUse"><rect width="2" height="60" fill="#EF5350"/><rect x="2" width="2" height="60" fill="#FFA726"/><rect x="4" width="2" height="60" fill="#FFEE58"/><rect x="6" width="2" height="60" fill="#66BB6A"/><rect x="8" width="2" height="60" fill="#42A5F5"/><rect x="10" width="2" height="60" fill="#AB47BC"/></pattern>'}];
+const curtainFill=c=>c.def?`url(#pcu-${c.id.slice(3)})`:c.color;
+const FLOORS=[
+  {id:'fl-wood',name:'פרקט עץ',type:'wood',price:0,base:'#DDBB91',line:'#C9A378'},
+  {id:'fl-carpet',name:'שטיח בז׳',type:'carpet',price:0,base:'#E9DCC8',line:'#D3C2A8'},
+  {id:'fl-tiles',name:'אריחים לבנים',type:'tiles',price:0,base:'#F4F4F0',line:'#D2D5CF'},
+  {id:'fl-grass',name:'דשא',type:'grass',price:0,base:'#9ED27F',line:'#77B257'},
+  {id:'fl-wood-dark',name:'פרקט כהה',type:'wood',price:6,base:'#9B6B47',line:'#7E5536'},
+  {id:'fl-wood-white',name:'פרקט לבן',type:'wood',price:6,base:'#EFE6DA',line:'#D6C7B2'},
+  {id:'fl-carpet-pink',name:'שטיח ורוד',type:'carpet',price:7,base:'#F6C1D1',line:'#E79DB4'},
+  {id:'fl-carpet-blue',name:'שטיח כחול',type:'carpet',price:7,base:'#A9C8F0',line:'#86AFE2'},
+  {id:'fl-tiles-mint',name:'אריחי מנטה',type:'tiles',price:7,base:'#CDEFE0',line:'#A5D9C2'},
+  {id:'fl-tiles-check',name:'משבצות',type:'tiles',price:9,base:'#FFFFFF',line:'#D2D5CF',check:'#3B4556'},
+  {id:'fl-grass-flowers',name:'דשא עם פרחים',type:'grass',price:9,base:'#9ED27F',line:'#77B257',flowers:true}];
 // wooden planks: rows every 38, joints staggered row by row
 const FLOOR=(()=>{ let d=''; for(let k=0,y=306;y<1200;k++,y+=38){ d+=`M-800 ${y+34} H1600 `; for(let x=-780+(k%3)*140;x<1600;x+=300) d+=`M${x} ${y} V${y+34} `; } return d; })();
-function roomSvg({animal, worn, wornBy={}, wallpaper, items, friends, preview, girl}){
+const TILES=(()=>{ let d=''; for(let y=306;y<1200;y+=64) d+=`M-800 ${y} H1600 `; for(let x=-800;x<1600;x+=64) d+=`M${x} 306 V1200 `; return d; })();
+function floorSvg(f, x0=-800, y0=306, w=2400, h=900){
+  const pid='pfl-'+f.id;
+  if(f.type==='wood') return `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="${f.base}"/><path d="${FLOOR}" stroke="${f.line}" stroke-width="3"/>`;
+  if(f.type==='tiles') return `${f.check?`<defs><pattern id="${pid}" width="128" height="128" patternUnits="userSpaceOnUse" y="306"><rect width="128" height="128" fill="${f.base}"/><rect width="64" height="64" fill="${f.check}"/><rect x="64" y="64" width="64" height="64" fill="${f.check}"/></pattern></defs>`:''}
+    <rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="${f.check?`url(#${pid})`:f.base}"/><path d="${TILES}" stroke="${f.line}" stroke-width="2.5"/>`;
+  if(f.type==='carpet') return `<defs><pattern id="${pid}" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="${f.base}"/><circle cx="5" cy="6" r="1.6" fill="${f.line}"/><circle cx="16" cy="17" r="1.6" fill="${f.line}"/></pattern></defs><rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="url(#${pid})"/>`;
+  return `<defs><pattern id="${pid}" width="34" height="30" patternUnits="userSpaceOnUse"><rect width="34" height="30" fill="${f.base}"/><path d="M6 24 l2 -9 M10 24 l-1 -8 M24 12 l2 -8 M28 12 l-1 -7" stroke="${f.line}" stroke-width="2" stroke-linecap="round"/>${f.flowers?'<circle cx="18" cy="22" r="2.6" fill="#fff"/><circle cx="18" cy="22" r="1.2" fill="#FFD54F"/><circle cx="4" cy="8" r="2.4" fill="#F48FB1"/>':''}</pattern></defs><rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="url(#${pid})"/>`;
+}
+const floorThumb=f=>`<svg viewBox="0 306 120 90">${floorSvg(f,0,306,120,90)}</svg>`;
+function windowSvg({night, curtain, open, act=true}){
+  const c=CURTAINS.find(x=>x.id===curtain)||CURTAINS[0], fill=curtainFill(c);
+  const sky = night ? `<rect x="320" y="34" width="160" height="124" rx="8" fill="#1E2A5A"/><circle cx="452" cy="64" r="13" fill="#FFF3C4"/><circle cx="458" cy="60" r="11" fill="#1E2A5A"/><g fill="#fff"><circle cx="346" cy="58" r="1.8"/><circle cx="372" cy="120" r="1.6"/><circle cx="428" cy="112" r="2"/><circle cx="362" cy="84" r="1.3"/><circle cx="470" cy="130" r="1.5"/></g>`
+                    : `<rect x="320" y="34" width="160" height="124" rx="8" fill="#CDEBFB"/><circle cx="452" cy="66" r="13" fill="#FFE082"/>`;
+  const panels = open ? `<path d="M308 28 Q330 90 316 166 L300 166 L300 28Z M492 28 Q470 90 484 166 L500 166 L500 28Z" fill="${fill}"/>`
+    : `<path d="M300 28 H402 V166 H300Z M398 28 H500 V166 H398Z" fill="${fill}"/><path d="M325 30 V164 M352 30 V164 M378 30 V164 M424 30 V164 M450 30 V164 M476 30 V164" stroke="rgba(0,0,0,.08)" stroke-width="3"/><path d="M400 28 V166" stroke="rgba(0,0,0,.18)" stroke-width="2"/>`;
+  // the whole window is the button: a click anywhere on it opens or closes the curtain
+  return `<g ${act?'data-act="curtain" class="curtain" role="button" aria-label="לפתוח או לסגור את הווילון"':''}>${sky}<rect x="320" y="34" width="160" height="124" rx="8" fill="none" stroke="#fff" stroke-width="10"/><path d="M400 34 V158 M320 96 H480" stroke="#fff" stroke-width="6"/>
+    ${panels}<rect x="290" y="22" width="220" height="10" rx="5" fill="#9C6B45"/></g>`;
+}
+const curtainThumb=c=>`<svg viewBox="290 18 220 152"><defs>${c.def||''}</defs>${windowSvg({curtain:c.id, open:true, act:false})}</svg>`;
+
+/* asleep: closed eyes drawn over a character (character coordinates, eyes at 78,100 and 122,100) */
+function sleepEyes(a){ const A=ANIMALS[a]; const cover=a==='owl'?A.light:a==='panda'?A.dark:A.fur, r=a==='owl'?19:a==='panda'?12:10;
+  return `<circle cx="78" cy="100" r="${r}" fill="${cover}"/><circle cx="122" cy="100" r="${r}" fill="${cover}"/><path d="M69 99 Q78 107 87 99 M113 99 Q122 107 131 99" stroke="${a==='panda'?'#fff':'#2A2225'}" stroke-width="3" fill="none" stroke-linecap="round"/>`; }
+
+/* zones: wall things stay on the wall, everything else on the floor (objects such as a balloon may go anywhere) */
+function clampMove(e,dx,dy){ const [x,y,w,h]=e.box, cx=x+w/2;
+  dx=Math.max(-cx+20,Math.min(780-cx,dx));
+  if(e.zone==='wall') dy=Math.max(-120-y,Math.min(290-(y+h),dy));
+  else if(e.zone==='floor'){ const foot=y+h, lo=Math.min(foot,312); dy=Math.max(lo-foot,Math.min(470-foot,dy)); }
+  else dy=Math.max(-120-y,Math.min(470-(y+h),dy));
+  return [Math.round(dx),Math.round(dy)]; }
+const entTransform=(e,p={})=>{ const [x,,w]=e.box, cx=x+w/2; return `translate(${p.dx||0} ${p.dy||0})${p.flip?` translate(${cx} 0) scale(-1 1) translate(${-cx} 0)`:''}`; };
+
+/* everything that stands in the room, with its box and zone (used to draw and to drag) */
+function roomEntities({animal, worn, wornBy={}, items, friends, preview, girl, stored=[], night}){
+  const A=ANIMALS[animal], show=new Set(items); if(preview && (ROOM_ITEMS.some(r=>r.id===preview)||itemById(preview))) show.add(preview);
+  const has=id=>show.has(id)&&!stored.includes(id), strip=s=>s.replace(/^<svg[^>]*>|<\/svg>$/g,''), wearOnly=w=>Object.fromEntries(Object.entries(w||{}).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
+  const ents=[];
+  ROOM_ITEMS.filter(r=>has(r.id)).forEach(r=>ents.push({id:r.id, box:ITEM_BOX[r.id], zone:r.cat==='wall'?'wall':'floor', under:r.layer==='under', svg:r.svg(), glow:night&&r.glow?r.glow():''}));
+  Object.entries(OBJ_SPOTS).filter(([id])=>has(id)).forEach(([id,[x,y,w,h,vb]])=>ents.push({id, box:[x,y,w,h], zone:'any', svg:`<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${vb}">${itemById(id).svg(A)}</svg>`}));
+  ITEMS.filter(i=>i.cat==='pet' && show.has(i.id)).forEach((i,k)=>{ if(!has(i.id)) return; const [x,y]=PET_SPOTS[k%4];
+    ents.push({id:i.id, box:[x,y,90,80], zone:'floor', svg:`<ellipse cx="${x+45}" cy="${y+74}" rx="38" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="90" height="78" viewBox="0 180 72 62">${i.svg(A)}</svg>`}); });
+  const charSvg=(a,w,[x,y,wd,ht],prev={})=>`<svg x="${x}" y="${y}" width="${wd}" height="${ht}" viewBox="-6 -18 216 260">${strip(drawChar(a,wearOnly(w),prev))}${night?sleepEyes(a):''}</svg>`;
+  (friends||[]).slice(0,8).forEach((a,k)=>{ const id='a:'+a; if(stored.includes(id)) return; const [x,y,w]=FRIEND_SPOTS[k];
+    ents.push({id, box:[x,y,w,w*1.2], zone:'floor', friend:a, svg:charSvg(a,wornBy[a],[x,y,w,w*1.2])}); });
+  const pv=preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {};
+  ents.push({id:'main', box:MAIN_BOX, zone:'floor', svg:charSvg(animal,worn,MAIN_BOX,pv)});
+  if(girl){ const [x,y,w,h]=GIRL_BOX; ents.push({id:'girl', box:GIRL_BOX, zone:'floor', svg:`<ellipse cx="${x+74}" cy="${y+276}" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}, girl.look))}</svg>`}); }
+  return ents;
+}
+
+function roomSvg(o){
+  const {animal, wallpaper, preview, pos={}, arrange=false, sel=null, night=false, curtain='cu-pink', curtainOpen=true, floor='fl-wood'}=o;
   const A = ANIMALS[animal];
-  const wp = WALLPAPERS.find(w=>w.id===wallpaper) || WALLPAPERS[0];
-  const show = new Set(items); if(preview && !WALLPAPERS.some(w=>w.id===preview)) show.add(preview);
-  const wpShow = preview && WALLPAPERS.some(w=>w.id===preview) ? WALLPAPERS.find(w=>w.id===preview) : wp;
-  const has = id => show.has(id);
-  const roomItem = id => ROOM_ITEMS.find(r=>r.id===id);
-  const under = ROOM_ITEMS.filter(r=>r.layer==='under' && has(r.id)).map(r=>r.svg()).join('');
-  const back  = ROOM_ITEMS.filter(r=>r.layer!=='under' && has(r.id)).map(r=>r.svg()).join('');
-  const objs = Object.entries(OBJ_SPOTS).filter(([id])=>has(id)).map(([id,[x,y,w,h,vb]])=>`<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${vb}">${itemById(id).svg(A)}</svg>`).join('');
-  const pets = ITEMS.filter(i=>i.cat==='pet' && has(i.id)).map((i,k)=>{ const [x,y]=PET_SPOTS[k%4];
-    return `<ellipse cx="${x+45}" cy="${y+74}" rx="38" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="90" height="78" viewBox="0 180 72 62">${i.svg(A)}</svg>`; }).join('');
-  const strip = s => s.replace(/^<svg[^>]*>|<\/svg>$/g,'');
-  const fr = (friends||[]).slice(0,8).map((a,k)=>{ const [x,y,w]=FRIEND_SPOTS[k];
-    return `<g class="friend" data-act="animal" data-v="${a}" role="button" aria-label="לעבור ל${ANIMALS[a].name}"><svg x="${x}" y="${y}" width="${w}" height="${w*1.2}" viewBox="-6 -18 216 260">${strip(drawChar(a,Object.fromEntries(Object.entries(wornBy[a]||{}).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)))))}</svg></g>`; }).join('');
-  const wearOnly = Object.fromEntries(Object.entries(worn).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
-  return `<svg class="scene" viewBox="0 0 800 440" preserveAspectRatio="xMidYMax meet" role="img" aria-label="החדר של ה${A.name}">
-    <defs>${WALLPAPERS.map(w=>w.def).join('')}</defs>
+  const isWp=id=>WALLPAPERS.some(w=>w.id===id), isFl=id=>FLOORS.some(f=>f.id===id), isCu=id=>CURTAINS.some(c=>c.id===id);
+  const wpShow = WALLPAPERS.find(w=>w.id===(preview&&isWp(preview)?preview:wallpaper)) || WALLPAPERS[0];
+  const flShow = FLOORS.find(f=>f.id===(preview&&isFl(preview)?preview:floor)) || FLOORS[0];
+  const cuShow = preview&&isCu(preview) ? preview : curtain;
+  const ents=roomEntities(o);
+  const foot=e=>e.box[1]+e.box[3]+(pos[e.id]?.dy||0);
+  const order=[...ents.filter(e=>e.under), ...ents.filter(e=>!e.under&&e.zone==='wall'), ...ents.filter(e=>!e.under&&e.zone!=='wall').sort((a,b)=>foot(a)-foot(b))];
+  const g=e=>`<g class="ent ${arrange?'drag':''} ${e.friend&&!arrange?'friend':''}" data-ent="${e.id}" data-box="${e.box.join(',')}" data-zone="${e.zone}" transform="${entTransform(e,pos[e.id])}" ${e.friend&&!arrange?`data-act="animal" data-v="${e.friend}" role="button" aria-label="לעבור ל${ANIMALS[e.friend].name}"`:''}>${e.svg}</g>`;
+  const glows=night?ents.filter(e=>e.glow).map(e=>`<g transform="${entTransform(e,pos[e.id])}">${e.glow}</g>`).join(''):'';
+  const se=arrange&&sel?ents.find(e=>e.id===sel):null;
+  const selBox=se?`<g transform="${entTransform(se,pos[se.id])}" pointer-events="none"><rect x="${se.box[0]-6}" y="${se.box[1]-6}" width="${se.box[2]+12}" height="${se.box[3]+12}" rx="10" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="8 6"/></g>`:'';
+  return `<svg class="scene ${arrange?'arranging':''}" viewBox="0 0 800 440" preserveAspectRatio="xMidYMax meet" role="img" aria-label="החדר של ה${A.name}">
+    <defs>${WALLPAPERS.map(w=>w.def).join('')}${CURTAINS.map(c=>c.def||'').join('')}<radialGradient id="glow"><stop offset="0" stop-color="#FFE9A8" stop-opacity=".75"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/></radialGradient></defs>
     <rect x="-800" y="-700" width="2400" height="1000" fill="${wpShow.fill}"/>
-    <rect x="320" y="34" width="160" height="124" rx="8" fill="#CDEBFB" stroke="#fff" stroke-width="10"/>
-    <path d="M400 34 V158 M320 96 H480" stroke="#fff" stroke-width="6"/><circle cx="452" cy="66" r="13" fill="#FFE082"/>
-    <path d="M308 28 Q330 90 316 166 L300 166 L300 28Z M492 28 Q470 90 484 166 L500 166 L500 28Z" fill="#F4A9B8"/>
-    <rect x="290" y="22" width="220" height="10" rx="5" fill="#9C6B45"/>
+    ${windowSvg({night, curtain:cuShow, open:curtainOpen})}
     <rect x="-800" y="292" width="2400" height="14" fill="#fff"/>
-    <rect x="-800" y="306" width="2400" height="900" fill="#DDBB91"/>
-    <path d="${FLOOR}" stroke="#C9A378" stroke-width="3"/>
-    ${under}${back}${objs}
-    <svg x="378" y="200" width="122" height="146" viewBox="-6 -18 216 260">${strip(drawChar(animal, wearOnly, preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {}))}</svg>
-    ${girl?`<ellipse cx="580" cy="342" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="506" y="66" width="150" height="280" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}))}</svg>`:''}
-    ${fr}${pets}
+    ${floorSvg(flShow)}
+    ${order.map(g).join('')}
+    ${night?'<rect x="-800" y="-700" width="2400" height="1900" fill="#0B1640" opacity=".38" pointer-events="none"/>':''}
+    ${glows}${selBox}
   </svg>`;
 }
 
 /* The girl herself, standing in her home next to her animal, dressed from the shop's "לעצמי" side.
    One geometry for both girls (viewBox 0 0 120 224: head centre 60,56 r34, shoulders y98, feet y214);
    only hair and skin differ, so every item fits both. Items are drawn in fixed layers. */
-const GIRLS={
-  lili:{skin:'#F6CFAE',
-    back:`<circle cx="28" cy="30" r="14" fill="#6B3E26"/><circle cx="92" cy="30" r="14" fill="#6B3E26"/><circle cx="35" cy="38" r="4.5" fill="#F2B21E"/><circle cx="85" cy="38" r="4.5" fill="#F2B21E"/>`,
-    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C90 46 80 40 70 40 C66 46 58 48 50 44 C40 44 30 48 26 58Z" fill="#6B3E26"/>`},
-  nori:{skin:'#E9B98F',
-    back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L98 106 Q60 114 22 106Z" fill="#2E2A33"/>`,
-    front:`<path d="M26 56 C28 30 44 21 60 21 C78 21 92 32 94 56 C80 52 70 42 66 33 C60 44 44 52 26 56Z" fill="#2E2A33"/><path d="M82 24 l9-6 -1 11z M82 24 l11 3 -8 6z" fill="#E8457A"/><circle cx="84" cy="26" r="3" fill="#C72F63"/>`}
-};
+const GIRLS={lili:{skin:'#F6CFAE'}, nori:{skin:'#E9B98F'}, test:{skin:'#F1C9A5'}};
+/* her look: a hairstyle and a hair colour (free), plus happy colours and specials bought in the shop.
+   Every style is a back part (behind the head and body) and a front part (over the forehead), drawn for the
+   same head (centre 60,56 r34), so hats, ears, the flower and glasses sit on top of any of them. */
+const HAIR_STYLES=[
+  {id:'long', name:'פזור ארוך', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L98 106 Q60 114 22 106Z"/>`,
+    front:`<path d="M26 56 C28 30 44 21 60 21 C78 21 92 32 94 56 C80 52 70 42 66 33 C60 44 44 52 26 56Z"/>`, ties:[]},
+  {id:'buns', name:'שתי בובות', back:`<circle cx="28" cy="30" r="14"/><circle cx="92" cy="30" r="14"/>`,
+    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C90 46 80 40 70 40 C66 46 58 48 50 44 C40 44 30 48 26 58Z"/>`, ties:[[35,38],[85,38]]},
+  {id:'pony', name:'קוקו', back:`<path d="M84 34 C114 34 116 72 104 100 C100 82 96 62 82 44Z"/><circle cx="90" cy="33" r="9"/>`,
+    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C88 44 76 36 60 36 C46 36 34 44 26 58Z"/>`, ties:[[92,34]]},
+  {id:'braid', name:'צמה', back:`<path d="M26 60 C24 30 42 20 60 20 C78 20 96 30 94 60Z"/>${[[91,64],[94,78],[96,92],[97,106]].map(([x,y],k)=>`<ellipse cx="${x}" cy="${y}" rx="8" ry="8.5" transform="rotate(${k%2?-18:18} ${x} ${y})"/>`).join('')}<path d="M95 116 l4 10 l3-10z"/>`,
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[97,114]]},
+  {id:'curly', name:'תלתלים', back:[[30,30,13],[44,19,13],[60,15,13],[76,19,13],[90,30,13],[97,46,12],[23,46,12],[98,63,11],[22,63,11],[96,79,10],[24,79,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''),
+    front:[[33,42,8],[45,33,8.5],[60,30,9],[75,33,8.5],[87,42,8]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''), ties:[]},
+  {id:'short', name:'קצר', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L97 84 Q91 91 84 83 L36 83 Q29 91 23 84Z"/>`,
+    front:`<path d="M26 54 C25 30 42 20 60 20 C78 20 95 30 94 54 C80 46 40 46 26 54Z"/>`, ties:[]},
+  {id:'pigtails', name:'קוקיות', back:`<path d="M24 48 C6 58 6 92 16 106 C21 88 26 72 31 58Z"/><path d="M96 48 C114 58 114 92 104 106 C99 88 94 72 89 58Z"/>`,
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[27,52],[93,52]]}
+];
+const HAIR_COLORS=[
+  {id:'black', name:'שחור', fill:'#1F1B24', price:0},{id:'dark', name:'כהה', fill:'#2E2A33', price:0},
+  {id:'darkbrown', name:'חום כהה', fill:'#4A2C1D', price:0},{id:'brown', name:'חום', fill:'#6B3E26', price:0},
+  {id:'lightbrown', name:'חום בהיר', fill:'#A0673A', price:0},{id:'blonde', name:'בלונדיני', fill:'#E2B85C', price:0},
+  {id:'ginger', name:'ג׳ינג׳י', fill:'#C2562A', price:0},
+  {id:'pink', name:'ורוד', fill:'#F28DB2', price:8},{id:'purple', name:'סגול', fill:'#9B6BD6', price:8},{id:'sky', name:'תכלת', fill:'#7CC6F0', price:8}
+];
+const HAIR_SPECIALS=[
+  {id:'rainbow', name:'שיער בצבע קשת', price:15, kind:'color'},
+  {id:'glitter', name:'נצנצים בשיער', price:10, kind:'toggle'},
+  {id:'ribbon', name:'קוקו עם סרט', price:8, kind:'toggle'},
+  {id:'bow', name:'פפיון ורוד', price:6, kind:'toggle'}
+];
+const DEFAULT_LOOKS={lili:{hair:'buns',color:'brown',owned:[]}, nori:{hair:'long',color:'dark',bow:true,owned:['bow']}, test:{hair:'long',color:'pink',owned:['pink']}};
+const lookFor=(face,look)=>({...(DEFAULT_LOOKS[face]||DEFAULT_LOOKS.lili),...(look||{})});
+let hairGrad=0;
+function hairSvg(look){ // returns {defs, back, front, top}
+  const st=HAIR_STYLES.find(h=>h.id===look.hair)||HAIR_STYLES[0];
+  let fill=(HAIR_COLORS.find(c=>c.id===look.color)||HAIR_COLORS[3]).fill, defs='';
+  if(look.color==='rainbow'){ const id='hrb'+(++hairGrad); fill=`url(#${id})`;
+    defs=`<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">${['#F25C5C','#F5A142','#F2D24B','#5CC97B','#4FA3E8','#9B6BD6'].map((c,k)=>`<stop offset="${k/5}" stop-color="${c}"/>`).join('')}</linearGradient>`; }
+  const ribbon=(x,y)=>`<path d="M${x} ${y} l-13 -9 l1 18z M${x} ${y} l13 -9 l-1 18z" fill="#E8457A"/><circle cx="${x}" cy="${y}" r="4.2" fill="#C72F63"/>`;
+  const ties=st.ties.map(([x,y])=>look.ribbon?ribbon(x,y):`<circle cx="${x}" cy="${y}" r="4.5" fill="#F2B21E"/>`).join('');
+  const bow=look.bow&&!(look.ribbon&&st.ties.length)?`<path d="M82 24 l9-6 -1 11z M82 24 l11 3 -8 6z" fill="#E8457A"/><circle cx="84" cy="26" r="3" fill="#C72F63"/>`:'';
+  const spark=(x,y)=>`<path d="M${x} ${y-4} L${x+1.2} ${y-1.2} L${x+4} ${y} L${x+1.2} ${y+1.2} L${x} ${y+4} L${x-1.2} ${y+1.2} L${x-4} ${y} L${x-1.2} ${y-1.2}Z" fill="#fff"/>`;
+  const glitter=look.glitter?[[40,28],[58,23],[78,27],[33,44],[88,42],[50,36],[70,35]].map(([x,y])=>spark(x,y)).join(''):'';
+  return {defs, back:`<g fill="${fill}">${st.back}</g>`, front:`<g fill="${fill}">${st.front}</g>${ties}${bow}${glitter}`};
+}
 const GIRL_CATS=[{id:'g-outfit',name:'בגדים'},{id:'g-shoes',name:'נעליים'},{id:'g-head',name:'לראש'},{id:'g-glasses',name:'משקפיים'}];
 const sleeves=c=>`<path d="M38 98 L27 118 L35 122 L45 106Z M82 98 L93 118 L85 122 L75 106Z" fill="${c}"/>`;
 const longSleeves=c=>`<path d="M40 100 L28 146 M80 100 L92 146" stroke="${c}" stroke-width="12" stroke-linecap="round"/>`;
@@ -944,8 +1193,9 @@ const GIRL_ITEMS=[
 const girlItem=id=>GIRL_ITEMS.find(i=>i.id===id);
 /* where each category is cropped for shop thumbnails */
 const GIRL_CROP={'g-outfit':'4 90 112 126','g-shoes':'22 176 76 44','g-head':'0 -2 120 72','g-glasses':'24 30 72 52'};
-function drawGirl(face, worn={}, preview={}){
-  const G=GIRLS[face]||GIRLS.lili, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
+/* look: {hair, color, glitter, ribbon, bow}; leave it out to get her default look */
+function drawGirl(face, worn={}, preview={}, look=null){
+  const H=hairSvg(lookFor(face,look)), G={...(GIRLS[face]||GIRLS.lili), back:H.defs?`<defs>${H.defs}</defs>${H.back}`:H.back, front:H.front}, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
   const outfit=it('g-outfit'), shoes=it('g-shoes');
   return `<svg viewBox="0 0 120 224" role="img" aria-label="אני">
     ${G.back}
@@ -963,6 +1213,8 @@ function drawGirl(face, worn={}, preview={}){
     ${it('g-head')?it('g-head').svg():''}${it('g-glasses')?it('g-glasses').svg():''}
   </svg>`;
 }
+/* her head alone, for the small round faces in menus */
+function drawGirlHead(face, look=null){ return drawGirl(face,{},{},look).replace(/viewBox="[^"]*"/,'viewBox="12 2 96 96"'); }
 
 const COIN='<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#F2C230" stroke="#C99A12" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#C99A12" stroke-width="1.6"/></svg>';
 const IC={
@@ -972,6 +1224,13 @@ const IC={
   next:'<svg class="ic" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
   prev:'<svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   eye:'<svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  sun:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  move:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>',
+  brush:'<svg class="ic" viewBox="0 0 24 24"><path d="M14 4l6 6-8 8H6v-6z"/><path d="M12 6l6 6"/></svg>',
+  check:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  flip:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-5 5 5 5V7zM16 7l5 5-5 5V7z"/></svg>',
+  box:'<svg class="ic" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>',
   bag:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></svg>'
 };
 const GIFT=`<svg class="gift" viewBox="0 0 100 100" aria-hidden="true"><rect x="12" y="40" width="76" height="52" rx="6" fill="#E8457A"/><rect x="6" y="28" width="88" height="18" rx="5" fill="#F06292"/><rect x="44" y="28" width="12" height="64" fill="#FFD54F"/><path d="M50 28 C38 8 18 14 30 26 Z M50 28 C62 8 82 14 70 26 Z" fill="#FFD54F"/></svg>`;
@@ -980,7 +1239,7 @@ const FACE=Shell.kid()?.face||'lili';
 
 /* ---------- state per girl ---------- */
 const kidId=Shell.kid()?.id;
-function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, wornBy:{}, girlWorn:{}, coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
+function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, wornBy:{}, girlWorn:{}, pos:{}, stored:[], night:false, curtain:'cu-pink', curtainOpen:true, floor:'fl-wood', ownedFloor:[], ownedCurtain:[], coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
 /* every animal has its own clothes (wornBy); S.worn is the main animal's, kept in step on load, save and switch */
 function load(id){ let s; try{ s=JSON.parse(localStorage.getItem('home:'+id)||'null'); }catch(e){} s=s?{...fresh(),...s}:fresh();
   s.wornBy ||= {}; if(!Object.keys(s.wornBy).length && Object.keys(s.worn||{}).length) s.wornBy[s.animal]=s.worn; // from before
@@ -990,6 +1249,7 @@ let seenTs=0;
 function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); seenTs=tsNow(); }catch(e){} }
 function refresh(){ if(tsNow()>seenTs){ S=load(kidId); seenTs=tsNow(); return true; } return false; }
 let S=load(kidId); seenTs=tsNow();
+let arrange=false, sel=null, drag=null;
 let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, banner=null, bannerT=0, modal=null, offer=null;
 const T={ms:0,from:null,running:false,used:false};
 
@@ -1056,25 +1316,25 @@ function settle(q, solved, reveal){
   if(box) openBox();
 }
 /* ---------- surprise box: choose 1 of 3 things she doesn't have yet ---------- */
-const ALL_BUY=()=>[...WALLPAPERS.filter(w=>w.price>0).map(w=>({...w,kind:'wallpaper'})), ...ROOM_ITEMS.map(i=>({...i,kind:'room'})), ...ITEMS.map(i=>({...i,kind:i.cat==='pet'||i.cat==='object'?'room':'wear'})), ...GIRL_ITEMS.map(i=>({...i,kind:'me'}))];
+const ALL_BUY=()=>[...WALLPAPERS.filter(w=>w.price>0).map(w=>({...w,kind:'wallpaper'})), ...FLOORS.filter(f=>f.price>0).map(f=>({...f,kind:'floor'})), ...CURTAINS.filter(c=>c.price>0).map(c=>({...c,kind:'curtain'})), ...ROOM_ITEMS.map(i=>({...i,kind:'room'})), ...ITEMS.map(i=>({...i,kind:i.cat==='pet'||i.cat==='object'?'room':'wear'})), ...GIRL_ITEMS.map(i=>({...i,kind:'me'}))];
 function openBox(){
   const left=ALL_BUY().filter(i=>!isOwned(i.id)); if(!left.length) return;
   offer=left.sort(()=>Math.random()-.5).slice(0,3).map(i=>i.id); modal='box';
 }
-function isOwned(id){ return S.items.includes(id) || (S.ownedWp||[]).includes(id); }
+function isOwned(id){ return S.items.includes(id) || (S.ownedWp||[]).includes(id) || (S.ownedFloor||[]).includes(id) || (S.ownedCurtain||[]).includes(id); }
 function thumb(id){
   const wp=WALLPAPERS.find(w=>w.id===id); if(wp) return `<svg viewBox="0 0 120 90"><defs>${wp.def}</defs><rect width="120" height="90" rx="8" fill="${wp.fill}"/></svg>`;
+  const fl=FLOORS.find(f=>f.id===id); if(fl) return floorThumb(fl);
+  const cu=CURTAINS.find(c=>c.id===id); if(cu) return curtainThumb(cu);
   const ri=ROOM_ITEMS.find(x=>x.id===id); if(ri) return thumbRoom(ri);
-  const gi=girlItem(id); if(gi) return drawGirl(FACE,{},{[gi.cat]:id}).replace(/viewBox="[^"]*"/,`viewBox="${GIRL_CROP[gi.cat]}"`);
+  const gi=girlItem(id); if(gi) return drawGirl(FACE,{},{[gi.cat]:id},LOOK()).replace(/viewBox="[^"]*"/,`viewBox="${GIRL_CROP[gi.cat]}"`);
   const it=itemById(id); if(!it) return '';
   if(it.cat==='pet') return `<svg viewBox="0 180 72 62">${it.svg(ANIMALS[S.animal])}</svg>`;
   if(it.cat==='object'){ const s=OBJ_SPOTS[id]; return `<svg viewBox="${s[4]}">${it.svg(ANIMALS[S.animal])}</svg>`; }
   return drawChar(S.animal,{},{[it.cat]:id});
 }
-function thumbRoom(ri){ // render the item alone in a frame that fits it
-  const box={bed:'8 210 230 120',desk:'590 180 190 160','armchair':'136 256 120 110','rug-round':'200 330 400 100',picture:'100 50 130 100',bookshelf:'550 80 170 70',clock:'244 34 60 60',garland:'10 10 380 70',plant:'236 244 80 96',cactus:'720 190 46 70',sunflower:'520 180 60 160'}[ri.id];
-  return `<svg viewBox="${box}">${ri.svg()}</svg>`;
-}
+function thumbRoom(ri){ return `<svg viewBox="${ITEM_BOX[ri.id].join(' ')}">${ri.svg()}</svg>`; } // the item alone in a frame that fits it
+const LOOK=()=>Shell.lookOf?.(kidId);
 function priceOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.price:0; }
 function nameOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.name:''; }
 
@@ -1085,15 +1345,19 @@ function shopHtml(){
   if(!cats.some(c=>c.id===tab)) tab=cats[0].id;
   let list;
   if(tab==='wallpaper') list=WALLPAPERS.map(w=>({id:w.id,name:w.name,price:w.price,cat:'wallpaper'}));
+  else if(tab==='floor') list=FLOORS.map(f=>({id:f.id,name:f.name,price:f.price,cat:'floor'}));
+  else if(tab==='curtain') list=CURTAINS.map(c=>({id:c.id,name:c.name,price:c.price,cat:'curtain'}));
   else if(['furniture','wall','plant'].includes(tab)) list=ROOM_ITEMS.filter(i=>i.cat===tab);
   else if(side==='me') list=GIRL_ITEMS.filter(i=>i.cat===tab);
   else list=ITEMS.filter(i=>i.cat===tab);
   const cards=list.map(i=>{
     const own = i.price===0 || isOwned(i.id), can=S.coins>=i.price, isWp=tab==='wallpaper', isWear=side!=='home';
-    const on = isWp ? S.wallpaper===i.id : side==='me' ? S.girlWorn[i.cat]===i.id : isWear ? S.worn[i.cat]===i.id : own;
+    const look = {floor:['floor','useFloor','על הרצפה','לשים על הרצפה'], curtain:['curtain','useCurtain','על החלון','לתלות על החלון']}[tab];
+    const on = look ? S[look[0]]===i.id : isWp ? S.wallpaper===i.id : side==='me' ? S.girlWorn[i.cat]===i.id : isWear ? S.worn[i.cat]===i.id : own;
     let act='';
     if(own){
-      if(isWp) act = on ? '<span class="need">על הקיר</span>' : `<button class="btn primary" data-act="useWp" data-v="${i.id}">לשים על הקיר</button>`;
+      if(look) act = on ? `<span class="need">${look[2]}</span>` : `<button class="btn primary" data-act="${look[1]}" data-v="${i.id}">${look[3]}</button>`;
+      else if(isWp) act = on ? '<span class="need">על הקיר</span>' : `<button class="btn primary" data-act="useWp" data-v="${i.id}">לשים על הקיר</button>`;
       else if(isWear) act=`<button class="btn ${on?'':'primary'}" data-act="${side==='me'?'wearMe':'wear'}" data-v="${i.id}">${on?'להוריד':'ללבוש'}</button>`;
       else act='<span class="need">בחדר</span>';
     } else act=`<div class="acts"><button class="ib eye" data-act="preview" data-v="${i.id}" aria-pressed="${preview===i.id}" aria-label="לראות איך זה נראה" title="לראות איך זה נראה">${IC.eye}</button>
@@ -1120,6 +1384,44 @@ function practiceHtml(){
     <div class="level"><span>רמה ${S.level}: ${LEVELS[S.level].name}</span><span class="bars" aria-hidden="true">${bars}</span></div>
     ${body}${msg?`<p class="msg ${msg.ok?'ok':''}">${msg.text}</p>`:''}</section>`;
 }
+/* tools on the room: day/night, arrange, and the way to the style page */
+function roomTools(){
+  return `<div class="roomtools">
+    <button class="rt" data-act="night" aria-pressed="${!!S.night}" title="${S.night?'יום':'לילה'}" aria-label="${S.night?'להפוך ליום':'להפוך ללילה'}">${S.night?IC.sun:IC.moon}</button>
+    <button class="rt wide ${arrange?'on':''}" data-act="arrange">${arrange?IC.check+'סיימתי':IC.move+'לסדר את החדר'}</button>
+    ${arrange?'':`<a class="rt wide" href="style.html">${IC.brush}לעצב את עצמי</a>`}
+  </div>`;
+}
+const entName=id=>id==='main'?ANIMALS[S.animal].name:id==='girl'?'אני':id.startsWith('a:')?ANIMALS[id.slice(2)].name:nameOf(id)||(ROOM_ITEMS.find(r=>r.id===id)||{}).name||id;
+function storedThumb(id){ if(id.startsWith('a:')) return drawChar(id.slice(2)); return thumb(id); }
+function arrangePanel(){
+  const st=S.stored||[];
+  return `<section class="card arrange"><h2>מסדרות את החדר</h2>
+    <p class="meta">גוררים כל דבר למקום שרוצים. לחיצה על משהו בוחרת אותו.</p>
+    <div class="row arr-row">${sel?`<b>${entName(sel)}</b><button class="btn" data-act="flip">${IC.flip}להפוך</button>${sel!=='main'&&sel!=='girl'?`<button class="btn" data-act="store">${IC.box}לשים במחסן</button>`:''}`:'<span class="meta">עוד לא בחרת כלום.</span>'}
+      <button class="btn ghost" data-act="resetPos">להחזיר הכל למקום</button></div>
+    ${st.length?`<p class="meta" style="margin-top:8px">במחסן:</p><div class="store">${st.map(id=>`<button class="stbtn" data-act="unstore" data-v="${id}" title="להחזיר לחדר"><span class="th">${storedThumb(id)}</span><span>${entName(id)}</span></button>`).join('')}</div>`:''}
+  </section>`;
+}
+/* dragging (arrange mode only): move the group live, keep the offset when the mouse lets go */
+function svgPoint(svg,e){ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+document.addEventListener('pointerdown',e=>{
+  if(!arrange) return; const g=e.target.closest('g.ent'); if(!g) return;
+  const svg=g.ownerSVGElement, id=g.dataset.ent, box=g.dataset.box.split(',').map(Number), p=S.pos[id]||{};
+  drag={id, g, svg, ent:{box, zone:g.dataset.zone}, start:svgPoint(svg,e), dx:p.dx||0, dy:p.dy||0, moved:false};
+  g.setPointerCapture?.(e.pointerId); e.preventDefault();
+});
+document.addEventListener('pointermove',e=>{
+  if(!drag) return; const pt=svgPoint(drag.svg,e);
+  const [dx,dy]=clampMove(drag.ent, drag.dx+pt.x-drag.start.x, drag.dy+pt.y-drag.start.y);
+  if(Math.abs(pt.x-drag.start.x)+Math.abs(pt.y-drag.start.y)>3) drag.moved=true;
+  drag.nx=dx; drag.ny=dy; drag.g.setAttribute('transform', entTransform(drag.ent,{...(S.pos[drag.id]||{}),dx,dy}));
+});
+document.addEventListener('pointerup',()=>{
+  if(!drag) return; const d=drag; drag=null; refresh();
+  if(d.moved){ const p=S.pos[d.id] ||= {}; p.dx=d.nx; p.dy=d.ny; save(); }
+  sel=d.id; render();
+});
 /* the room fills the middle column: grow the drawing taller (more wall above, more floor below) or wider */
 function fitRoom(){
   const box=document.querySelector('.room'), svg=box?.querySelector('svg.scene'); if(!svg) return;
@@ -1142,8 +1444,10 @@ function render(){
   document.getElementById('app').innerHTML=`
     ${shopHtml()}
     <div class="col mid">
-      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wornBy:S.wornBy, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
-      <section class="card"><h2>החיות שלי</h2><p class="meta">כל נושא שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
+      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wornBy:S.wornBy, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn, look:LOOK()},
+        pos:S.pos, stored:S.stored, arrange, sel, night:S.night, curtain:S.curtain, curtainOpen:S.curtainOpen, floor:S.floor})}${roomTools()}</div>
+      ${arrange?arrangePanel():''}
+      <section class="card ${arrange?'hide':''}"><h2>החיות שלי</h2><p class="meta">כל נושא שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
         <div class="carousel"><button class="arrow" data-act="scrollAn" data-v="-1" aria-label="חיות קודמות">${IC.next}</button><div class="animals">${anim}</div><button class="arrow" data-act="scrollAn" data-v="1" aria-label="עוד חיות">${IC.prev}</button></div></section>
     </div>
     <aside class="col practice">${practiceHtml()}${Shell.kid()?.trial?`<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div>`:''}</aside>`;
@@ -1160,6 +1464,8 @@ function render(){
 /* ---------- actions ---------- */
 function grant(id){
   if(WALLPAPERS.some(w=>w.id===id)){ (S.ownedWp ||= []).push(id); S.wallpaper=id; }
+  else if(FLOORS.some(f=>f.id===id)){ (S.ownedFloor ||= []).push(id); S.floor=id; }
+  else if(CURTAINS.some(c=>c.id===id)){ (S.ownedCurtain ||= []).push(id); S.curtain=id; }
   else if(girlItem(id)){ S.items.push(id); S.girlWorn[girlItem(id).cat]=id; }
   else { S.items.push(id); const it=itemById(id); if(it && ['outfit','hair','hat','glasses'].includes(it.cat)) S.worn[it.cat]=id; }
 }
@@ -1177,6 +1483,15 @@ const A={
     // the news goes on top of the home, where the new thing just appeared, and fades by itself
     banner=`קנית: ${nameOf(v)}!`; clearTimeout(bannerT); bannerT=setTimeout(()=>{ banner=null; document.querySelector('.banner.ok')?.remove(); },2600); },
   useWp(v){ S.wallpaper=v; save(); },
+  useFloor(v){ S.floor=v; save(); },
+  useCurtain(v){ S.curtain=v; save(); },
+  curtain(){ S.curtainOpen=!S.curtainOpen; save(); },
+  night(){ S.night=!S.night; save(); },
+  arrange(){ arrange=!arrange; sel=null; preview=null; },
+  flip(){ if(!sel) return; const p=S.pos[sel] ||= {}; p.flip=!p.flip; save(); },
+  store(){ if(!sel||sel==='main'||sel==='girl') return; S.stored=[...(S.stored||[]),sel]; sel=null; save(); },
+  unstore(v){ S.stored=(S.stored||[]).filter(x=>x!==v); sel=v; save(); },
+  resetPos(){ S.pos={}; S.stored=[]; sel=null; save(); },
   wear(v){ const it=itemById(v); S.worn[it.cat] = S.worn[it.cat]===v ? undefined : v; save(); },
   wearMe(v){ const c=girlItem(v).cat; S.girlWorn[c] = S.girlWorn[c]===v ? undefined : v; save(); },
   animal(v){ S.wornBy[S.animal]=S.worn; S.animal=v; S.worn=S.wornBy[v] ||= {}; save(); },

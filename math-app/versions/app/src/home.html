@@ -48,6 +48,21 @@ h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
 .room{border-radius:16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .room svg.scene{display:block;width:100%;height:auto}
 .friend{cursor:pointer}
+.curtain{cursor:pointer}
+svg.arranging g.ent{cursor:grab}
+svg.arranging g.ent:active{cursor:grabbing}
+.roomtools{position:absolute;bottom:12px;inset-inline-start:12px;z-index:2;display:flex;gap:8px;flex-wrap:wrap}
+.rt{min-height:44px;min-width:44px;padding:0 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.rt.wide{padding:0 16px}.rt.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.rt[aria-pressed="true"]{background:#1E2A5A;border-color:#1E2A5A;color:#FFF3C4}
+.card.hide{display:none}
+.arrange .arr-row{justify-content:flex-start;align-items:center;margin-top:8px}
+.arrange .btn{min-height:42px;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+.btn.ghost{border-style:dashed;color:var(--muted);margin-inline-start:auto}
+.store{display:flex;gap:8px;overflow-x:auto;padding:4px 2px}
+.stbtn{flex:none;width:84px;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;font-size:12px}
+.stbtn .th{width:70px;height:56px}
+.stbtn:hover{border-color:var(--accent)}
 .preview-tag{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:2px 12px;font-size:14px;font-weight:600}
 /* animals */
 .carousel{display:flex;align-items:center;gap:6px}
@@ -147,6 +162,13 @@ const IC={
   next:'<svg class="ic" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
   prev:'<svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   eye:'<svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  sun:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  move:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>',
+  brush:'<svg class="ic" viewBox="0 0 24 24"><path d="M14 4l6 6-8 8H6v-6z"/><path d="M12 6l6 6"/></svg>',
+  check:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  flip:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-5 5 5 5V7zM16 7l5 5-5 5V7z"/></svg>',
+  box:'<svg class="ic" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>',
   bag:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></svg>'
 };
 const GIFT=`<svg class="gift" viewBox="0 0 100 100" aria-hidden="true"><rect x="12" y="40" width="76" height="52" rx="6" fill="#E8457A"/><rect x="6" y="28" width="88" height="18" rx="5" fill="#F06292"/><rect x="44" y="28" width="12" height="64" fill="#FFD54F"/><path d="M50 28 C38 8 18 14 30 26 Z M50 28 C62 8 82 14 70 26 Z" fill="#FFD54F"/></svg>`;
@@ -155,7 +177,7 @@ const FACE=Shell.kid()?.face||'lili';
 
 /* ---------- state per girl ---------- */
 const kidId=Shell.kid()?.id;
-function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, wornBy:{}, girlWorn:{}, coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
+function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, wornBy:{}, girlWorn:{}, pos:{}, stored:[], night:false, curtain:'cu-pink', curtainOpen:true, floor:'fl-wood', ownedFloor:[], ownedCurtain:[], coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
 /* every animal has its own clothes (wornBy); S.worn is the main animal's, kept in step on load, save and switch */
 function load(id){ let s; try{ s=JSON.parse(localStorage.getItem('home:'+id)||'null'); }catch(e){} s=s?{...fresh(),...s}:fresh();
   s.wornBy ||= {}; if(!Object.keys(s.wornBy).length && Object.keys(s.worn||{}).length) s.wornBy[s.animal]=s.worn; // from before
@@ -165,6 +187,7 @@ let seenTs=0;
 function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); seenTs=tsNow(); }catch(e){} }
 function refresh(){ if(tsNow()>seenTs){ S=load(kidId); seenTs=tsNow(); return true; } return false; }
 let S=load(kidId); seenTs=tsNow();
+let arrange=false, sel=null, drag=null;
 let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, banner=null, bannerT=0, modal=null, offer=null;
 const T={ms:0,from:null,running:false,used:false};
 
@@ -231,25 +254,25 @@ function settle(q, solved, reveal){
   if(box) openBox();
 }
 /* ---------- surprise box: choose 1 of 3 things she doesn't have yet ---------- */
-const ALL_BUY=()=>[...WALLPAPERS.filter(w=>w.price>0).map(w=>({...w,kind:'wallpaper'})), ...ROOM_ITEMS.map(i=>({...i,kind:'room'})), ...ITEMS.map(i=>({...i,kind:i.cat==='pet'||i.cat==='object'?'room':'wear'})), ...GIRL_ITEMS.map(i=>({...i,kind:'me'}))];
+const ALL_BUY=()=>[...WALLPAPERS.filter(w=>w.price>0).map(w=>({...w,kind:'wallpaper'})), ...FLOORS.filter(f=>f.price>0).map(f=>({...f,kind:'floor'})), ...CURTAINS.filter(c=>c.price>0).map(c=>({...c,kind:'curtain'})), ...ROOM_ITEMS.map(i=>({...i,kind:'room'})), ...ITEMS.map(i=>({...i,kind:i.cat==='pet'||i.cat==='object'?'room':'wear'})), ...GIRL_ITEMS.map(i=>({...i,kind:'me'}))];
 function openBox(){
   const left=ALL_BUY().filter(i=>!isOwned(i.id)); if(!left.length) return;
   offer=left.sort(()=>Math.random()-.5).slice(0,3).map(i=>i.id); modal='box';
 }
-function isOwned(id){ return S.items.includes(id) || (S.ownedWp||[]).includes(id); }
+function isOwned(id){ return S.items.includes(id) || (S.ownedWp||[]).includes(id) || (S.ownedFloor||[]).includes(id) || (S.ownedCurtain||[]).includes(id); }
 function thumb(id){
   const wp=WALLPAPERS.find(w=>w.id===id); if(wp) return `<svg viewBox="0 0 120 90"><defs>${wp.def}</defs><rect width="120" height="90" rx="8" fill="${wp.fill}"/></svg>`;
+  const fl=FLOORS.find(f=>f.id===id); if(fl) return floorThumb(fl);
+  const cu=CURTAINS.find(c=>c.id===id); if(cu) return curtainThumb(cu);
   const ri=ROOM_ITEMS.find(x=>x.id===id); if(ri) return thumbRoom(ri);
-  const gi=girlItem(id); if(gi) return drawGirl(FACE,{},{[gi.cat]:id}).replace(/viewBox="[^"]*"/,`viewBox="${GIRL_CROP[gi.cat]}"`);
+  const gi=girlItem(id); if(gi) return drawGirl(FACE,{},{[gi.cat]:id},LOOK()).replace(/viewBox="[^"]*"/,`viewBox="${GIRL_CROP[gi.cat]}"`);
   const it=itemById(id); if(!it) return '';
   if(it.cat==='pet') return `<svg viewBox="0 180 72 62">${it.svg(ANIMALS[S.animal])}</svg>`;
   if(it.cat==='object'){ const s=OBJ_SPOTS[id]; return `<svg viewBox="${s[4]}">${it.svg(ANIMALS[S.animal])}</svg>`; }
   return drawChar(S.animal,{},{[it.cat]:id});
 }
-function thumbRoom(ri){ // render the item alone in a frame that fits it
-  const box={bed:'8 210 230 120',desk:'590 180 190 160','armchair':'136 256 120 110','rug-round':'200 330 400 100',picture:'100 50 130 100',bookshelf:'550 80 170 70',clock:'244 34 60 60',garland:'10 10 380 70',plant:'236 244 80 96',cactus:'720 190 46 70',sunflower:'520 180 60 160'}[ri.id];
-  return `<svg viewBox="${box}">${ri.svg()}</svg>`;
-}
+function thumbRoom(ri){ return `<svg viewBox="${ITEM_BOX[ri.id].join(' ')}">${ri.svg()}</svg>`; } // the item alone in a frame that fits it
+const LOOK=()=>Shell.lookOf?.(kidId);
 function priceOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.price:0; }
 function nameOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.name:''; }
 
@@ -260,15 +283,19 @@ function shopHtml(){
   if(!cats.some(c=>c.id===tab)) tab=cats[0].id;
   let list;
   if(tab==='wallpaper') list=WALLPAPERS.map(w=>({id:w.id,name:w.name,price:w.price,cat:'wallpaper'}));
+  else if(tab==='floor') list=FLOORS.map(f=>({id:f.id,name:f.name,price:f.price,cat:'floor'}));
+  else if(tab==='curtain') list=CURTAINS.map(c=>({id:c.id,name:c.name,price:c.price,cat:'curtain'}));
   else if(['furniture','wall','plant'].includes(tab)) list=ROOM_ITEMS.filter(i=>i.cat===tab);
   else if(side==='me') list=GIRL_ITEMS.filter(i=>i.cat===tab);
   else list=ITEMS.filter(i=>i.cat===tab);
   const cards=list.map(i=>{
     const own = i.price===0 || isOwned(i.id), can=S.coins>=i.price, isWp=tab==='wallpaper', isWear=side!=='home';
-    const on = isWp ? S.wallpaper===i.id : side==='me' ? S.girlWorn[i.cat]===i.id : isWear ? S.worn[i.cat]===i.id : own;
+    const look = {floor:['floor','useFloor','על הרצפה','לשים על הרצפה'], curtain:['curtain','useCurtain','על החלון','לתלות על החלון']}[tab];
+    const on = look ? S[look[0]]===i.id : isWp ? S.wallpaper===i.id : side==='me' ? S.girlWorn[i.cat]===i.id : isWear ? S.worn[i.cat]===i.id : own;
     let act='';
     if(own){
-      if(isWp) act = on ? '<span class="need">על הקיר</span>' : `<button class="btn primary" data-act="useWp" data-v="${i.id}">לשים על הקיר</button>`;
+      if(look) act = on ? `<span class="need">${look[2]}</span>` : `<button class="btn primary" data-act="${look[1]}" data-v="${i.id}">${look[3]}</button>`;
+      else if(isWp) act = on ? '<span class="need">על הקיר</span>' : `<button class="btn primary" data-act="useWp" data-v="${i.id}">לשים על הקיר</button>`;
       else if(isWear) act=`<button class="btn ${on?'':'primary'}" data-act="${side==='me'?'wearMe':'wear'}" data-v="${i.id}">${on?'להוריד':'ללבוש'}</button>`;
       else act='<span class="need">בחדר</span>';
     } else act=`<div class="acts"><button class="ib eye" data-act="preview" data-v="${i.id}" aria-pressed="${preview===i.id}" aria-label="לראות איך זה נראה" title="לראות איך זה נראה">${IC.eye}</button>
@@ -295,6 +322,44 @@ function practiceHtml(){
     <div class="level"><span>רמה ${S.level}: ${LEVELS[S.level].name}</span><span class="bars" aria-hidden="true">${bars}</span></div>
     ${body}${msg?`<p class="msg ${msg.ok?'ok':''}">${msg.text}</p>`:''}</section>`;
 }
+/* tools on the room: day/night, arrange, and the way to the style page */
+function roomTools(){
+  return `<div class="roomtools">
+    <button class="rt" data-act="night" aria-pressed="${!!S.night}" title="${S.night?'יום':'לילה'}" aria-label="${S.night?'להפוך ליום':'להפוך ללילה'}">${S.night?IC.sun:IC.moon}</button>
+    <button class="rt wide ${arrange?'on':''}" data-act="arrange">${arrange?IC.check+'סיימתי':IC.move+'לסדר את החדר'}</button>
+    ${arrange?'':`<a class="rt wide" href="style.html">${IC.brush}לעצב את עצמי</a>`}
+  </div>`;
+}
+const entName=id=>id==='main'?ANIMALS[S.animal].name:id==='girl'?'אני':id.startsWith('a:')?ANIMALS[id.slice(2)].name:nameOf(id)||(ROOM_ITEMS.find(r=>r.id===id)||{}).name||id;
+function storedThumb(id){ if(id.startsWith('a:')) return drawChar(id.slice(2)); return thumb(id); }
+function arrangePanel(){
+  const st=S.stored||[];
+  return `<section class="card arrange"><h2>מסדרות את החדר</h2>
+    <p class="meta">גוררים כל דבר למקום שרוצים. לחיצה על משהו בוחרת אותו.</p>
+    <div class="row arr-row">${sel?`<b>${entName(sel)}</b><button class="btn" data-act="flip">${IC.flip}להפוך</button>${sel!=='main'&&sel!=='girl'?`<button class="btn" data-act="store">${IC.box}לשים במחסן</button>`:''}`:'<span class="meta">עוד לא בחרת כלום.</span>'}
+      <button class="btn ghost" data-act="resetPos">להחזיר הכל למקום</button></div>
+    ${st.length?`<p class="meta" style="margin-top:8px">במחסן:</p><div class="store">${st.map(id=>`<button class="stbtn" data-act="unstore" data-v="${id}" title="להחזיר לחדר"><span class="th">${storedThumb(id)}</span><span>${entName(id)}</span></button>`).join('')}</div>`:''}
+  </section>`;
+}
+/* dragging (arrange mode only): move the group live, keep the offset when the mouse lets go */
+function svgPoint(svg,e){ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+document.addEventListener('pointerdown',e=>{
+  if(!arrange) return; const g=e.target.closest('g.ent'); if(!g) return;
+  const svg=g.ownerSVGElement, id=g.dataset.ent, box=g.dataset.box.split(',').map(Number), p=S.pos[id]||{};
+  drag={id, g, svg, ent:{box, zone:g.dataset.zone}, start:svgPoint(svg,e), dx:p.dx||0, dy:p.dy||0, moved:false};
+  g.setPointerCapture?.(e.pointerId); e.preventDefault();
+});
+document.addEventListener('pointermove',e=>{
+  if(!drag) return; const pt=svgPoint(drag.svg,e);
+  const [dx,dy]=clampMove(drag.ent, drag.dx+pt.x-drag.start.x, drag.dy+pt.y-drag.start.y);
+  if(Math.abs(pt.x-drag.start.x)+Math.abs(pt.y-drag.start.y)>3) drag.moved=true;
+  drag.nx=dx; drag.ny=dy; drag.g.setAttribute('transform', entTransform(drag.ent,{...(S.pos[drag.id]||{}),dx,dy}));
+});
+document.addEventListener('pointerup',()=>{
+  if(!drag) return; const d=drag; drag=null; refresh();
+  if(d.moved){ const p=S.pos[d.id] ||= {}; p.dx=d.nx; p.dy=d.ny; save(); }
+  sel=d.id; render();
+});
 /* the room fills the middle column: grow the drawing taller (more wall above, more floor below) or wider */
 function fitRoom(){
   const box=document.querySelector('.room'), svg=box?.querySelector('svg.scene'); if(!svg) return;
@@ -317,8 +382,10 @@ function render(){
   document.getElementById('app').innerHTML=`
     ${shopHtml()}
     <div class="col mid">
-      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wornBy:S.wornBy, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn}})}</div>
-      <section class="card"><h2>החיות שלי</h2><p class="meta">כל נושא שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
+      <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wornBy:S.wornBy, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn, look:LOOK()},
+        pos:S.pos, stored:S.stored, arrange, sel, night:S.night, curtain:S.curtain, curtainOpen:S.curtainOpen, floor:S.floor})}${roomTools()}</div>
+      ${arrange?arrangePanel():''}
+      <section class="card ${arrange?'hide':''}"><h2>החיות שלי</h2><p class="meta">כל נושא שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
         <div class="carousel"><button class="arrow" data-act="scrollAn" data-v="-1" aria-label="חיות קודמות">${IC.next}</button><div class="animals">${anim}</div><button class="arrow" data-act="scrollAn" data-v="1" aria-label="עוד חיות">${IC.prev}</button></div></section>
     </div>
     <aside class="col practice">${practiceHtml()}${Shell.kid()?.trial?`<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div>`:''}</aside>`;
@@ -335,6 +402,8 @@ function render(){
 /* ---------- actions ---------- */
 function grant(id){
   if(WALLPAPERS.some(w=>w.id===id)){ (S.ownedWp ||= []).push(id); S.wallpaper=id; }
+  else if(FLOORS.some(f=>f.id===id)){ (S.ownedFloor ||= []).push(id); S.floor=id; }
+  else if(CURTAINS.some(c=>c.id===id)){ (S.ownedCurtain ||= []).push(id); S.curtain=id; }
   else if(girlItem(id)){ S.items.push(id); S.girlWorn[girlItem(id).cat]=id; }
   else { S.items.push(id); const it=itemById(id); if(it && ['outfit','hair','hat','glasses'].includes(it.cat)) S.worn[it.cat]=id; }
 }
@@ -352,6 +421,15 @@ const A={
     // the news goes on top of the home, where the new thing just appeared, and fades by itself
     banner=`קנית: ${nameOf(v)}!`; clearTimeout(bannerT); bannerT=setTimeout(()=>{ banner=null; document.querySelector('.banner.ok')?.remove(); },2600); },
   useWp(v){ S.wallpaper=v; save(); },
+  useFloor(v){ S.floor=v; save(); },
+  useCurtain(v){ S.curtain=v; save(); },
+  curtain(){ S.curtainOpen=!S.curtainOpen; save(); },
+  night(){ S.night=!S.night; save(); },
+  arrange(){ arrange=!arrange; sel=null; preview=null; },
+  flip(){ if(!sel) return; const p=S.pos[sel] ||= {}; p.flip=!p.flip; save(); },
+  store(){ if(!sel||sel==='main'||sel==='girl') return; S.stored=[...(S.stored||[]),sel]; sel=null; save(); },
+  unstore(v){ S.stored=(S.stored||[]).filter(x=>x!==v); sel=v; save(); },
+  resetPos(){ S.pos={}; S.stored=[]; sel=null; save(); },
   wear(v){ const it=itemById(v); S.worn[it.cat] = S.worn[it.cat]===v ? undefined : v; save(); },
   wearMe(v){ const c=girlItem(v).cat; S.girlWorn[c] = S.girlWorn[c]===v ? undefined : v; save(); },
   animal(v){ S.wornBy[S.animal]=S.worn; S.animal=v; S.worn=S.wornBy[v] ||= {}; save(); },

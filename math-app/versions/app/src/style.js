@@ -26,7 +26,7 @@ function shopCard(id,name,price,thumb,L){
     ${can?'':`<span class="need">חסרים ${price-coins}</span>`}</div>`;
 }
 function render(){
-  Shell.renderBar({page:'style', title:'לעצב את עצמי'});
+  Shell.renderBar({page:'style', title:'לעצב את עצמי', back:'home.html'});
   const L=Shell.lookOf(kidId), view=preview?effect(L,preview.id):L, worn=homeState().girlWorn||{};
   let cards='';
   if(tab==='hair') cards=HAIR_STYLES.map(h=>`<button class="item ${L.hair===h.id?'on':''}" data-act="hair" data-v="${h.id}"><div class="th">${drawGirlHead(FACE,{...L,hair:h.id})}</div><b>${h.name}</b></button>`).join('');
@@ -49,4 +49,4 @@ const A={
     note=''; Shell.saveLook(effect(Shell.lookOf(kidId),v)); }
 };
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t||t.disabled) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
-if(Shell.start({page:'style', title:'לעצב את עצמי'})) render();
+if(Shell.start({page:'style', title:'לעצב את עצמי', back:'home.html'})) render();

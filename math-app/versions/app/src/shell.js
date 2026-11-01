@@ -164,7 +164,7 @@ const Shell = (() => {
     // the lessons page is the main page: settings live there. Every other page has a way back to it.
     const start = opts.page==='lessons'
       ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>`
-      : `<a class="sh-back" href="index.html">${IC.back}<span>חזרה</span></a>`;
+      : `<a class="sh-back" href="${opts.back||'index.html'}">${IC.back}<span>חזרה</span></a>`;
     bar.innerHTML=`${start}<h1 class="sh-title">${opts.title||''}</h1>
       ${petHtml()}
       <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
