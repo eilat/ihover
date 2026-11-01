@@ -13,19 +13,19 @@ const WALLPAPERS = [
 
 const ROOM_ITEMS = [
   // furniture (floor)
-  {cat:'furniture', id:'bed', name:'מיטה', price:12, svg:()=>`<g transform="translate(14 218)">
+  {cat:'furniture', id:'bed', name:'מיטה', price:12, svg:(c)=>`<g transform="translate(14 218)">
     <rect x="0" y="0" width="22" height="110" rx="6" fill="#9C6B45"/><rect x="200" y="40" width="18" height="70" rx="5" fill="#9C6B45"/>
-    <rect x="10" y="52" width="200" height="40" rx="10" fill="#F7F3EE"/><rect x="62" y="44" width="152" height="52" rx="12" fill="#6FA8DC"/>
-    <path d="M62 60 H214 M62 76 H214" stroke="#5B93C7" stroke-width="3"/><rect x="18" y="34" width="52" height="26" rx="12" fill="#fff"/>
+    <rect x="10" y="52" width="200" height="40" rx="10" fill="#F7F3EE"/><rect x="62" y="44" width="152" height="52" rx="12" fill="${c||'#6FA8DC'}"/>
+    <path d="M62 60 H214 M62 76 H214" stroke="rgba(0,0,0,.14)" stroke-width="3"/><rect x="18" y="34" width="52" height="26" rx="12" fill="#fff"/>
     <rect x="6" y="92" width="210" height="14" rx="5" fill="#B5845C"/></g>`},
   {cat:'furniture', id:'desk', name:'שולחן ומנורה', price:10, glow:()=>`<circle cx="664" cy="204" r="80" fill="url(#glow)"/>`, svg:()=>`<g transform="translate(600 210)">
     <rect x="0" y="40" width="170" height="14" rx="4" fill="#C08A5A"/><rect x="10" y="54" width="10" height="70" fill="#A8744A"/><rect x="150" y="54" width="10" height="70" fill="#A8744A"/>
     <rect x="96" y="54" width="54" height="40" rx="4" fill="#B37D50"/><circle cx="123" cy="74" r="3" fill="#7A5232"/>
     <path d="M30 40 L30 8 L54 -6" stroke="#5A6577" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M46 -18 L76 -4 L62 10 Z" fill="#F2B21E"/><ellipse cx="30" cy="40" rx="14" ry="4" fill="#5A6577"/></g>`},
-  {cat:'furniture', id:'armchair', name:'כורסה', price:9, svg:()=>`<g transform="translate(150 262)">
-    <rect x="0" y="0" width="90" height="80" rx="22" fill="#E8577E"/><rect x="-10" y="34" width="26" height="54" rx="12" fill="#D9446C"/><rect x="74" y="34" width="26" height="54" rx="12" fill="#D9446C"/>
-    <rect x="10" y="48" width="70" height="30" rx="10" fill="#F07C9C"/><rect x="2" y="86" width="8" height="12" fill="#7A5232"/><rect x="80" y="86" width="8" height="12" fill="#7A5232"/></g>`},
-  {cat:'furniture', id:'rug-round', name:'שטיח עגול', price:5, layer:'under', svg:()=>`<ellipse cx="400" cy="378" rx="190" ry="40" fill="#F2B21E" opacity=".85"/><ellipse cx="400" cy="378" rx="150" ry="28" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="14 10"/>`},
+  {cat:'furniture', id:'armchair', name:'כורסה', price:9, svg:(c)=>`<g transform="translate(150 262)">
+    <rect x="0" y="0" width="90" height="80" rx="22" fill="${c||'#E8577E'}"/><rect x="-10" y="34" width="26" height="54" rx="12" fill="${c||'#E8577E'}"/><rect x="74" y="34" width="26" height="54" rx="12" fill="${c||'#E8577E'}"/><rect x="-10" y="34" width="26" height="54" rx="12" fill="rgba(0,0,0,.1)"/><rect x="74" y="34" width="26" height="54" rx="12" fill="rgba(0,0,0,.1)"/>
+    <rect x="10" y="48" width="70" height="30" rx="10" fill="${c||'#E8577E'}"/><rect x="10" y="48" width="70" height="30" rx="10" fill="rgba(255,255,255,.2)"/><rect x="2" y="86" width="8" height="12" fill="#7A5232"/><rect x="80" y="86" width="8" height="12" fill="#7A5232"/></g>`},
+  {cat:'furniture', id:'rug-round', name:'שטיח עגול', price:5, layer:'under', svg:(c)=>`<ellipse cx="400" cy="378" rx="190" ry="40" fill="${c||'#F2B21E'}" opacity=".85"/><ellipse cx="400" cy="378" rx="150" ry="28" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="14 10"/>`},
   // wall
   {cat:'wall', id:'picture', name:'תמונה של הר', price:5, svg:()=>`<g transform="translate(110 60)"><rect width="110" height="80" rx="4" fill="#fff" stroke="#9C6B45" stroke-width="8"/>
     <rect x="8" y="8" width="94" height="64" fill="#CDE8F8"/><path d="M8 72 L40 34 L60 54 L74 40 L102 72Z" fill="#6CC08B"/><path d="M40 34 L48 44 L34 44Z" fill="#fff"/><circle cx="84" cy="22" r="8" fill="#FFD54F"/></g>`},
@@ -36,6 +36,38 @@ const ROOM_ITEMS = [
   {cat:'wall', id:'garland', name:'שרשרת דגלים', price:4, svg:()=>`<path d="M20 22 Q200 70 380 22" stroke="#9C6B45" stroke-width="2" fill="none"/>${[0,1,2,3,4,5,6].map(k=>{const x=40+k*48,y=22+Math.sin((k+.5)/7*Math.PI)*34;return `<path d="M${x-12} ${y} L${x+12} ${y} L${x} ${y+24}Z" fill="${['#E8577E','#F2B21E','#3E7BD8','#6CC08B'][k%4]}"/>`}).join('')}`},
   {cat:'furniture', id:'nightlamp', name:'מנורת לילה', price:6, svg:()=>`<g transform="translate(296 286)"><ellipse cx="22" cy="72" rx="20" ry="5" fill="rgba(0,0,0,.12)"/><rect x="18" y="30" width="8" height="40" rx="3" fill="#9C6B45"/><rect x="8" y="66" width="28" height="7" rx="3" fill="#7A5232"/><path d="M4 32 Q22 -6 40 32Z" fill="#FFE29A" stroke="#E0A800" stroke-width="2"/></g>`,
     glow:()=>`<circle cx="318" cy="306" r="70" fill="url(#glow)"/>`},
+  // rare and legendary things to save up for
+  {cat:'furniture', id:'bed-canopy', name:'מיטת אפריון', price:90, svg:(c)=>`<g transform="translate(14 150)">
+    <rect x="0" y="0" width="10" height="176" rx="4" fill="#E0C27A"/><rect x="214" y="0" width="10" height="176" rx="4" fill="#E0C27A"/><rect x="-4" y="-6" width="232" height="12" rx="6" fill="#E0C27A"/>
+    <path d="M6 6 Q30 70 18 130 L6 130Z M218 6 Q194 70 206 130 L218 130Z" fill="${c||'#F8BBD0'}" opacity=".85"/><path d="M6 6 Q112 40 218 6" fill="none" stroke="${c||'#F8BBD0'}" stroke-width="10"/>
+    <rect x="14" y="116" width="196" height="40" rx="10" fill="#FFFDF8"/><rect x="60" y="108" width="150" height="52" rx="12" fill="${c||'#F48FB1'}"/><rect x="60" y="108" width="150" height="52" rx="12" fill="rgba(255,255,255,.25)"/>
+    <rect x="22" y="98" width="50" height="26" rx="12" fill="#fff"/><rect x="10" y="156" width="206" height="14" rx="5" fill="#C9A44C"/>
+    <g fill="#FFF3C4"><circle cx="112" cy="18" r="3"/><circle cx="60" cy="16" r="2"/><circle cx="164" cy="16" r="2"/></g></g>`},
+  {cat:'furniture', id:'castle', name:'טירה קטנה', price:200, svg:()=>`<g transform="translate(250 160)">
+    <rect x="10" y="60" width="130" height="118" fill="#F3E5F5"/><rect x="0" y="30" width="40" height="148" fill="#E1BEE7"/><rect x="110" y="30" width="40" height="148" fill="#E1BEE7"/>
+    <path d="M0 30 L20 -6 L40 30Z M110 30 L130 -6 L150 30Z" fill="#AB47BC"/><path d="M20 -6 V-24 L34 -18 L20 -12" fill="#F06292" stroke="#7B1FA2" stroke-width="2"/><path d="M130 -6 V-24 L144 -18 L130 -12" fill="#F06292" stroke="#7B1FA2" stroke-width="2"/>
+    <path d="M10 60 h14 v-10 h14 v10 h14 v-10 h14 v10 h14 v-10 h14 v10 h14 v-10 h14 v10 h4" fill="none" stroke="#CE93D8" stroke-width="6"/>
+    <path d="M55 178 V128 Q75 104 95 128 V178Z" fill="#8D6E63"/><circle cx="88" cy="150" r="3" fill="#F2C230"/>
+    <rect x="12" y="70" width="16" height="22" rx="8" fill="#81D4FA"/><rect x="122" y="70" width="16" height="22" rx="8" fill="#81D4FA"/><circle cx="75" cy="88" r="10" fill="#81D4FA" stroke="#fff" stroke-width="3"/></g>`},
+  {cat:'furniture', id:'aquarium', name:'אקווריום', price:70, svg:()=>`<g transform="translate(620 170)">
+    <rect x="10" y="96" width="120" height="70" rx="6" fill="#8D6E63"/><rect x="0" y="0" width="140" height="100" rx="8" fill="#B3E5FC" stroke="#4FC3F7" stroke-width="5"/>
+    <path d="M4 82 Q30 72 60 84 Q96 96 136 82 V96 H4Z" fill="#FFE0B2"/><path d="M24 92 Q20 70 28 56 M30 92 Q36 74 30 60 M110 92 Q104 72 114 58" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M50 40 Q60 30 70 40 Q60 50 50 40Z M70 40 L80 32 L80 48Z" fill="#FF8A3D"/><path d="M92 62 Q100 54 108 62 Q100 70 92 62Z M108 62 L116 56 L116 68Z" fill="#F06292"/>
+    <g fill="#fff" opacity=".8"><circle cx="40" cy="30" r="3"/><circle cx="44" cy="18" r="2"/><circle cx="96" cy="44" r="2.5"/></g></g>`},
+  {cat:'furniture', id:'plush-unicorn', name:'חד־קרן מפרווה ענק', price:160, svg:()=>`<g transform="translate(640 240)">
+    <ellipse cx="60" cy="100" rx="56" ry="14" fill="rgba(0,0,0,.1)"/><ellipse cx="62" cy="76" rx="48" ry="30" fill="#F3E5F5"/><circle cx="34" cy="38" r="28" fill="#F3E5F5"/>
+    <path d="M30 12 L34 -16 L42 12Z" fill="#FFD54F" stroke="#E0A800" stroke-width="2"/><path d="M48 14 Q78 20 74 52 Q64 34 50 28Z" fill="#CE93D8"/><path d="M56 22 Q80 36 70 60" stroke="#81D4FA" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="26" cy="40" r="3.4" fill="#2A2225"/><ellipse cx="18" cy="48" rx="6" ry="4" fill="#F8BBD0"/><rect x="28" y="92" width="14" height="14" rx="6" fill="#E1BEE7"/><rect x="82" y="92" width="14" height="14" rx="6" fill="#E1BEE7"/>
+    <path d="M106 66 Q130 60 124 90 Q116 76 104 78Z" fill="#CE93D8"/></g>`},
+  {cat:'furniture', id:'rug-rainbow', name:'שטיח קשת', price:65, layer:'under', svg:()=>`<g>${['#EF5350','#FFA726','#FFEE58','#66BB6A','#42A5F5','#AB47BC'].map((col,k)=>`<ellipse cx="400" cy="380" rx="${200-k*24}" ry="${44-k*5}" fill="${col}" opacity=".9"/>`).join('')}</g>`},
+  {cat:'wall', id:'chandelier', name:'נברשת', price:85, svg:()=>`<g transform="translate(160 0)"><path d="M45 -120 V18" stroke="#C99A12" stroke-width="3"/><path d="M8 30 Q45 52 82 30" stroke="#E0A800" stroke-width="5" fill="none"/>
+    <path d="M14 30 V20 M45 40 V24 M76 30 V20" stroke="#E0A800" stroke-width="4"/><g fill="#FFF3C4"><path d="M14 8 q4 6 0 12 q-4 -6 0 -12z"/><path d="M45 12 q4 6 0 12 q-4 -6 0 -12z"/><path d="M76 8 q4 6 0 12 q-4 -6 0 -12z"/></g>
+    <g fill="#B3E5FC"><path d="M22 44 l3 6 -3 6 -3 -6z"/><path d="M45 54 l3 6 -3 6 -3 -6z"/><path d="M68 44 l3 6 -3 6 -3 -6z"/></g></g>`, glow:()=>`<circle cx="205" cy="30" r="90" fill="url(#glow)"/>`},
+  {cat:'wall', id:'neon-heart', name:'שלט ניאון לב', price:75, svg:()=>`<g transform="translate(60 150)"><rect x="0" y="0" width="90" height="70" rx="10" fill="#2A2235"/><path d="M45 58 L18 32 Q10 14 26 12 Q38 12 45 24 Q52 12 64 12 Q80 14 72 32Z" fill="none" stroke="#FF4FA3" stroke-width="5" stroke-linejoin="round"/><path d="M45 58 L18 32 Q10 14 26 12 Q38 12 45 24 Q52 12 64 12 Q80 14 72 32Z" fill="none" stroke="#FFC1E3" stroke-width="2" stroke-linejoin="round"/></g>`,
+    glow:()=>`<circle cx="105" cy="185" r="70" fill="url(#glow)"/>`},
+  {cat:'wall', id:'mirror-gold', name:'מראה מוזהבת', price:35, svg:()=>`<g transform="translate(650 40)"><ellipse cx="40" cy="50" rx="40" ry="50" fill="#F7C948" stroke="#C99A12" stroke-width="4"/><ellipse cx="40" cy="50" rx="30" ry="40" fill="#E3F2FD"/><path d="M24 30 Q30 22 38 24" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></g>`},
+  {cat:'plant', id:'tree-blossom', name:'עץ פריחה בעציץ', price:30, svg:()=>`<g transform="translate(180 170)"><path d="M18 140 L54 140 L48 176 L24 176Z" fill="#C8743A"/><path d="M36 140 V70 M36 100 L18 80 M36 90 L56 72" stroke="#795548" stroke-width="6" stroke-linecap="round"/>
+    <g fill="#F8BBD0">${[[16,70,16],[36,52,20],[58,66,16],[26,40,14],[48,40,14]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><g fill="#fff"><circle cx="30" cy="54" r="3"/><circle cx="50" cy="62" r="3"/><circle cx="20" cy="70" r="2.5"/></g></g>`},
   // plants
   {cat:'plant', id:'plant', name:'עציץ', price:4, svg:()=>`<g transform="translate(250 250)"><path d="M6 50 L42 50 L36 84 L12 84Z" fill="#C8743A"/><path d="M24 50 Q8 20 22 0 Q30 24 24 50Z M24 50 Q40 18 54 16 Q46 40 24 50Z M24 50 Q2 34 -6 16 Q18 22 24 50Z" fill="#43A047"/></g>`},
   {cat:'plant', id:'cactus', name:'קקטוס', price:3, svg:()=>`<g transform="translate(726 196)"><rect x="0" y="40" width="34" height="18" rx="3" fill="#E8577E"/><rect x="10" y="4" width="14" height="40" rx="7" fill="#4CAF50"/><path d="M10 22 H2 V12" stroke="#4CAF50" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M24 26 H32 V16" stroke="#4CAF50" stroke-width="8" fill="none" stroke-linecap="round"/></g>`},
@@ -46,7 +78,7 @@ const WEAR_CATS = [{id:'outfit',name:'בגדים'},{id:'hair',name:'תסרוקו
 
 /* where things stand by default: a box (x, y, w, h) in room coordinates for each item.
    Anything can be dragged later; its offset is kept per item in the home's state (pos[id] = {dx, dy, flip}). */
-const ITEM_BOX={bed:[8,210,230,120],desk:[590,180,190,160],armchair:[136,256,120,110],'rug-round':[200,330,400,100],picture:[100,50,130,100],bookshelf:[550,80,170,70],clock:[244,34,60,60],garland:[10,10,380,70],plant:[236,244,80,96],cactus:[720,190,46,70],sunflower:[520,180,60,160],nightlamp:[296,280,48,84]};
+const ITEM_BOX={'bed-canopy':[6,136,240,190],castle:[246,132,160,214],aquarium:[616,166,148,174],'plush-unicorn':[634,222,132,128],'rug-rainbow':[196,332,408,96],chandelier:[164,-6,92,76],'neon-heart':[56,146,98,78],'mirror-gold':[646,36,88,108],'tree-blossom':[172,186,96,166],bed:[8,210,230,120],desk:[590,180,190,160],armchair:[136,256,120,110],'rug-round':[200,330,400,100],picture:[100,50,130,100],bookshelf:[550,80,170,70],clock:[244,34,60,60],garland:[10,10,380,70],plant:[236,244,80,96],cactus:[720,190,46,70],sunflower:[520,180,60,160],nightlamp:[296,280,48,84]};
 const PET_SPOTS=[[96,330],[560,346],[236,356],[660,350]];
 const OBJ_SPOTS={balloon:[200,40,70,150,'140 20 70 160'], ball:[470,350,60,60,'150 196 50 44'], wand:[650,150,46,110,'150 100 56 100'], flower:[580,190,50,110,'150 100 50 100']};
 const FRIEND_SPOTS=[[660,236,76],[248,236,78],[600,262,70],[170,270,70],[440,282,58],[680,286,60],[60,290,60],[360,296,52]];
@@ -101,30 +133,28 @@ const curtainThumb=c=>`<svg viewBox="290 18 220 152"><defs>${c.def||''}</defs>${
 function sleepEyes(a){ const A=ANIMALS[a]; const cover=a==='owl'?A.light:a==='panda'?A.dark:A.fur, r=a==='owl'?19:a==='panda'?12:10;
   return `<circle cx="78" cy="100" r="${r}" fill="${cover}"/><circle cx="122" cy="100" r="${r}" fill="${cover}"/><path d="M69 99 Q78 107 87 99 M113 99 Q122 107 131 99" stroke="${a==='panda'?'#fff':'#2A2225'}" stroke-width="3" fill="none" stroke-linecap="round"/>`; }
 
-/* zones: wall things stay on the wall, everything else on the floor (objects such as a balloon may go anywhere) */
+/* free placement: anything can go anywhere in the room (a night lamp on the shelf, a plant on the desk) — only kept inside the room */
 function clampMove(e,dx,dy){ const [x,y,w,h]=e.box, cx=x+w/2;
   dx=Math.max(-cx+20,Math.min(780-cx,dx));
-  if(e.zone==='wall') dy=Math.max(-120-y,Math.min(290-(y+h),dy));
-  else if(e.zone==='floor'){ const foot=y+h, lo=Math.min(foot,312); dy=Math.max(lo-foot,Math.min(470-foot,dy)); }
-  else dy=Math.max(-120-y,Math.min(470-(y+h),dy));
+  dy=Math.max(-120-y,Math.min(470-(y+h),dy));
   return [Math.round(dx),Math.round(dy)]; }
 const entTransform=(e,p={})=>{ const [x,,w]=e.box, cx=x+w/2; return `translate(${p.dx||0} ${p.dy||0})${p.flip?` translate(${cx} 0) scale(-1 1) translate(${-cx} 0)`:''}`; };
 
 /* everything that stands in the room, with its box and zone (used to draw and to drag) */
-function roomEntities({animal, worn, wornBy={}, items, friends, preview, girl, stored=[], night}){
+function roomEntities({animal, worn, wornBy={}, items, friends, preview, girl, stored=[], night, colors={}}){
   const A=ANIMALS[animal], show=new Set(items); if(preview && (ROOM_ITEMS.some(r=>r.id===preview)||itemById(preview))) show.add(preview);
   const has=id=>show.has(id)&&!stored.includes(id), strip=s=>s.replace(/^<svg[^>]*>|<\/svg>$/g,''), wearOnly=w=>Object.fromEntries(Object.entries(w||{}).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
   const ents=[];
-  ROOM_ITEMS.filter(r=>has(r.id)).forEach(r=>ents.push({id:r.id, box:ITEM_BOX[r.id], zone:r.cat==='wall'?'wall':'floor', under:r.layer==='under', svg:r.svg(), glow:night&&r.glow?r.glow():''}));
+  ROOM_ITEMS.filter(r=>has(r.id)).forEach(r=>ents.push({id:r.id, box:ITEM_BOX[r.id], zone:r.cat==='wall'?'wall':'floor', under:r.layer==='under', svg:r.svg(colors[r.id]), glow:night&&r.glow?r.glow():''}));
   Object.entries(OBJ_SPOTS).filter(([id])=>has(id)).forEach(([id,[x,y,w,h,vb]])=>ents.push({id, box:[x,y,w,h], zone:'any', svg:`<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${vb}">${itemById(id).svg(A)}</svg>`}));
   ITEMS.filter(i=>i.cat==='pet' && show.has(i.id)).forEach((i,k)=>{ if(!has(i.id)) return; const [x,y]=PET_SPOTS[k%4];
     ents.push({id:i.id, box:[x,y,90,80], zone:'floor', svg:`<ellipse cx="${x+45}" cy="${y+74}" rx="38" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="90" height="78" viewBox="0 180 72 62">${i.svg(A)}</svg>`}); });
-  const charSvg=(a,w,[x,y,wd,ht],prev={})=>`<svg x="${x}" y="${y}" width="${wd}" height="${ht}" viewBox="-6 -18 216 260">${strip(drawChar(a,wearOnly(w),prev))}${night?sleepEyes(a):''}</svg>`;
+  const charSvg=(a,w,[x,y,wd,ht],prev={})=>`<svg x="${x}" y="${y}" width="${wd}" height="${ht}" viewBox="-6 -18 216 260">${strip(drawChar(a,wearOnly(w),prev,colors))}${night?sleepEyes(a):''}</svg>`;
   (friends||[]).slice(0,8).forEach((a,k)=>{ const id='a:'+a; if(stored.includes(id)) return; const [x,y,w]=FRIEND_SPOTS[k];
     ents.push({id, box:[x,y,w,w*1.2], zone:'floor', friend:a, svg:charSvg(a,wornBy[a],[x,y,w,w*1.2])}); });
   const pv=preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {};
   ents.push({id:'main', box:MAIN_BOX, zone:'floor', svg:charSvg(animal,worn,MAIN_BOX,pv)});
-  if(girl){ const [x,y,w,h]=GIRL_BOX; ents.push({id:'girl', box:GIRL_BOX, zone:'floor', svg:`<ellipse cx="${x+74}" cy="${y+276}" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}, girl.look))}</svg>`}); }
+  if(girl){ const [x,y,w,h]=GIRL_BOX; ents.push({id:'girl', box:GIRL_BOX, zone:'floor', svg:`<ellipse cx="${x+74}" cy="${y+276}" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}, girl.look, colors))}</svg>`}); }
   return ents;
 }
 
@@ -137,7 +167,7 @@ function roomSvg(o){
   const cuShow = preview&&isCu(preview) ? preview : curtain;
   const ents=roomEntities(o);
   const foot=e=>e.box[1]+e.box[3]+(pos[e.id]?.dy||0);
-  const order=[...ents.filter(e=>e.under), ...ents.filter(e=>!e.under&&e.zone==='wall'), ...ents.filter(e=>!e.under&&e.zone!=='wall').sort((a,b)=>foot(a)-foot(b))];
+  const order=[...ents.filter(e=>e.under), ...ents.filter(e=>!e.under).sort((a,b)=>foot(a)-foot(b))];
   const g=e=>`<g class="ent ${arrange?'drag':''} ${e.friend&&!arrange?'friend':''}" data-ent="${e.id}" data-box="${e.box.join(',')}" data-zone="${e.zone}" transform="${entTransform(e,pos[e.id])}" ${e.friend&&!arrange?`data-act="animal" data-v="${e.friend}" role="button" aria-label="לעבור ל${ANIMALS[e.friend].name}"`:''}>${e.svg}</g>`;
   const glows=night?ents.filter(e=>e.glow).map(e=>`<g transform="${entTransform(e,pos[e.id])}">${e.glow}</g>`).join(''):'';
   const se=arrange&&sel?ents.find(e=>e.id===sel):null;

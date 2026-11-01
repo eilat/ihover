@@ -2,20 +2,21 @@
 .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);min-height:68px;position:relative;z-index:30}
 .bar svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .sh-me{position:relative}
-.sh-gear{width:50px;height:50px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);cursor:pointer;padding:0}
-.sh-gear:hover,.sh-gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
-.sh-gear svg{width:26px;height:26px}
+.sh-gear{width:48px;height:48px;border:0;background:transparent;display:grid;place-items:center;color:var(--muted);cursor:pointer;padding:0;border-radius:12px}
+.sh-gear:hover,.sh-gear[aria-expanded="true"]{color:var(--accent)}
+.sh-gear svg{width:30px;height:30px}
 .sh-back{display:flex;align-items:center;gap:6px;min-height:50px;padding:6px 18px 6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:17px;text-decoration:none}
 .sh-back:hover{border-color:var(--accent)}
 .sh-back svg{width:22px;height:22px}
 .sh-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;overflow:hidden;flex:none}
 .sh-av svg{width:100%;height:100%;display:block;stroke:none!important}
 .sh-title{flex:1;margin:0;text-align:start;font-family:var(--f-display);font-size:24px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sh-pet{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,var(--surface));border:2px solid transparent;overflow:hidden}
+.sh-pet{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--pc,var(--accent));border:2px solid transparent;overflow:hidden}
 a.sh-pet:hover{border-color:var(--accent)}
 .sh-pet svg{width:52px;height:52px;display:block;stroke:none!important;transform-origin:50% 85%;animation:sh-idle 5s ease-in-out infinite}
 a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
-.sh-pet.here{background:transparent}
+.sh-pet.here{cursor:default}
+
 @keyframes sh-idle{0%,62%,100%{transform:none}68%{transform:translateY(-3px) rotate(-7deg)}76%{transform:translateY(0) rotate(5deg)}84%{transform:rotate(-2deg)}}
 @keyframes sh-hop{0%,100%{transform:none}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(1px) scale(.98)}}
 .sh-bank{position:relative;display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600;font-size:22px;background:#FFF1C7;color:#5A4300;padding:6px 16px;border-radius:999px}
@@ -24,7 +25,7 @@ a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
 .sh-plus{position:absolute;top:-6px;inset-inline-end:8px;font-size:18px;color:#1F7A4D;animation:sh-up 1.5s ease forwards;pointer-events:none}
 @keyframes sh-bump{40%{transform:scale(1.15)}}
 @keyframes sh-up{from{opacity:0;transform:translateY(8px)}20%{opacity:1}to{opacity:0;transform:translateY(-26px)}}
-.sh-menu{position:absolute;top:calc(100% + 8px);inset-inline-start:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px;width:330px;display:flex;flex-direction:column;gap:6px}
+.sh-menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px;width:330px;display:flex;flex-direction:column;gap:6px}
 .sh-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 10px;border-radius:12px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;text-align:start}
 .sh-row:hover{background:var(--bg)}
 .sh-row .sh-av{width:38px;height:38px}

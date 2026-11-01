@@ -51,7 +51,38 @@ h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
 .curtain{cursor:pointer}
 svg.arranging g.ent{cursor:grab}
 svg.arranging g.ent:active{cursor:grabbing}
-.roomtools{position:absolute;bottom:12px;inset-inline-start:12px;z-index:2;display:flex;gap:8px;flex-wrap:wrap}
+.roomtools{position:absolute;top:12px;inset-inline-start:12px;z-index:2;display:flex;gap:8px;flex-wrap:wrap}
+/* her animals: small round faces along the bottom of the room (the room keeps nearly all the height) */
+.anrow{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:2;display:flex;gap:6px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none;padding:6px 8px;border-radius:999px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.anrow::-webkit-scrollbar{display:none}
+.anc{flex:none;width:46px;height:46px;border-radius:50%;border:2.5px solid var(--line);background:var(--surface);padding:0;display:grid;place-items:center;overflow:hidden}
+.anc svg{width:44px;height:44px;display:block}
+.anc[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.anc:disabled{cursor:default;background:var(--bg)} .anc:disabled svg{filter:brightness(0);opacity:.2}
+/* the shop can fold away: then the home takes its place */
+.wrap.noshop{grid-template-columns:64px minmax(0,1fr) 280px}
+.shoprail{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:16px;border:0;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.06);font-weight:600;color:var(--accent);align-self:start}
+.shoprail svg.ic{width:28px;height:28px}
+.shophead{display:flex;align-items:center;gap:8px}.shophead h2{margin:0;flex:1}
+.shopx{width:40px;height:40px;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;color:var(--muted)}
+.shopx:hover{border-color:var(--accent);color:var(--accent)}
+/* secondary tabs: one row that scrolls sideways */
+.chips{display:flex;align-items:center;gap:4px;padding-bottom:10px;margin-bottom:12px;border-bottom:2px solid var(--line)}
+.chips .tabs{flex:1;display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:2px;margin:0;border:0;scroll-behavior:smooth}
+.chips .tabs::-webkit-scrollbar{display:none}
+.chips .tab{flex:none;white-space:nowrap}
+.carr{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;color:var(--muted)}
+.carr svg.ic{width:18px;height:18px}
+/* price tiers */
+.tier{font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px}
+.tier.rare{background:#E3F2FD;color:#1565C0}.tier.legend{background:#FFF3C4;color:#8A6100}
+.item.rare{border-color:#90CAF9}.item.legend{border-color:#F2C230;background:linear-gradient(180deg,#FFFBEA,var(--surface) 40%)}
+/* recolour: the first change is a gift, each new colour after that costs 5, colours she bought stay hers */
+.pal{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:4px}
+.pc{position:relative;width:22px;height:22px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1.5px var(--line);background:var(--c);padding:0;font-size:12px;line-height:1;color:var(--muted)}
+.pc.on{box-shadow:0 0 0 2.5px var(--ink)}
+.pc.orig{background:var(--surface)}
+.pc i{position:absolute;top:-7px;inset-inline-end:-7px;font-style:normal;font-size:9px;font-weight:700;background:#F2C230;color:#5A4300;border-radius:999px;padding:0 3px}
 .rt{min-height:44px;min-width:44px;padding:0 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .rt.wide{padding:0 16px}.rt.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .rt[aria-pressed="true"]{background:#1E2A5A;border-color:#1E2A5A;color:#FFF3C4}
@@ -65,16 +96,6 @@ svg.arranging g.ent:active{cursor:grabbing}
 .stbtn:hover{border-color:var(--accent)}
 .preview-tag{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:2px 12px;font-size:14px;font-weight:600}
 /* animals */
-.carousel{display:flex;align-items:center;gap:6px}
-.animals{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 2px;scrollbar-width:none;flex:1}
-.animals::-webkit-scrollbar{display:none}
-.an{scroll-snap-align:start;flex:none}
-.arrow{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none;padding:0;color:var(--muted)}
-.arrow:hover{border-color:var(--accent);color:var(--accent)}
-.an{width:78px;padding:4px;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:center;font-size:13px}
-.an svg{width:60px;height:72px}
-.an[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.an.locked{cursor:default;color:var(--muted)} .an.locked svg{filter:brightness(0);opacity:.15}
 /* shop */
 .seg{display:flex;gap:6px;margin:6px 0 10px}
 .seg button{flex:1;min-height:46px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:600}
@@ -141,7 +162,7 @@ svg.arranging g.ent:active{cursor:grabbing}
 .testbar{padding:0 4px;color:var(--muted);font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .testbar button{font-size:13px;min-height:34px;padding:2px 12px;border-radius:999px;border:1.5px dashed var(--line);background:transparent;color:var(--muted)}
 /*SHELL_CSS*/
-@media (max-width:1180px){.mid .room{flex:none;aspect-ratio:800/440;min-height:0}.wrap{grid-template-columns:340px minmax(0,1fr)}.shop{grid-row:span 2;max-height:calc(100vh - 101px);position:sticky;top:16px}.practice{grid-column:2}}
+@media (max-width:1180px){.mid .room{flex:none;aspect-ratio:800/560;min-height:0}.anc{width:40px;height:40px}.anc svg{width:38px;height:38px}.wrap{grid-template-columns:340px minmax(0,1fr)}.wrap.noshop{grid-template-columns:64px minmax(0,1fr)}.shop{grid-row:span 2;max-height:calc(100vh - 101px);position:sticky;top:16px}.practice{grid-column:2}}
 @media (max-width:760px){.wrap{grid-template-columns:minmax(0,1fr)}.shop{grid-row:auto;max-height:70vh;position:static}.practice{grid-column:auto}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head>
@@ -177,18 +198,19 @@ const FACE=Shell.kid()?.face||'lili';
 
 /* ---------- state per girl ---------- */
 const kidId=Shell.kid()?.id;
-function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, wornBy:{}, girlWorn:{}, pos:{}, stored:[], night:false, curtain:'cu-pink', curtainOpen:true, floor:'fl-wood', ownedFloor:[], ownedCurtain:[], coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
+function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, wornBy:{}, girlWorn:{}, pos:{}, stored:[], colors:{}, shopOpen:true, night:false, curtain:'cu-pink', curtainOpen:true, floor:'fl-wood', ownedFloor:[], ownedCurtain:[], coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
 /* every animal has its own clothes (wornBy); S.worn is the main animal's, kept in step on load, save and switch */
 function load(id){ let s; try{ s=JSON.parse(localStorage.getItem('home:'+id)||'null'); }catch(e){} s=s?{...fresh(),...s}:fresh();
   s.wornBy ||= {}; if(!Object.keys(s.wornBy).length && Object.keys(s.worn||{}).length) s.wornBy[s.animal]=s.worn; // from before
   s.worn=s.wornBy[s.animal] ||= {}; return s; }
 const tsNow=()=>{ try{ return +(localStorage.getItem('mk:ts:home:'+kidId)||0); }catch(e){ return 0; } };
 let seenTs=0;
-function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); seenTs=tsNow(); }catch(e){} }
+function save(){ try{ S.girlColors=Object.fromEntries(Object.entries(colorMap()).filter(([id])=>id.startsWith('g-'))); // the style page dresses her in these colours
+  localStorage.setItem('home:'+kidId, JSON.stringify(S)); seenTs=tsNow(); }catch(e){} }
 function refresh(){ if(tsNow()>seenTs){ S=load(kidId); seenTs=tsNow(); return true; } return false; }
 let S=load(kidId); seenTs=tsNow();
 let arrange=false, sel=null, drag=null;
-let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, banner=null, bannerT=0, modal=null, offer=null;
+let side='home', tab='wallpaper', lastTab=null, lastSide=null, preview=null, msg=null, banner=null, bannerT=0, modal=null, offer=null;
 const T={ms:0,from:null,running:false,used:false};
 
 /* ---------- bonus practice: 5 difficulty levels, up after 2 in a row, down after a hard time ---------- */
@@ -256,7 +278,7 @@ function settle(q, solved, reveal){
 /* ---------- surprise box: choose 1 of 3 things she doesn't have yet ---------- */
 const ALL_BUY=()=>[...WALLPAPERS.filter(w=>w.price>0).map(w=>({...w,kind:'wallpaper'})), ...FLOORS.filter(f=>f.price>0).map(f=>({...f,kind:'floor'})), ...CURTAINS.filter(c=>c.price>0).map(c=>({...c,kind:'curtain'})), ...ROOM_ITEMS.map(i=>({...i,kind:'room'})), ...ITEMS.map(i=>({...i,kind:i.cat==='pet'||i.cat==='object'?'room':'wear'})), ...GIRL_ITEMS.map(i=>({...i,kind:'me'}))];
 function openBox(){
-  const left=ALL_BUY().filter(i=>!isOwned(i.id)); if(!left.length) return;
+  const left=ALL_BUY().filter(i=>!isOwned(i.id)&&i.price<=40); if(!left.length) return; // rare things are saved up for, never in the box
   offer=left.sort(()=>Math.random()-.5).slice(0,3).map(i=>i.id); modal='box';
 }
 function isOwned(id){ return S.items.includes(id) || (S.ownedWp||[]).includes(id) || (S.ownedFloor||[]).includes(id) || (S.ownedCurtain||[]).includes(id); }
@@ -265,27 +287,40 @@ function thumb(id){
   const fl=FLOORS.find(f=>f.id===id); if(fl) return floorThumb(fl);
   const cu=CURTAINS.find(c=>c.id===id); if(cu) return curtainThumb(cu);
   const ri=ROOM_ITEMS.find(x=>x.id===id); if(ri) return thumbRoom(ri);
-  const gi=girlItem(id); if(gi) return drawGirl(FACE,{},{[gi.cat]:id},LOOK()).replace(/viewBox="[^"]*"/,`viewBox="${GIRL_CROP[gi.cat]}"`);
+  const gi=girlItem(id); if(gi) return drawGirl(FACE,{},{[gi.cat]:id},LOOK(),colorMap()).replace(/viewBox="[^"]*"/,`viewBox="${GIRL_CROP[gi.cat]}"`);
   const it=itemById(id); if(!it) return '';
   if(it.cat==='pet') return `<svg viewBox="0 180 72 62">${it.svg(ANIMALS[S.animal])}</svg>`;
   if(it.cat==='object'){ const s=OBJ_SPOTS[id]; return `<svg viewBox="${s[4]}">${it.svg(ANIMALS[S.animal])}</svg>`; }
-  return drawChar(S.animal,{},{[it.cat]:id});
+  return drawChar(S.animal,{},{[it.cat]:id},colorMap());
 }
-function thumbRoom(ri){ return `<svg viewBox="${ITEM_BOX[ri.id].join(' ')}">${ri.svg()}</svg>`; } // the item alone in a frame that fits it
+function thumbRoom(ri){ return `<svg viewBox="${ITEM_BOX[ri.id].join(' ')}">${ri.svg(colorMap()[ri.id])}</svg>`; } // the item alone in a frame that fits it
 const LOOK=()=>Shell.lookOf?.(kidId);
+/* price tiers: regular 5-15, special 20-40, rare 60-100, legendary 150-250 */
+const tierId=p=>tierOf(p).id; // tierOf comes with the girl's art (girl.js), shared with the style page
+const TIER_TAG={rare:'💎 נדיר', legend:'👑 אגדי'};
+/* recolouring */
+const PALETTE=['#E8577E','#3E7BD8','#4FC3F7','#2F9E8F','#F2B21E','#FF8A3D','#7444C9','#263238'];
+const RECOLOR=new Set(['stripes','dress','cape','overalls','beanie','bow','royal-cape','bed','armchair','rug-round','bed-canopy','g-dress','g-overalls','g-tutu','g-sport','g-hoodie','g-skirt']);
+const RECOLOR_PRICE=5;
+const colorMap=()=>Object.fromEntries(Object.entries(S.colors||{}).filter(([,e])=>e&&e.c).map(([id,e])=>[id,e.c]));
+function paletteHtml(id){ const e=(S.colors||{})[id]||{};
+  return `<div class="pal" role="group" aria-label="צבע">${[null,...PALETTE].map(c=>{ const cur=(e.c||null)===c, have=c===null||(e.owned||[]).includes(c), cost=!have&&e.freeUsed;
+    return `<button class="pc ${cur?'on':''} ${c?'':'orig'}" style="--c:${c||'transparent'}" data-act="recolor" data-v="${id}|${c||''}" title="${!c?'הצבע המקורי':have?'הצבע שלך':cost?`צבע חדש: ${RECOLOR_PRICE} מטבעות`:'הצבע הראשון במתנה'}" aria-label="${!c?'הצבע המקורי':'צבע'}">${c?'':'↺'}${cost?`<i>${RECOLOR_PRICE}</i>`:''}</button>`; }).join('')}</div>`; }
+function flash(text){ banner=text; clearTimeout(bannerT); bannerT=setTimeout(()=>{ banner=null; document.querySelector('.banner.ok')?.remove(); },2600); }
 function priceOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.price:0; }
 function nameOf(id){ const x=ALL_BUY().find(i=>i.id===id); return x?x.name:''; }
 
 /* ---------- rendering ---------- */
-function renderBar(){ Shell.renderBar({page:'home', title:'הבית שלי', coins:S.coins, pet:{chosen:S.chosen, animal:S.animal, worn:S.worn}}); }
+function renderBar(){ Shell.renderBar({page:'home', title:'הבית שלי', coins:S.coins}); }
 function shopHtml(){
-  const cats = side==='home' ? ROOM_CATS : side==='me' ? GIRL_CATS : WEAR_CATS;
+  const cats = [...(side==='home' ? ROOM_CATS : side==='me' ? GIRL_CATS : WEAR_CATS), {id:'rare',name:'💎 נדירים'}];
   if(!cats.some(c=>c.id===tab)) tab=cats[0].id;
   let list;
   if(tab==='wallpaper') list=WALLPAPERS.map(w=>({id:w.id,name:w.name,price:w.price,cat:'wallpaper'}));
   else if(tab==='floor') list=FLOORS.map(f=>({id:f.id,name:f.name,price:f.price,cat:'floor'}));
   else if(tab==='curtain') list=CURTAINS.map(c=>({id:c.id,name:c.name,price:c.price,cat:'curtain'}));
   else if(['furniture','wall','plant'].includes(tab)) list=ROOM_ITEMS.filter(i=>i.cat===tab);
+  else if(tab==='rare') list=(side==='home'?[...ROOM_ITEMS,...ITEMS.filter(i=>i.cat==='pet'||i.cat==='object')]:side==='me'?GIRL_ITEMS:ITEMS.filter(i=>['outfit','hair','hat','glasses'].includes(i.cat))).filter(i=>i.price>=60).sort((a,b)=>a.price-b.price);
   else if(side==='me') list=GIRL_ITEMS.filter(i=>i.cat===tab);
   else list=ITEMS.filter(i=>i.cat===tab);
   const cards=list.map(i=>{
@@ -298,14 +333,16 @@ function shopHtml(){
       else if(isWp) act = on ? '<span class="need">על הקיר</span>' : `<button class="btn primary" data-act="useWp" data-v="${i.id}">לשים על הקיר</button>`;
       else if(isWear) act=`<button class="btn ${on?'':'primary'}" data-act="${side==='me'?'wearMe':'wear'}" data-v="${i.id}">${on?'להוריד':'ללבוש'}</button>`;
       else act='<span class="need">בחדר</span>';
+      if(RECOLOR.has(i.id)) act+=paletteHtml(i.id);
     } else act=`<div class="acts"><button class="ib eye" data-act="preview" data-v="${i.id}" aria-pressed="${preview===i.id}" aria-label="לראות איך זה נראה" title="לראות איך זה נראה">${IC.eye}</button>
       <button class="ib buy" data-act="buy" data-v="${i.id}" ${can?'':'disabled'} aria-label="לקנות ב-${i.price} מטבעות" title="לקנות">${IC.bag}<span class="ltr">${i.price}</span>${COIN}</button></div>${can?'':`<span class="need">חסרים ${i.price-S.coins}</span>`}`;
-    return `<div class="item ${on?'on':''} ${preview===i.id?'pv':''}"><div class="th">${thumb(i.id)}</div><b>${i.name}</b>${act}</div>`;
+    const tr=tierId(i.price||0);
+    return `<div class="item ${on?'on':''} ${preview===i.id?'pv':''} ${tr}">${TIER_TAG[tr]?`<span class="tier ${tr}">${TIER_TAG[tr]}</span>`:''}<div class="th">${thumb(i.id)}</div><b>${i.name}</b>${act}</div>`;
   }).join('');
-  return `<section class="card shop"><h2>החנות</h2>
+  return `<section class="card shop"><div class="shophead"><h2>החנות</h2><button class="shopx" data-act="shop" aria-label="לסגור את החנות" title="לסגור את החנות">${IC.next}</button></div>
     <div class="seg"><button data-act="side" data-v="home" aria-pressed="${side==='home'}">לבית</button><button data-act="side" data-v="animal" aria-pressed="${side==='animal'}">ל${ANIMALS[S.animal].name}</button><button data-act="side" data-v="me" aria-pressed="${side==='me'}">לעצמי</button></div>
-    <div class="tabs" role="tablist">${cats.map(c=>`<button class="tab" role="tab" aria-selected="${tab===c.id}" data-act="tab" data-v="${c.id}">${c.name}</button>`).join('')}</div>
-    <div class="scroll"><div class="grid">${cards}</div></div></section>`;
+    <div class="chips"><button class="carr" data-act="chipScroll" data-v="-1" aria-label="אחורה">${IC.next}</button><div class="tabs" role="tablist">${cats.map(c=>`<button class="tab" role="tab" aria-selected="${tab===c.id}" data-act="tab" data-v="${c.id}">${c.name}</button>`).join('')}</div><button class="carr" data-act="chipScroll" data-v="1" aria-label="עוד">${IC.prev}</button></div>
+    <div class="scroll"><div class="grid">${cards||'<p class="meta">עוד אין כאן כלום.</p>'}</div></div></section>`;
 }
 function practiceHtml(){
   const bars=[1,2,3,4,5].map(n=>`<i class="${n<=S.level?'on':''}"></i>`).join('');
@@ -376,22 +413,24 @@ function render(){
       <div class="starters">${STARTERS.map(a=>`<button data-act="start" data-v="${a}">${drawChar(a)}${ANIMALS[a].name}</button>`).join('')}</div></div></div>`; return;
   }
   const friends=S.animals.filter(a=>a!==S.animal);
-  const anim=ANIMAL_ORDER.map(a=>{ const has=S.animals.includes(a); return `<button class="an ${has?'':'locked'}" ${has?`data-act="animal" data-v="${a}"`:'disabled'} aria-pressed="${S.animal===a}">${drawChar(a)}<span>${has?ANIMALS[a].name:'אחרי נושא'}</span></button>`; }).join('');
-  // keep where she was in the shop and in the animals strip: re-rendering must not move anything under her finger
-  const keep={shop:tab===lastTab?document.querySelector('.shop .scroll')?.scrollTop:0, an:document.querySelector('.animals')?.scrollLeft}; lastTab=tab;
-  document.getElementById('app').innerHTML=`
-    ${shopHtml()}
+  const face=a=>drawChar(a,a===S.animal?S.worn:(S.wornBy[a]||{}),{},colorMap()).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"');
+  const anim=ANIMAL_ORDER.map(a=>{ const has=S.animals.includes(a); return `<button class="anc" ${has?`data-act="animal" data-v="${a}" title="${ANIMALS[a].name}" aria-label="${ANIMALS[a].name}"`:'disabled title="אחרי נושא" aria-label="נפתחת אחרי נושא"'} aria-pressed="${S.animal===a}">${face(a)}</button>`; }).join('');
+  // keep where she was in the shop, the chips and the animals row: re-rendering must not move anything under her finger
+  const keep={shop:tab===lastTab?document.querySelector('.shop .scroll')?.scrollTop:0, an:document.querySelector('.anrow')?.scrollLeft, chips:side===lastSide?document.querySelector('.chips .tabs')?.scrollLeft:0}; lastTab=tab; lastSide=side;
+  const app=document.getElementById('app'); app.classList.toggle('noshop',!S.shopOpen);
+  app.innerHTML=`
+    ${S.shopOpen?shopHtml():`<button class="shoprail" data-act="shop" aria-label="לפתוח את החנות" title="לפתוח את החנות">${IC.bag}<span>חנות</span></button>`}
     <div class="col mid">
       <div class="room">${banner?`<p class="banner ok" role="status">${banner}</p>`:preview?`<p class="banner"><span class="preview-tag">מסתכלת</span> ככה זה ייראה</p>`:''}${roomSvg({animal:S.animal, worn:S.worn, wornBy:S.wornBy, wallpaper:S.wallpaper, items:S.items, friends, preview, girl:{face:FACE, worn:S.girlWorn, look:LOOK()},
-        pos:S.pos, stored:S.stored, arrange, sel, night:S.night, curtain:S.curtain, curtainOpen:S.curtainOpen, floor:S.floor})}${roomTools()}</div>
+        pos:S.pos, stored:S.stored, arrange, sel, night:S.night, curtain:S.curtain, curtainOpen:S.curtainOpen, floor:S.floor, colors:colorMap()})}${roomTools()}
+        ${arrange?'':`<div class="anrow" role="group" aria-label="החיות שלי. כל נושא שמסיימים מביא חיה חדשה">${anim}</div>`}</div>
       ${arrange?arrangePanel():''}
-      <section class="card ${arrange?'hide':''}"><h2>החיות שלי</h2><p class="meta">כל נושא שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
-        <div class="carousel"><button class="arrow" data-act="scrollAn" data-v="-1" aria-label="חיות קודמות">${IC.next}</button><div class="animals">${anim}</div><button class="arrow" data-act="scrollAn" data-v="1" aria-label="עוד חיות">${IC.prev}</button></div></section>
     </div>
     <aside class="col practice">${practiceHtml()}${Shell.kid()?.trial?`<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div>`:''}</aside>`;
   fitRoom();
   const sc=document.querySelector('.shop .scroll'); if(sc) sc.scrollTop=keep.shop||0;
-  const an=document.querySelector('.animals'); if(an && keep.an!=null){ an.style.scrollBehavior='auto'; an.scrollLeft=keep.an; an.style.scrollBehavior=''; }
+  const an=document.querySelector('.anrow'); if(an && keep.an!=null) an.scrollLeft=keep.an;
+  const ch=document.querySelector('.chips .tabs'); if(ch && keep.chips!=null){ ch.style.scrollBehavior='auto'; ch.scrollLeft=keep.chips; ch.style.scrollBehavior=''; }
   let ov='';
   if(modal==='box') ov=`<div class="scrim"><div class="modal" role="dialog">${GIFT}<h2>תיבת הפתעה!</h2><p class="meta">בחרי מתנה אחת.</p><div class="choices">${offer.map(id=>`<button class="choice" data-act="pick" data-v="${id}"><div class="th">${thumb(id)}</div><b>${nameOf(id)}</b></button>`).join('')}</div></div></div>`;
   else if(modal) ov=`<div class="scrim"><div class="modal" role="dialog">${modal}<button class="btn primary" data-act="close">איזה כיף!</button></div></div>`;
@@ -416,10 +455,17 @@ const A={
   side(v){ side=v; preview=null; tab = v==='home' ? 'wallpaper' : v==='me' ? 'g-outfit' : 'outfit'; },
   tab(v){ tab=v; },
   preview(v){ preview = preview===v ? null : v; },
-  scrollAn(v){ const an=document.querySelector('.animals'); if(an) an.scrollBy({left:-v*258}); return false; },
+  chipScroll(v){ const t=document.querySelector('.chips .tabs'); if(t) t.scrollBy({left:-v*160}); return false; },
+  shop(){ S.shopOpen=!S.shopOpen; preview=null; save(); },
+  recolor(v){ const [id,c0]=v.split('|'), c=c0||null; const e=(S.colors ||= {})[id] ||= {c:null,owned:[],freeUsed:false};
+    if((e.c||null)===c) return;
+    if(c===null||e.owned.includes(c)){ e.c=c; save(); return; }
+    if(!e.freeUsed){ e.freeUsed=true; e.owned.push(c); e.c=c; save(); flash('הצבע הראשון במתנה!'); return; }
+    if(S.coins<RECOLOR_PRICE){ flash(`צבע חדש עולה ${RECOLOR_PRICE} מטבעות. עוד קצת תרגול!`); return; }
+    S.coins-=RECOLOR_PRICE; e.owned.push(c); e.c=c; save(); flash(`צבע חדש! ${RECOLOR_PRICE} מטבעות, והוא שלך.`); },
   buy(v){ const p=priceOf(v); if(S.coins<p) return; S.coins-=p; grant(v); preview=null; save();
     // the news goes on top of the home, where the new thing just appeared, and fades by itself
-    banner=`קנית: ${nameOf(v)}!`; clearTimeout(bannerT); bannerT=setTimeout(()=>{ banner=null; document.querySelector('.banner.ok')?.remove(); },2600); },
+    flash(`קנית: ${nameOf(v)}!`); },
   useWp(v){ S.wallpaper=v; save(); },
   useFloor(v){ S.floor=v; save(); },
   useCurtain(v){ S.curtain=v; save(); },

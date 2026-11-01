@@ -144,14 +144,11 @@ const Shell = (() => {
   /* ---------- top bar ---------- */
   let opts={}, menu=false, gate=null, screen=null, bumpN=0, lastCoins=null, bumpT=0;
   /* her animal's head, gently moving, next to the coins: the way into her home */
-  function petHtml(){
-    const h=opts.pet||homeOf(kidId), here=opts.page==='home';
-    let art, label;
-    if(h.chosen && CH.ANIMALS[h.animal]){
-      const w=h.worn||{}, head={hat:w.hat, hair:w.hair, glasses:w.glasses};
-      art=CH.drawChar(h.animal, head).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"'); label='הבית שלי';
-    } else { art=IC.gift; label='הבית שלי: חיה מחכה לך'; }
-    return here ? `<span class="sh-pet here" aria-hidden="true">${art}</span>` : `<a class="sh-pet ${bumpN?'happy':''}" href="home.html" aria-label="${label}" title="${label}">${art}</a>`;
+  /* her own designed face, gently moving, next to the coins: the way into her home */
+  function meHtml(){
+    const k=kid(), here=opts.page==='home', art=GL.drawGirlHead(k.face, lookOf(kidId));
+    return here ? `<span class="sh-pet here" style="--pc:${accentOf(k)}" aria-hidden="true">${art}</span>`
+      : `<a class="sh-pet ${bumpN?'happy':''}" style="--pc:${accentOf(k)}" href="home.html" aria-label="הבית שלי" title="הבית שלי">${art}</a>`;
   }
   function renderBar(){
     const bar=document.getElementById('bar'); if(!bar) return;
@@ -162,12 +159,11 @@ const Shell = (() => {
     if(lastCoins!=null && c>lastCoins){ bumpN=c-lastCoins; clearTimeout(bumpT); bumpT=setTimeout(()=>{ bumpN=0; renderBar(); },1500); }
     lastCoins=c;
     // the lessons page is the main page: settings live there. Every other page has a way back to it.
-    const start = opts.page==='lessons'
-      ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>`
-      : `<a class="sh-back" href="${opts.back||'index.html'}">${IC.back}<span>חזרה</span></a>`;
-    bar.innerHTML=`${start}<h1 class="sh-title">${opts.title||''}</h1>
-      ${petHtml()}
-      <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
+    // right side: (back) · coins · her face · title. Left side: settings, on the lessons map only.
+    const back = opts.page==='lessons' ? '' : `<a class="sh-back" href="${opts.back||'index.html'}">${IC.back}<span>חזרה</span></a>`;
+    const gear = opts.page==='lessons' ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>` : '';
+    bar.innerHTML=`${back}<span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>
+      ${meHtml()}<h1 class="sh-title">${opts.title||''}</h1>${gear}`;
   }
   function menuHtml(k){
     const others=KIDS.filter(x=>x.id!==k.id);

@@ -43,24 +43,33 @@ button.item:hover{border-color:var(--accent)}
 .ib:disabled{opacity:.45;cursor:default}
 .need{font-size:12px;color:var(--muted)}
 .state{font-size:13px;color:var(--good);font-weight:600}
+.item{position:relative}
+.tier{position:absolute;top:6px;inset-inline-start:6px;font-size:12px;font-weight:600;border-radius:999px;padding:1px 8px;background:#EDE7FB;color:#5B3BA8}
+.tier.legend{background:#FFF1C7;color:#7A5B00}
+.pick{margin:0 0 12px;display:flex;flex-direction:column;gap:6px}
+.pick b{font-size:15px}
+.dots{display:flex;gap:8px;flex-wrap:wrap}
+.dot{width:36px;height:36px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--line);padding:0}
+.dot.on{box-shadow:0 0 0 3px var(--ink)}
 /* shell: the shared top bar, first-entry screens, parent gate and parent area */
 .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);min-height:68px;position:relative;z-index:30}
 .bar svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .sh-me{position:relative}
-.sh-gear{width:50px;height:50px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);cursor:pointer;padding:0}
-.sh-gear:hover,.sh-gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
-.sh-gear svg{width:26px;height:26px}
+.sh-gear{width:48px;height:48px;border:0;background:transparent;display:grid;place-items:center;color:var(--muted);cursor:pointer;padding:0;border-radius:12px}
+.sh-gear:hover,.sh-gear[aria-expanded="true"]{color:var(--accent)}
+.sh-gear svg{width:30px;height:30px}
 .sh-back{display:flex;align-items:center;gap:6px;min-height:50px;padding:6px 18px 6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:17px;text-decoration:none}
 .sh-back:hover{border-color:var(--accent)}
 .sh-back svg{width:22px;height:22px}
 .sh-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;overflow:hidden;flex:none}
 .sh-av svg{width:100%;height:100%;display:block;stroke:none!important}
 .sh-title{flex:1;margin:0;text-align:start;font-family:var(--f-display);font-size:24px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sh-pet{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,var(--surface));border:2px solid transparent;overflow:hidden}
+.sh-pet{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--pc,var(--accent));border:2px solid transparent;overflow:hidden}
 a.sh-pet:hover{border-color:var(--accent)}
 .sh-pet svg{width:52px;height:52px;display:block;stroke:none!important;transform-origin:50% 85%;animation:sh-idle 5s ease-in-out infinite}
 a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
-.sh-pet.here{background:transparent}
+.sh-pet.here{cursor:default}
+
 @keyframes sh-idle{0%,62%,100%{transform:none}68%{transform:translateY(-3px) rotate(-7deg)}76%{transform:translateY(0) rotate(5deg)}84%{transform:rotate(-2deg)}}
 @keyframes sh-hop{0%,100%{transform:none}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(1px) scale(.98)}}
 .sh-bank{position:relative;display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600;font-size:22px;background:#FFF1C7;color:#5A4300;padding:6px 16px;border-radius:999px}
@@ -69,7 +78,7 @@ a.sh-pet:hover svg,.sh-pet.happy svg{animation:sh-hop .6s ease 2}
 .sh-plus{position:absolute;top:-6px;inset-inline-end:8px;font-size:18px;color:#1F7A4D;animation:sh-up 1.5s ease forwards;pointer-events:none}
 @keyframes sh-bump{40%{transform:scale(1.15)}}
 @keyframes sh-up{from{opacity:0;transform:translateY(8px)}20%{opacity:1}to{opacity:0;transform:translateY(-26px)}}
-.sh-menu{position:absolute;top:calc(100% + 8px);inset-inline-start:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px;width:330px;display:flex;flex-direction:column;gap:6px}
+.sh-menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px;width:330px;display:flex;flex-direction:column;gap:6px}
 .sh-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 10px;border-radius:12px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;text-align:start}
 .sh-row:hover{background:var(--bg)}
 .sh-row .sh-av{width:38px;height:38px}
@@ -253,10 +262,10 @@ const CATS = [
 ];
 const ITEMS = [
   // clothes (drawn on the body)
-  {cat:'outfit', id:'stripes', name:'חולצת פסים', price:4, svg:()=>`<path d="M52 170 Q100 150 148 170 L152 214 Q100 232 48 214Z" fill="#3E7BD8"/><path d="M50 182 Q100 166 150 182 M49 196 Q100 182 151 196 M49 210 Q100 198 151 210" stroke="#fff" stroke-width="6" fill="none"/>`},
-  {cat:'outfit', id:'dress', name:'שמלה', price:6, svg:()=>`<path d="M60 166 Q100 154 140 166 L146 186 L160 228 Q100 242 40 228 L54 186Z" fill="#E8577E"/><circle cx="80" cy="206" r="4" fill="#fff"/><circle cx="104" cy="214" r="4" fill="#fff"/><circle cx="126" cy="202" r="4" fill="#fff"/><circle cx="92" cy="186" r="4" fill="#fff"/><circle cx="118" cy="184" r="4" fill="#fff"/>`},
-  {cat:'outfit', id:'cape', name:'גלימה', price:8, svg:{back:()=>`<path d="M40 156 Q100 138 160 156 L176 236 Q100 226 24 236Z" fill="#7B4BC9"/>`, front:()=>`<path d="M66 156 L100 172 L134 156" stroke="#F2B21E" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="100" cy="172" r="7" fill="#F2B21E"/>`}},
-  {cat:'outfit', id:'overalls', name:'אוברול', price:5, svg:()=>`<path d="M58 186 L142 186 L150 224 Q100 238 50 224Z" fill="#2F9E8F"/><path d="M70 160 L74 190 M130 160 L126 190" stroke="#2F9E8F" stroke-width="9" stroke-linecap="round"/><rect x="86" y="194" width="28" height="18" rx="4" fill="#257E72"/>`},
+  {cat:'outfit', id:'stripes', name:'חולצת פסים', price:4, svg:(A,c)=>`<path d="M52 170 Q100 150 148 170 L152 214 Q100 232 48 214Z" fill="${c||'#3E7BD8'}"/><path d="M50 182 Q100 166 150 182 M49 196 Q100 182 151 196 M49 210 Q100 198 151 210" stroke="#fff" stroke-width="6" fill="none"/>`},
+  {cat:'outfit', id:'dress', name:'שמלה', price:6, svg:(A,c)=>`<path d="M60 166 Q100 154 140 166 L146 186 L160 228 Q100 242 40 228 L54 186Z" fill="${c||'#E8577E'}"/><circle cx="80" cy="206" r="4" fill="#fff"/><circle cx="104" cy="214" r="4" fill="#fff"/><circle cx="126" cy="202" r="4" fill="#fff"/><circle cx="92" cy="186" r="4" fill="#fff"/><circle cx="118" cy="184" r="4" fill="#fff"/>`},
+  {cat:'outfit', id:'cape', name:'גלימה', price:8, svg:{back:(A,c)=>`<path d="M40 156 Q100 138 160 156 L176 236 Q100 226 24 236Z" fill="${c||'#7B4BC9'}"/>`, front:()=>`<path d="M66 156 L100 172 L134 156" stroke="#F2B21E" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="100" cy="172" r="7" fill="#F2B21E"/>`}},
+  {cat:'outfit', id:'overalls', name:'אוברול', price:5, svg:(A,c)=>`<path d="M58 186 L142 186 L150 224 Q100 238 50 224Z" fill="${c||'#2F9E8F'}"/><path d="M70 160 L74 190 M130 160 L126 190" stroke="${c||'#2F9E8F'}" stroke-width="9" stroke-linecap="round"/><rect x="86" y="194" width="28" height="18" rx="4" fill="${c||'#2F9E8F'}"/><rect x="86" y="194" width="28" height="18" rx="4" fill="rgba(0,0,0,.18)"/>`},
   // hair (on the head, between the ears)
   {cat:'hair', id:'bangs', name:'פוני', price:3, svg:()=>`<path d="M54 82 Q60 40 100 40 Q140 40 146 82 Q132 64 120 74 Q110 58 100 72 Q88 58 80 74 Q68 62 54 82Z" fill="#4A2E22"/>`},
   {cat:'hair', id:'curls', name:'תלתלים', price:4, svg:()=>`<g fill="#D9783A"><circle cx="70" cy="56" r="14"/><circle cx="88" cy="46" r="15"/><circle cx="108" cy="44" r="15"/><circle cx="126" cy="50" r="14"/><circle cx="138" cy="64" r="12"/><circle cx="60" cy="70" r="11"/></g>`},
@@ -264,9 +273,9 @@ const ITEMS = [
   {cat:'hair', id:'tuft', name:'ציצית', price:2, svg:()=>`<path d="M96 46 Q86 22 104 18 Q96 30 108 34 Q104 24 118 26 Q106 38 104 48Z" fill="#6B3E26"/>`},
   // hats
   {cat:'hat', id:'crown', name:'כתר', price:10, svg:()=>`<path d="M66 50 L72 18 L88 38 L100 12 L112 38 L128 18 L134 50Z" fill="#F2C230" stroke="#C99A12" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="36" r="5" fill="#E8457A"/><circle cx="80" cy="42" r="4" fill="#3E7BD8"/><circle cx="120" cy="42" r="4" fill="#3E7BD8"/>`},
-  {cat:'hat', id:'beanie', name:'כובע צמר', price:5, svg:()=>`<path d="M48 62 Q52 18 100 16 Q148 18 152 62Z" fill="#E05A47"/><rect x="44" y="56" width="112" height="16" rx="8" fill="#F5F0E6"/><circle cx="100" cy="12" r="11" fill="#F5F0E6"/>`},
+  {cat:'hat', id:'beanie', name:'כובע צמר', price:5, svg:(A,c)=>`<path d="M48 62 Q52 18 100 16 Q148 18 152 62Z" fill="${c||'#E05A47'}"/><rect x="44" y="56" width="112" height="16" rx="8" fill="#F5F0E6"/><circle cx="100" cy="12" r="11" fill="#F5F0E6"/>`},
   {cat:'hat', id:'straw', name:'כובע קש', price:6, svg:()=>`<ellipse cx="100" cy="54" rx="80" ry="14" fill="#E8C66A"/><path d="M62 54 Q66 16 100 16 Q134 16 138 54Z" fill="#E8C66A"/><path d="M63 46 Q100 54 137 46 L138 54 Q100 60 62 54Z" fill="#3E9C6B"/>`},
-  {cat:'hat', id:'bow', name:'פפיון', price:3, svg:()=>`<path d="M118 48 L100 36 L102 62Z M118 48 L136 36 L134 62Z" fill="#E8457A"/><circle cx="118" cy="49" r="7" fill="#C72F63"/>`},
+  {cat:'hat', id:'bow', name:'פפיון', price:3, svg:(A,c)=>`<path d="M118 48 L100 36 L102 62Z M118 48 L136 36 L134 62Z" fill="${c||'#E8457A'}"/><circle cx="118" cy="49" r="7" fill="${c||'#E8457A'}"/><circle cx="118" cy="49" r="7" fill="rgba(0,0,0,.2)"/>`},
   // glasses
   {cat:'glasses', id:'round', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="4"><circle cx="78" cy="100" r="15"/><circle cx="122" cy="100" r="15"/><path d="M93 98 Q100 94 107 98"/></g>`},
   {cat:'glasses', id:'hearts', name:'משקפי לב', price:6, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="3.5"><path d="M78 116 L62 100 Q58 86 70 86 Q76 86 78 92 Q80 86 86 86 Q98 86 94 100Z"/><path d="M122 116 L106 100 Q102 86 114 86 Q120 86 122 92 Q124 86 130 86 Q142 86 138 100Z"/></g><path d="M94 96 Q100 92 106 96" stroke="#D81B60" stroke-width="3" fill="none"/>`},
@@ -277,6 +286,17 @@ const ITEMS = [
   {cat:'pet', id:'snail', name:'חילזון', price:5, svg:()=>`<path d="M8 234 Q40 238 64 232 Q60 222 50 224 L18 226Z" fill="#A5D6A7"/><circle cx="40" cy="214" r="18" fill="#C68B59"/><path d="M40 214 m-10 0 a10 10 0 1 1 10 10 a6 6 0 1 1 -6 -6" stroke="#8D5A35" stroke-width="3" fill="none"/><path d="M14 226 L8 210 M20 226 L18 210" stroke="#7CB342" stroke-width="3" stroke-linecap="round"/><circle cx="8" cy="208" r="3" fill="#2A2225"/><circle cx="18" cy="208" r="3" fill="#2A2225"/>`},
   {cat:'pet', id:'puppy', name:'גור כלבים', price:9, svg:()=>`<ellipse cx="34" cy="222" rx="24" ry="15" fill="#D7B48A"/><circle cx="30" cy="198" r="16" fill="#D7B48A"/><ellipse cx="17" cy="198" rx="6" ry="12" fill="#8D6E4F"/><ellipse cx="43" cy="198" rx="6" ry="12" fill="#8D6E4F"/><circle cx="25" cy="196" r="2.6" fill="#2A2225"/><circle cx="35" cy="196" r="2.6" fill="#2A2225"/><ellipse cx="30" cy="204" rx="4" ry="3" fill="#2A2225"/><path d="M56 216 Q66 206 62 198" stroke="#D7B48A" stroke-width="5" fill="none" stroke-linecap="round"/>`},
   {cat:'pet', id:'fish', name:'דג בצנצנת', price:7, svg:()=>`<path d="M14 196 Q10 236 36 238 Q62 236 58 196Z" fill="#B3E5FC" fill-opacity=".8" stroke="#81D4FA" stroke-width="3"/><rect x="12" y="190" width="48" height="8" rx="4" fill="#81D4FA"/><path d="M28 218 Q36 208 44 218 Q36 228 28 218Z M44 218 L52 212 L52 224Z" fill="#FF8A3D"/><circle cx="32" cy="216" r="1.8" fill="#2A2225"/>`},
+  // rare and legendary things to save up for
+  {cat:'outfit', id:'royal-cape', name:'גלימה מלכותית', price:180, svg:{back:(A,c)=>`<path d="M36 152 Q100 132 164 152 L182 238 Q100 226 18 238Z" fill="${c||'#B3203C'}"/><path d="M18 238 Q100 226 182 238 L180 230 Q100 218 20 230Z" fill="#fff"/><g fill="#2A2225"><circle cx="40" cy="232" r="2.5"/><circle cx="80" cy="228" r="2.5"/><circle cx="120" cy="228" r="2.5"/><circle cx="160" cy="232" r="2.5"/></g>`,
+    front:()=>`<path d="M60 152 Q100 168 140 152" stroke="#fff" stroke-width="14" fill="none" stroke-linecap="round"/><g fill="#2A2225"><circle cx="76" cy="160" r="2.2"/><circle cx="100" cy="164" r="2.2"/><circle cx="124" cy="160" r="2.2"/></g><circle cx="100" cy="176" r="8" fill="#F2C230" stroke="#C99A12" stroke-width="2"/><circle cx="100" cy="176" r="3" fill="#E8457A"/>`}},
+  {cat:'hat', id:'crown-gold', name:'כתר יהלומים', price:220, svg:()=>`<path d="M58 54 L64 10 L82 34 L100 4 L118 34 L136 10 L142 54Z" fill="#F7C948" stroke="#C99A12" stroke-width="3" stroke-linejoin="round"/><rect x="58" y="48" width="84" height="10" rx="3" fill="#E0A800"/>
+    <path d="M100 18 l7 9 -7 9 -7 -9z" fill="#7FD8F8" stroke="#fff" stroke-width="1.5"/><path d="M76 34 l5 6 -5 6 -5 -6z M124 34 l5 6 -5 6 -5 -6z" fill="#F06292" stroke="#fff" stroke-width="1.2"/><g fill="#fff"><circle cx="70" cy="53" r="2.4"/><circle cx="86" cy="53" r="2.4"/><circle cx="114" cy="53" r="2.4"/><circle cx="130" cy="53" r="2.4"/></g>
+    <path d="M150 20 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#FFF3C4"/>`},
+  {cat:'glasses', id:'diamond', name:'משקפי יהלומים', price:70, svg:()=>`<g fill="#B3E5FC" fill-opacity=".75" stroke="#4FC3F7" stroke-width="3" stroke-linejoin="round"><path d="M78 84 L95 96 L78 116 L61 96Z"/><path d="M122 84 L139 96 L122 116 L105 96Z"/></g><path d="M94 96 Q100 92 106 96" stroke="#4FC3F7" stroke-width="3" fill="none"/><g fill="#fff"><circle cx="74" cy="92" r="2.4"/><circle cx="118" cy="92" r="2.4"/></g>`},
+  {cat:'pet', id:'dragon', name:'דרקון קטן', price:200, svg:()=>`<path d="M14 214 Q4 196 16 188 Q16 200 26 204Z" fill="#7E57C2"/><path d="M52 210 Q66 202 64 188 Q74 204 60 218Z" fill="#7E57C2"/>
+    <ellipse cx="38" cy="220" rx="22" ry="16" fill="#9575CD"/><ellipse cx="38" cy="226" rx="13" ry="9" fill="#D1C4E9"/><circle cx="30" cy="196" r="13" fill="#9575CD"/>
+    <path d="M22 186 L24 176 L30 184Z M34 184 L38 174 L40 186Z" fill="#FFD54F"/><circle cx="26" cy="194" r="2.6" fill="#2A2225"/><circle cx="34" cy="194" r="2.6" fill="#2A2225"/>
+    <path d="M18 202 Q12 204 8 200" stroke="#FF8A65" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M58 218 Q72 222 68 234 Q62 226 56 228Z" fill="#9575CD"/>`},
   // objects (held on the right)
   {cat:'object', id:'balloon', name:'בלון', price:3, svg:()=>`<path d="M176 92 Q170 140 154 176" stroke="#555" stroke-width="2" fill="none"/><ellipse cx="178" cy="62" rx="20" ry="25" fill="#E8457A"/><path d="M172 87 L184 87 L178 94Z" fill="#E8457A"/><ellipse cx="171" cy="54" rx="5" ry="8" fill="#fff" opacity=".45"/>`},
   {cat:'object', id:'wand', name:'שרביט קסמים', price:6, svg:()=>`<path d="M156 186 L182 126" stroke="#6D4C41" stroke-width="6" stroke-linecap="round"/><path d="M184 102 L189 115 L203 116 L192 124 L196 138 L184 130 L172 138 L176 124 L165 116 L179 115Z" fill="#FFD54F" stroke="#E0A800" stroke-width="2"/>`},
@@ -287,10 +307,11 @@ const itemById = id => ITEMS.find(i=>i.id===id);
 const LAYER_ORDER = ['outfit','hair','hat','glasses','object','pet'];
 
 /* draw one character. worn = {cat: itemId}. preview = {cat: itemId} overrides (for "try on") */
-function drawChar(animal, worn={}, preview={}){
+/* colors = {itemId: '#hex'} — items she recoloured (only items whose svg takes a colour use it) */
+function drawChar(animal, worn={}, preview={}, colors={}){
   const A = ANIMALS[animal], w = {...worn, ...preview};
   const it = c => w[c] ? itemById(w[c]) : null;
-  const part = (item, side) => !item ? '' : typeof item.svg === 'function' ? (side==='front' ? item.svg(A) : '') : (item.svg[side] ? item.svg[side](A) : '');
+  const part = (item, side) => !item ? '' : typeof item.svg === 'function' ? (side==='front' ? item.svg(A, colors[item.id]) : '') : (item.svg[side] ? item.svg[side](A, colors[item.id]) : '');
   const out = it('outfit');
   return `<svg viewBox="-6 -18 216 260" role="img" aria-label="${A.name}">
     ${part(out,'back')}
@@ -371,21 +392,44 @@ const HAIR_STYLES=[
   {id:'short', name:'קצר', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L97 84 Q91 91 84 83 L36 83 Q29 91 23 84Z"/>`,
     front:`<path d="M26 54 C25 30 42 20 60 20 C78 20 95 30 94 54 C80 46 40 46 26 54Z"/>`, ties:[]},
   {id:'pigtails', name:'קוקיות', back:`<path d="M24 48 C6 58 6 92 16 106 C21 88 26 72 31 58Z"/><path d="M96 48 C114 58 114 92 104 106 C99 88 94 72 89 58Z"/>`,
-    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[27,52],[93,52]]}
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[27,52],[93,52]]},
+  /* bought in the shop (price), the rest are free */
+  {id:'ballet', name:'בובה של בלט', price:25, back:`<circle cx="60" cy="14" r="14"/>`,
+    front:`<path d="M26 58 C24 30 42 21 60 21 C78 21 96 30 94 58 C88 42 76 34 60 34 C44 34 32 42 26 58Z"/>`, ties:[[60,27]]},
+  {id:'fringe', name:'פוני פרוע', price:30, back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L96 76 Q90 80 86 72 L34 72 Q30 80 24 76Z"/>`,
+    front:`<path d="M24 56 C22 28 42 17 60 17 C80 17 98 28 96 56 L90 50 L86 58 L80 47 L74 56 L68 45 L62 55 L56 44 L50 55 L44 46 L38 56 L33 47 L28 56Z"/>`, ties:[]},
+  {id:'mohawk', name:'מוהוק', price:40, back:'',
+    front:`<path d="M30 46 C32 30 44 23 60 23 C76 23 88 30 90 46 C84 36 74 31 60 31 C46 31 36 36 30 46Z" opacity=".35"/><path d="M52 34 L48 18 L55 22 L54 6 L60 16 L64 2 L66 18 L72 10 L70 24 L76 20 L68 36Z"/>`, ties:[]},
+  {id:'halfshave', name:'חצי תלתלים חצי מגולח', price:50, back:[[30,30,13],[44,19,13],[23,46,12],[22,63,11],[24,79,10],[27,94,9]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''),
+    front:[[33,42,8],[45,33,8.5],[57,29,8.5]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')+`<path d="M62 22 C80 22 94 32 94 56 C90 42 78 34 62 34Z" opacity=".35"/>`, ties:[]},
+  {id:'dreads', name:'ראסטות', price:60, back:[[26,60],[22,72],[25,86],[30,98],[94,60],[98,72],[95,86],[90,98],[36,100],[84,100]].map(([x,y])=>`<rect x="${x-5}" y="${y-40}" width="10" height="${40+ (y%3)*6}" rx="5"/>`).join('')+`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58Z"/>`,
+    front:`<path d="M26 56 C26 30 42 20 60 20 C78 20 94 30 94 56 C84 44 72 38 60 38 C48 38 36 44 26 56Z"/><rect x="25" y="44" width="9" height="34" rx="4.5"/><rect x="86" y="44" width="9" height="34" rx="4.5"/>`, ties:[]}
 ];
 const HAIR_COLORS=[
   {id:'black', name:'שחור', fill:'#1F1B24', price:0},{id:'dark', name:'כהה', fill:'#2E2A33', price:0},
   {id:'darkbrown', name:'חום כהה', fill:'#4A2C1D', price:0},{id:'brown', name:'חום', fill:'#6B3E26', price:0},
   {id:'lightbrown', name:'חום בהיר', fill:'#A0673A', price:0},{id:'blonde', name:'בלונדיני', fill:'#E2B85C', price:0},
   {id:'ginger', name:'ג׳ינג׳י', fill:'#C2562A', price:0},
-  {id:'pink', name:'ורוד', fill:'#F28DB2', price:8},{id:'purple', name:'סגול', fill:'#9B6BD6', price:8},{id:'sky', name:'תכלת', fill:'#7CC6F0', price:8}
+  {id:'pink', name:'ורוד', fill:'#F28DB2', price:8},{id:'purple', name:'סגול', fill:'#9B6BD6', price:8},{id:'sky', name:'תכלת', fill:'#7CC6F0', price:8},
+  {id:'gold', name:'זהב', fill:'#E9B824', price:25},{id:'turquoise', name:'טורקיז', fill:'#2BB5A8', price:25},{id:'green', name:'ירוק', fill:'#5CB85C', price:25}
 ];
+/* kinds: color (the whole hair), toggle (worn on top, groups can't be worn together), two (two-colour: half-half or one streak), style (a paid hairstyle) */
 const HAIR_SPECIALS=[
-  {id:'rainbow', name:'שיער בצבע קשת', price:15, kind:'color'},
+  {id:'rainbow', name:'שיער בצבע קשת', price:70, kind:'color'},
+  {id:'half', name:'חצי־חצי', price:35, kind:'two'},
+  {id:'streak', name:'קווצה צבעונית', price:20, kind:'two'},
   {id:'glitter', name:'נצנצים בשיער', price:10, kind:'toggle'},
   {id:'ribbon', name:'קוקו עם סרט', price:8, kind:'toggle'},
-  {id:'bow', name:'פפיון ורוד', price:6, kind:'toggle'}
+  {id:'bow', name:'פפיון ורוד', price:6, kind:'toggle'},
+  {id:'clips', name:'סיכות', price:12, kind:'toggle'},
+  {id:'beads', name:'חרוזים בשיער', price:15, kind:'toggle'},
+  {id:'rstreaks', name:'פסים צבעוניים', price:35, kind:'toggle'},
+  {id:'flowercrown', name:'זר פרחים', price:30, kind:'toggle', group:'top'},
+  {id:'tiara', name:'טיארה', price:80, kind:'toggle', group:'top'},
+  ...HAIR_STYLES.filter(h=>h.price).map(h=>({id:h.id, name:h.name, price:h.price, kind:'style'}))
 ];
+/* price tiers: so there is something to save up for */
+const tierOf=p=>p>=150?{id:'legend',name:'אגדי',badge:'👑'}:p>=60?{id:'rare',name:'נדיר',badge:'💎'}:p>=20?{id:'special',name:'מיוחד',badge:''}:{id:'basic',name:'',badge:''};
 const DEFAULT_LOOKS={lili:{hair:'buns',color:'brown',owned:[]}, nori:{hair:'long',color:'dark',bow:true,owned:['bow']}, test:{hair:'long',color:'pink',owned:['pink']}};
 const lookFor=(face,look)=>({...(DEFAULT_LOOKS[face]||DEFAULT_LOOKS.lili),...(look||{})});
 let hairGrad=0;
@@ -399,63 +443,79 @@ function hairSvg(look){ // returns {defs, back, front, top}
   const bow=look.bow&&!(look.ribbon&&st.ties.length)?`<path d="M82 24 l9-6 -1 11z M82 24 l11 3 -8 6z" fill="#E8457A"/><circle cx="84" cy="26" r="3" fill="#C72F63"/>`:'';
   const spark=(x,y)=>`<path d="M${x} ${y-4} L${x+1.2} ${y-1.2} L${x+4} ${y} L${x+1.2} ${y+1.2} L${x} ${y+4} L${x-1.2} ${y+1.2} L${x-4} ${y} L${x-1.2} ${y-1.2}Z" fill="#fff"/>`;
   const glitter=look.glitter?[[40,28],[58,23],[78,27],[33,44],[88,42],[50,36],[70,35]].map(([x,y])=>spark(x,y)).join(''):'';
-  return {defs, back:`<g fill="${fill}">${st.back}</g>`, front:`<g fill="${fill}">${st.front}</g>${ties}${bow}${glitter}`};
+  const colorFill=id=>id==='rainbow'?fill:(HAIR_COLORS.find(c=>c.id===id)||{}).fill;
+  let back=`<g fill="${fill}">${st.back}</g>`, front=`<g fill="${fill}">${st.front}</g>`;
+  // half-half: the right side of the hair (her left) in the second colour
+  if(look.half && look.color2 && colorFill(look.color2)){ const cid='hh'+(++hairGrad), f2=colorFill(look.color2);
+    defs+=`<clipPath id="${cid}"><rect x="60" y="-20" width="80" height="260"/></clipPath>`;
+    back+=`<g fill="${f2}" clip-path="url(#${cid})">${st.back}</g>`; front+=`<g fill="${f2}" clip-path="url(#${cid})">${st.front}</g>`; }
+  // one coloured lock, like a hair extension
+  const streak=look.streak && look.streakColor && colorFill(look.streakColor) ? `<path d="M44 22 C38 32 34 44 33 58${['long','braid','pigtails','dreads','pony'].includes(st.id)?' C33 70 31 86 28 100':''}" stroke="${colorFill(look.streakColor)}" stroke-width="7" fill="none" stroke-linecap="round"/>` : '';
+  const rstreaks=look.rstreaks?['#F25C5C','#F2D24B','#4FA3E8'].map((c,k)=>`<path d="M${66+k*7} 22 C${72+k*7} 32 ${76+k*6} 44 ${78+k*5} 56" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round"/>`).join(''):'';
+  const clips=look.clips?`<rect x="34" y="40" width="12" height="5" rx="2.5" fill="#4FA3E8" transform="rotate(-30 40 42)"/><rect x="74" y="40" width="12" height="5" rx="2.5" fill="#F28DB2" transform="rotate(30 80 42)"/>`:'';
+  const beads=look.beads?[[27,62,'#F25C5C'],[26,72,'#F2D24B'],[93,62,'#4FA3E8'],[94,72,'#5CC97B']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="3.6" fill="${c}" stroke="#fff" stroke-width="1"/>`).join(''):'';
+  const flowercrown=look.flowercrown?`<path d="M28 34 Q60 14 92 34" stroke="#4CAF50" stroke-width="3" fill="none"/>${[[30,32,'#FF8AB3'],[42,24,'#FFD54F'],[54,20,'#B39DDB'],[66,20,'#FF8AB3'],[78,24,'#FFD54F'],[90,32,'#B39DDB']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="5" fill="${c}"/><circle cx="${x}" cy="${y}" r="1.8" fill="#fff"/>`).join('')}`:'';
+  const tiara=look.tiara?`<path d="M36 28 Q60 16 84 28 L80 22 L72 24 L66 12 L60 20 L54 12 L48 24 L40 22Z" fill="#E6E9F0" stroke="#AAB4C3" stroke-width="1.5" stroke-linejoin="round"/><circle cx="60" cy="18" r="3" fill="#7CC6F0"/><circle cx="48" cy="22" r="2" fill="#F28DB2"/><circle cx="72" cy="22" r="2" fill="#F28DB2"/>`:'';
+  return {defs, back, front:`${front}${streak}${rstreaks}${ties}${bow}${clips}${beads}${flowercrown}${tiara}${glitter}`};
 }
 const GIRL_CATS=[{id:'g-outfit',name:'בגדים'},{id:'g-shoes',name:'נעליים'},{id:'g-head',name:'לראש'},{id:'g-glasses',name:'משקפיים'}];
 const sleeves=c=>`<path d="M38 98 L27 118 L35 122 L45 106Z M82 98 L93 118 L85 122 L75 106Z" fill="${c}"/>`;
 const longSleeves=c=>`<path d="M40 100 L28 146 M80 100 L92 146" stroke="${c}" stroke-width="12" stroke-linecap="round"/>`;
 const GIRL_ITEMS=[
   // clothes: replace the default t-shirt and shorts
-  {cat:'g-outfit', id:'g-dress', name:'שמלה פרחונית', price:6, svg:()=>`${sleeves('#F06292')}<path d="M40 96 Q60 90 80 96 L84 118 L98 176 Q60 186 22 176 L36 118Z" fill="#F06292"/>
+  {cat:'g-outfit', id:'g-dress', main:'#F06292', name:'שמלה פרחונית', price:6, svg:()=>`${sleeves('#F06292')}<path d="M40 96 Q60 90 80 96 L84 118 L98 176 Q60 186 22 176 L36 118Z" fill="#F06292"/>
     ${[[46,128],[70,134],[56,156],[36,162],[80,160]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="#fff"/><circle cx="${x}" cy="${y}" r="2" fill="#FFD54F"/>`).join('')}`},
-  {cat:'g-outfit', id:'g-overalls', name:'סרבל ג׳ינס', price:6, svg:()=>`${sleeves('#FFD54F')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#FFD54F"/>
+  {cat:'g-outfit', id:'g-overalls', main:'#3F6FB5', name:'סרבל ג׳ינס', price:6, svg:()=>`${sleeves('#FFD54F')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#FFD54F"/>
     <path d="M40 118 H80 L84 172 H63 L60 152 L57 172 H36Z" fill="#3F6FB5"/><path d="M45 99 L46 120 M75 99 L74 120" stroke="#3F6FB5" stroke-width="5"/><rect x="51" y="124" width="18" height="12" rx="3" fill="#335C99"/>`},
-  {cat:'g-outfit', id:'g-tutu', name:'שמלת נסיכה', price:10, svg:()=>`${sleeves('#B39DDB')}<path d="M42 98 Q60 92 78 98 L80 132 H40Z" fill="#B39DDB"/>
+  {cat:'g-outfit', id:'g-tutu', main:'#E1BEE7', name:'שמלת נסיכה', price:10, svg:()=>`${sleeves('#B39DDB')}<path d="M42 98 Q60 92 78 98 L80 132 H40Z" fill="#B39DDB"/>
     <path d="M40 128 H80 L106 168 Q60 182 14 168Z" fill="#E1BEE7"/><path d="M40 128 H80 L96 160 Q60 172 24 160Z" fill="#F3E5F5"/>
     <g fill="#fff">${[[30,164],[52,170],[76,168],[94,162],[62,150]].map(([x,y])=>`<path d="M${x} ${y-4} L${x+1.5} ${y-1} L${x+4} ${y} L${x+1.5} ${y+1} L${x} ${y+4} L${x-1.5} ${y+1} L${x-4} ${y} L${x-1.5} ${y-1}Z"/>`).join('')}</g>
     <path d="M52 100 L60 108 L68 100" stroke="#F2C230" stroke-width="3" fill="none"/>`},
-  {cat:'g-outfit', id:'g-sport', name:'חליפת ספורט', price:7, svg:()=>`${longSleeves('#26A69A')}<path d="M36 98 Q60 90 84 98 L86 142 H34Z" fill="#26A69A"/>
+  {cat:'g-outfit', id:'g-sport', main:'#26A69A', name:'חליפת ספורט', price:7, svg:()=>`${longSleeves('#26A69A')}<path d="M36 98 Q60 90 84 98 L86 142 H34Z" fill="#26A69A"/>
     <path d="M60 96 V142" stroke="#fff" stroke-width="2.5"/><path d="M36 140 H84 L84 204 H64 L60 160 L56 204 H36Z" fill="#26A69A"/><path d="M38 144 L38 202 M82 144 L82 202" stroke="#fff" stroke-width="3"/>`},
-  {cat:'g-outfit', id:'g-hoodie', name:'קפוצ׳ון', price:7, svg:()=>`${longSleeves('#FF8A65')}<path d="M40 144 H80 L80 204 H64 L60 160 L56 204 H40Z" fill="#455A64"/>
+  {cat:'g-outfit', id:'g-hoodie', main:'#FF8A65', name:'קפוצ׳ון', price:7, svg:()=>`${longSleeves('#FF8A65')}<path d="M40 144 H80 L80 204 H64 L60 160 L56 204 H40Z" fill="#455A64"/>
     <path d="M34 98 Q60 88 86 98 L88 148 H32Z" fill="#FF8A65"/><path d="M44 128 H76 L72 144 H48Z" fill="#F4724B"/><path d="M54 98 L54 114 M66 98 L66 114" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`},
-  {cat:'g-outfit', id:'g-skirt', name:'חולצה וחצאית', price:5, svg:()=>`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff"/>
+  {cat:'g-outfit', id:'g-skirt', main:'#7444C9', name:'חולצה וחצאית', price:5, svg:()=>`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff"/>
     <path d="M37 108 H83 M36 120 H84 M36 132 H84" stroke="#E8577E" stroke-width="5"/><path d="M36 136 H84 L94 170 H26Z" fill="#7444C9"/>`},
   // shoes
-  {cat:'g-shoes', id:'g-sneakers', name:'נעלי ספורט', price:4, svg:()=>`<g><path d="M36 214 Q36 202 46 202 Q56 202 58 214Z M62 214 Q64 202 74 202 Q84 202 84 214Z" fill="#fff" stroke="#9AA6B8" stroke-width="1.5"/><path d="M40 208 H54 M66 208 H80" stroke="#E8457A" stroke-width="3"/></g>`},
-  {cat:'g-shoes', id:'g-boots', name:'מגפיים', price:5, svg:()=>`<g fill="#E05A47"><rect x="39" y="186" width="16" height="26" rx="4"/><rect x="65" y="186" width="16" height="26" rx="4"/><path d="M37 214 Q37 206 47 206 Q59 206 59 214Z M63 214 Q63 206 73 206 Q85 206 85 214Z"/></g>`},
-  {cat:'g-shoes', id:'g-sparkle', name:'נעליים נוצצות', price:6, svg:()=>`<path d="M36 214 Q36 203 46 203 Q57 203 58 214Z M62 214 Q63 203 74 203 Q84 203 84 214Z" fill="#F2C230"/><g fill="#fff"><circle cx="44" cy="208" r="1.6"/><circle cx="51" cy="210" r="1.6"/><circle cx="70" cy="208" r="1.6"/><circle cx="77" cy="210" r="1.6"/></g>`},
+  {cat:'g-shoes', id:'g-sneakers', main:'#E8457A', name:'נעלי ספורט', price:4, svg:()=>`<g><path d="M36 214 Q36 202 46 202 Q56 202 58 214Z M62 214 Q64 202 74 202 Q84 202 84 214Z" fill="#fff" stroke="#9AA6B8" stroke-width="1.5"/><path d="M40 208 H54 M66 208 H80" stroke="#E8457A" stroke-width="3"/></g>`},
+  {cat:'g-shoes', id:'g-boots', main:'#E05A47', name:'מגפיים', price:5, svg:()=>`<g fill="#E05A47"><rect x="39" y="186" width="16" height="26" rx="4"/><rect x="65" y="186" width="16" height="26" rx="4"/><path d="M37 214 Q37 206 47 206 Q59 206 59 214Z M63 214 Q63 206 73 206 Q85 206 85 214Z"/></g>`},
+  {cat:'g-shoes', id:'g-sparkle', main:'#F2C230', name:'נעליים נוצצות', price:6, svg:()=>`<path d="M36 214 Q36 203 46 203 Q57 203 58 214Z M62 214 Q63 203 74 203 Q84 203 84 214Z" fill="#F2C230"/><g fill="#fff"><circle cx="44" cy="208" r="1.6"/><circle cx="51" cy="210" r="1.6"/><circle cx="70" cy="208" r="1.6"/><circle cx="77" cy="210" r="1.6"/></g>`},
   // on the head
-  {cat:'g-head', id:'g-crown', name:'כתר', price:8, svg:()=>`<path d="M40 26 L42 6 L52 18 L60 2 L68 18 L78 6 L80 26Z" fill="#F2C230" stroke="#C99A12" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="16" r="3" fill="#E8457A"/>`},
-  {cat:'g-head', id:'g-headband', name:'קשת', price:3, svg:()=>`<path d="M27 50 Q30 18 60 17 Q90 18 93 50" stroke="#E8457A" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="34" cy="28" r="5" fill="#FFD54F"/>`},
-  {cat:'g-head', id:'g-cap', name:'כובע מצחייה', price:4, svg:()=>`<path d="M25 42 Q28 12 60 12 Q92 12 95 42Z" fill="#3E7BD8"/><path d="M25 42 Q8 42 4 48 Q20 50 40 44Z" fill="#2F5BD3"/><circle cx="60" cy="13" r="3" fill="#2F5BD3"/>`},
-  {cat:'g-head', id:'g-catears', name:'אוזני חתול', price:4, svg:()=>`<path d="M28 34 L30 6 L48 22Z M92 34 L90 6 L72 22Z" fill="#2E2A33"/><path d="M33 26 L34 14 L42 21Z M87 26 L86 14 L78 21Z" fill="#F4A9B8"/><path d="M27 40 Q30 18 60 17 Q90 18 93 40" stroke="#2E2A33" stroke-width="4" fill="none"/>`},
-  {cat:'g-head', id:'g-flower', name:'פרח בשיער', price:3, svg:()=>`<g fill="#FF8AB3"><circle cx="30" cy="30" r="6"/><circle cx="39" cy="26" r="6"/><circle cx="40" cy="36" r="6"/><circle cx="31" cy="40" r="6"/><circle cx="25" cy="35" r="6"/></g><circle cx="33" cy="34" r="4.5" fill="#FFD54F"/>`},
+  {cat:'g-head', id:'g-crown', main:'#F2C230', name:'כתר', price:8, svg:()=>`<path d="M40 26 L42 6 L52 18 L60 2 L68 18 L78 6 L80 26Z" fill="#F2C230" stroke="#C99A12" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="16" r="3" fill="#E8457A"/>`},
+  {cat:'g-head', id:'g-headband', main:'#E8457A', name:'קשת', price:3, svg:()=>`<path d="M27 50 Q30 18 60 17 Q90 18 93 50" stroke="#E8457A" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="34" cy="28" r="5" fill="#FFD54F"/>`},
+  {cat:'g-head', id:'g-cap', main:'#3E7BD8', name:'כובע מצחייה', price:4, svg:()=>`<path d="M25 42 Q28 12 60 12 Q92 12 95 42Z" fill="#3E7BD8"/><path d="M25 42 Q8 42 4 48 Q20 50 40 44Z" fill="#2F5BD3"/><circle cx="60" cy="13" r="3" fill="#2F5BD3"/>`},
+  {cat:'g-head', id:'g-catears', main:'#2E2A33', name:'אוזני חתול', price:4, svg:()=>`<path d="M28 34 L30 6 L48 22Z M92 34 L90 6 L72 22Z" fill="#2E2A33"/><path d="M33 26 L34 14 L42 21Z M87 26 L86 14 L78 21Z" fill="#F4A9B8"/><path d="M27 40 Q30 18 60 17 Q90 18 93 40" stroke="#2E2A33" stroke-width="4" fill="none"/>`},
+  {cat:'g-head', id:'g-flower', main:'#FF8AB3', name:'פרח בשיער', price:3, svg:()=>`<g fill="#FF8AB3"><circle cx="30" cy="30" r="6"/><circle cx="39" cy="26" r="6"/><circle cx="40" cy="36" r="6"/><circle cx="31" cy="40" r="6"/><circle cx="25" cy="35" r="6"/></g><circle cx="33" cy="34" r="4.5" fill="#FFD54F"/>`},
   // glasses (eyes at 47,60 and 73,60)
-  {cat:'g-glasses', id:'g-round', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="2.5"><circle cx="47" cy="60" r="9"/><circle cx="73" cy="60" r="9"/><path d="M56 59 Q60 56 64 59"/></g>`},
-  {cat:'g-glasses', id:'g-hearts', name:'משקפי לב', price:5, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="2"><path d="M47 70 L37 60 Q34 51 41 51 Q45 51 47 55 Q49 51 53 51 Q60 51 57 60Z"/><path d="M73 70 L63 60 Q60 51 67 51 Q71 51 73 55 Q75 51 79 51 Q86 51 83 60Z"/></g><path d="M57 57 Q60 55 63 57" stroke="#D81B60" stroke-width="2" fill="none"/>`},
-  {cat:'g-glasses', id:'g-shades', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="36" y="54" width="21" height="13" rx="5"/><rect x="63" y="54" width="21" height="13" rx="5"/></g><path d="M57 58 H63" stroke="#263238" stroke-width="2.5"/><path d="M40 57 H46" stroke="#fff" stroke-width="2" opacity=".6" stroke-linecap="round"/>`}
+  {cat:'g-glasses', id:'g-round', main:'#2A2225', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="2.5"><circle cx="47" cy="60" r="9"/><circle cx="73" cy="60" r="9"/><path d="M56 59 Q60 56 64 59"/></g>`},
+  {cat:'g-glasses', id:'g-hearts', main:'#F06292', name:'משקפי לב', price:5, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="2"><path d="M47 70 L37 60 Q34 51 41 51 Q45 51 47 55 Q49 51 53 51 Q60 51 57 60Z"/><path d="M73 70 L63 60 Q60 51 67 51 Q71 51 73 55 Q75 51 79 51 Q86 51 83 60Z"/></g><path d="M57 57 Q60 55 63 57" stroke="#D81B60" stroke-width="2" fill="none"/>`},
+  {cat:'g-glasses', id:'g-shades', main:'#263238', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="36" y="54" width="21" height="13" rx="5"/><rect x="63" y="54" width="21" height="13" rx="5"/></g><path d="M57 58 H63" stroke="#263238" stroke-width="2.5"/><path d="M40 57 H46" stroke="#fff" stroke-width="2" opacity=".6" stroke-linecap="round"/>`}
 ];
 const girlItem=id=>GIRL_ITEMS.find(i=>i.id===id);
+/* an item in its own colour: its main colour swapped for the one she chose (shades and details stay) */
+const paintItem=(it,colors={})=>{ const out=it.svg(); const c=colors[it.id]; return c&&it.main?out.split(it.main).join(c):out; };
 /* where each category is cropped for shop thumbnails */
 const GIRL_CROP={'g-outfit':'4 90 112 126','g-shoes':'22 176 76 44','g-head':'0 -2 120 72','g-glasses':'24 30 72 52'};
-/* look: {hair, color, glitter, ribbon, bow}; leave it out to get her default look */
-function drawGirl(face, worn={}, preview={}, look=null){
+/* look: {hair, color, glitter, ribbon, bow, half+color2, streak+streakColor, clips, beads, rstreaks, flowercrown, tiara};
+   leave it out to get her default look. colors: {itemId:'#hex'} paints her clothes in the colours she chose. */
+function drawGirl(face, worn={}, preview={}, look=null, colors={}){
   const H=hairSvg(lookFor(face,look)), G={...(GIRLS[face]||GIRLS.lili), back:H.defs?`<defs>${H.defs}</defs>${H.back}`:H.back, front:H.front}, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
   const outfit=it('g-outfit'), shoes=it('g-shoes');
   return `<svg viewBox="0 0 120 224" role="img" aria-label="אני">
     ${G.back}
     <rect x="42" y="160" width="12" height="48" rx="5" fill="${sk}"/><rect x="66" y="160" width="12" height="48" rx="5" fill="${sk}"/>
-    ${shoes?shoes.svg():`<path d="M36 214 Q36 204 46 204 Q56 204 57 214Z M63 214 Q64 204 74 204 Q84 204 84 214Z" fill="#5A6577"/>`}
+    ${shoes?paintItem(shoes,colors):`<path d="M36 214 Q36 204 46 204 Q56 204 57 214Z M63 214 Q64 204 74 204 Q84 204 84 214Z" fill="#5A6577"/>`}
     <path d="M40 100 L29 146 M80 100 L91 146" stroke="${sk}" stroke-width="10" stroke-linecap="round"/>
     <circle cx="29" cy="149" r="6" fill="${sk}"/><circle cx="91" cy="149" r="6" fill="${sk}"/>
-    ${outfit?outfit.svg():`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff" stroke="#E3E7EE" stroke-width="1.5"/><path d="M36 138 H84 L86 168 H63 L60 152 L57 168 H34Z" fill="#3E7BD8"/>`}
+    ${outfit?paintItem(outfit,colors):`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff" stroke="#E3E7EE" stroke-width="1.5"/><path d="M36 138 H84 L86 168 H63 L60 152 L57 168 H34Z" fill="#3E7BD8"/>`}
     <rect x="54" y="84" width="12" height="14" rx="4" fill="${sk}"/>
     <circle cx="60" cy="56" r="34" fill="${sk}"/>
     <circle cx="47" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="73" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="48.2" cy="58.8" r="1.1" fill="#fff"/><circle cx="74.2" cy="58.8" r="1.1" fill="#fff"/>
     <ellipse cx="40" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/><ellipse cx="80" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/>
     <path d="M53 73 Q60 79 67 73" stroke="#2B2B2B" stroke-width="2.4" fill="none" stroke-linecap="round"/>
     ${G.front}
-    ${it('g-head')?it('g-head').svg():''}${it('g-glasses')?it('g-glasses').svg():''}
+    ${it('g-head')?paintItem(it('g-head'),colors):''}${it('g-glasses')?paintItem(it('g-glasses'),colors):''}
   </svg>`;
 }
 /* her head alone, for the small round faces in menus */
@@ -556,14 +616,11 @@ function drawGirlHead(face, look=null){ return drawGirl(face,{},{},look).replace
   /* ---------- top bar ---------- */
   let opts={}, menu=false, gate=null, screen=null, bumpN=0, lastCoins=null, bumpT=0;
   /* her animal's head, gently moving, next to the coins: the way into her home */
-  function petHtml(){
-    const h=opts.pet||homeOf(kidId), here=opts.page==='home';
-    let art, label;
-    if(h.chosen && CH.ANIMALS[h.animal]){
-      const w=h.worn||{}, head={hat:w.hat, hair:w.hair, glasses:w.glasses};
-      art=CH.drawChar(h.animal, head).replace(/viewBox="[^"]*"/,'viewBox="18 -14 164 172"'); label='הבית שלי';
-    } else { art=IC.gift; label='הבית שלי: חיה מחכה לך'; }
-    return here ? `<span class="sh-pet here" aria-hidden="true">${art}</span>` : `<a class="sh-pet ${bumpN?'happy':''}" href="home.html" aria-label="${label}" title="${label}">${art}</a>`;
+  /* her own designed face, gently moving, next to the coins: the way into her home */
+  function meHtml(){
+    const k=kid(), here=opts.page==='home', art=GL.drawGirlHead(k.face, lookOf(kidId));
+    return here ? `<span class="sh-pet here" style="--pc:${accentOf(k)}" aria-hidden="true">${art}</span>`
+      : `<a class="sh-pet ${bumpN?'happy':''}" style="--pc:${accentOf(k)}" href="home.html" aria-label="הבית שלי" title="הבית שלי">${art}</a>`;
   }
   function renderBar(){
     const bar=document.getElementById('bar'); if(!bar) return;
@@ -574,12 +631,11 @@ function drawGirlHead(face, look=null){ return drawGirl(face,{},{},look).replace
     if(lastCoins!=null && c>lastCoins){ bumpN=c-lastCoins; clearTimeout(bumpT); bumpT=setTimeout(()=>{ bumpN=0; renderBar(); },1500); }
     lastCoins=c;
     // the lessons page is the main page: settings live there. Every other page has a way back to it.
-    const start = opts.page==='lessons'
-      ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>`
-      : `<a class="sh-back" href="${opts.back||'index.html'}">${IC.back}<span>חזרה</span></a>`;
-    bar.innerHTML=`${start}<h1 class="sh-title">${opts.title||''}</h1>
-      ${petHtml()}
-      <span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>`;
+    // right side: (back) · coins · her face · title. Left side: settings, on the lessons map only.
+    const back = opts.page==='lessons' ? '' : `<a class="sh-back" href="${opts.back||'index.html'}">${IC.back}<span>חזרה</span></a>`;
+    const gear = opts.page==='lessons' ? `<div class="sh-me"><button class="sh-gear" data-sh="menu" aria-expanded="${menu}" aria-haspopup="true" aria-label="הגדרות">${IC.gear}</button>${menu?menuHtml(k):''}</div>` : '';
+    bar.innerHTML=`${back}<span class="sh-bank ${bumpN?'bump':''}" aria-label="מטבעות: ${c}">${COIN}<span class="ltr">${c}</span>${bumpN?`<span class="sh-plus" dir="ltr">+${bumpN}</span>`:''}</span>
+      ${meHtml()}<h1 class="sh-title">${opts.title||''}</h1>${gear}`;
   }
   function menuHtml(k){
     const others=KIDS.filter(x=>x.id!==k.id);
@@ -697,21 +753,44 @@ const HAIR_STYLES=[
   {id:'short', name:'קצר', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L97 84 Q91 91 84 83 L36 83 Q29 91 23 84Z"/>`,
     front:`<path d="M26 54 C25 30 42 20 60 20 C78 20 95 30 94 54 C80 46 40 46 26 54Z"/>`, ties:[]},
   {id:'pigtails', name:'קוקיות', back:`<path d="M24 48 C6 58 6 92 16 106 C21 88 26 72 31 58Z"/><path d="M96 48 C114 58 114 92 104 106 C99 88 94 72 89 58Z"/>`,
-    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[27,52],[93,52]]}
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[27,52],[93,52]]},
+  /* bought in the shop (price), the rest are free */
+  {id:'ballet', name:'בובה של בלט', price:25, back:`<circle cx="60" cy="14" r="14"/>`,
+    front:`<path d="M26 58 C24 30 42 21 60 21 C78 21 96 30 94 58 C88 42 76 34 60 34 C44 34 32 42 26 58Z"/>`, ties:[[60,27]]},
+  {id:'fringe', name:'פוני פרוע', price:30, back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L96 76 Q90 80 86 72 L34 72 Q30 80 24 76Z"/>`,
+    front:`<path d="M24 56 C22 28 42 17 60 17 C80 17 98 28 96 56 L90 50 L86 58 L80 47 L74 56 L68 45 L62 55 L56 44 L50 55 L44 46 L38 56 L33 47 L28 56Z"/>`, ties:[]},
+  {id:'mohawk', name:'מוהוק', price:40, back:'',
+    front:`<path d="M30 46 C32 30 44 23 60 23 C76 23 88 30 90 46 C84 36 74 31 60 31 C46 31 36 36 30 46Z" opacity=".35"/><path d="M52 34 L48 18 L55 22 L54 6 L60 16 L64 2 L66 18 L72 10 L70 24 L76 20 L68 36Z"/>`, ties:[]},
+  {id:'halfshave', name:'חצי תלתלים חצי מגולח', price:50, back:[[30,30,13],[44,19,13],[23,46,12],[22,63,11],[24,79,10],[27,94,9]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''),
+    front:[[33,42,8],[45,33,8.5],[57,29,8.5]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')+`<path d="M62 22 C80 22 94 32 94 56 C90 42 78 34 62 34Z" opacity=".35"/>`, ties:[]},
+  {id:'dreads', name:'ראסטות', price:60, back:[[26,60],[22,72],[25,86],[30,98],[94,60],[98,72],[95,86],[90,98],[36,100],[84,100]].map(([x,y])=>`<rect x="${x-5}" y="${y-40}" width="10" height="${40+ (y%3)*6}" rx="5"/>`).join('')+`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58Z"/>`,
+    front:`<path d="M26 56 C26 30 42 20 60 20 C78 20 94 30 94 56 C84 44 72 38 60 38 C48 38 36 44 26 56Z"/><rect x="25" y="44" width="9" height="34" rx="4.5"/><rect x="86" y="44" width="9" height="34" rx="4.5"/>`, ties:[]}
 ];
 const HAIR_COLORS=[
   {id:'black', name:'שחור', fill:'#1F1B24', price:0},{id:'dark', name:'כהה', fill:'#2E2A33', price:0},
   {id:'darkbrown', name:'חום כהה', fill:'#4A2C1D', price:0},{id:'brown', name:'חום', fill:'#6B3E26', price:0},
   {id:'lightbrown', name:'חום בהיר', fill:'#A0673A', price:0},{id:'blonde', name:'בלונדיני', fill:'#E2B85C', price:0},
   {id:'ginger', name:'ג׳ינג׳י', fill:'#C2562A', price:0},
-  {id:'pink', name:'ורוד', fill:'#F28DB2', price:8},{id:'purple', name:'סגול', fill:'#9B6BD6', price:8},{id:'sky', name:'תכלת', fill:'#7CC6F0', price:8}
+  {id:'pink', name:'ורוד', fill:'#F28DB2', price:8},{id:'purple', name:'סגול', fill:'#9B6BD6', price:8},{id:'sky', name:'תכלת', fill:'#7CC6F0', price:8},
+  {id:'gold', name:'זהב', fill:'#E9B824', price:25},{id:'turquoise', name:'טורקיז', fill:'#2BB5A8', price:25},{id:'green', name:'ירוק', fill:'#5CB85C', price:25}
 ];
+/* kinds: color (the whole hair), toggle (worn on top, groups can't be worn together), two (two-colour: half-half or one streak), style (a paid hairstyle) */
 const HAIR_SPECIALS=[
-  {id:'rainbow', name:'שיער בצבע קשת', price:15, kind:'color'},
+  {id:'rainbow', name:'שיער בצבע קשת', price:70, kind:'color'},
+  {id:'half', name:'חצי־חצי', price:35, kind:'two'},
+  {id:'streak', name:'קווצה צבעונית', price:20, kind:'two'},
   {id:'glitter', name:'נצנצים בשיער', price:10, kind:'toggle'},
   {id:'ribbon', name:'קוקו עם סרט', price:8, kind:'toggle'},
-  {id:'bow', name:'פפיון ורוד', price:6, kind:'toggle'}
+  {id:'bow', name:'פפיון ורוד', price:6, kind:'toggle'},
+  {id:'clips', name:'סיכות', price:12, kind:'toggle'},
+  {id:'beads', name:'חרוזים בשיער', price:15, kind:'toggle'},
+  {id:'rstreaks', name:'פסים צבעוניים', price:35, kind:'toggle'},
+  {id:'flowercrown', name:'זר פרחים', price:30, kind:'toggle', group:'top'},
+  {id:'tiara', name:'טיארה', price:80, kind:'toggle', group:'top'},
+  ...HAIR_STYLES.filter(h=>h.price).map(h=>({id:h.id, name:h.name, price:h.price, kind:'style'}))
 ];
+/* price tiers: so there is something to save up for */
+const tierOf=p=>p>=150?{id:'legend',name:'אגדי',badge:'👑'}:p>=60?{id:'rare',name:'נדיר',badge:'💎'}:p>=20?{id:'special',name:'מיוחד',badge:''}:{id:'basic',name:'',badge:''};
 const DEFAULT_LOOKS={lili:{hair:'buns',color:'brown',owned:[]}, nori:{hair:'long',color:'dark',bow:true,owned:['bow']}, test:{hair:'long',color:'pink',owned:['pink']}};
 const lookFor=(face,look)=>({...(DEFAULT_LOOKS[face]||DEFAULT_LOOKS.lili),...(look||{})});
 let hairGrad=0;
@@ -725,63 +804,79 @@ function hairSvg(look){ // returns {defs, back, front, top}
   const bow=look.bow&&!(look.ribbon&&st.ties.length)?`<path d="M82 24 l9-6 -1 11z M82 24 l11 3 -8 6z" fill="#E8457A"/><circle cx="84" cy="26" r="3" fill="#C72F63"/>`:'';
   const spark=(x,y)=>`<path d="M${x} ${y-4} L${x+1.2} ${y-1.2} L${x+4} ${y} L${x+1.2} ${y+1.2} L${x} ${y+4} L${x-1.2} ${y+1.2} L${x-4} ${y} L${x-1.2} ${y-1.2}Z" fill="#fff"/>`;
   const glitter=look.glitter?[[40,28],[58,23],[78,27],[33,44],[88,42],[50,36],[70,35]].map(([x,y])=>spark(x,y)).join(''):'';
-  return {defs, back:`<g fill="${fill}">${st.back}</g>`, front:`<g fill="${fill}">${st.front}</g>${ties}${bow}${glitter}`};
+  const colorFill=id=>id==='rainbow'?fill:(HAIR_COLORS.find(c=>c.id===id)||{}).fill;
+  let back=`<g fill="${fill}">${st.back}</g>`, front=`<g fill="${fill}">${st.front}</g>`;
+  // half-half: the right side of the hair (her left) in the second colour
+  if(look.half && look.color2 && colorFill(look.color2)){ const cid='hh'+(++hairGrad), f2=colorFill(look.color2);
+    defs+=`<clipPath id="${cid}"><rect x="60" y="-20" width="80" height="260"/></clipPath>`;
+    back+=`<g fill="${f2}" clip-path="url(#${cid})">${st.back}</g>`; front+=`<g fill="${f2}" clip-path="url(#${cid})">${st.front}</g>`; }
+  // one coloured lock, like a hair extension
+  const streak=look.streak && look.streakColor && colorFill(look.streakColor) ? `<path d="M44 22 C38 32 34 44 33 58${['long','braid','pigtails','dreads','pony'].includes(st.id)?' C33 70 31 86 28 100':''}" stroke="${colorFill(look.streakColor)}" stroke-width="7" fill="none" stroke-linecap="round"/>` : '';
+  const rstreaks=look.rstreaks?['#F25C5C','#F2D24B','#4FA3E8'].map((c,k)=>`<path d="M${66+k*7} 22 C${72+k*7} 32 ${76+k*6} 44 ${78+k*5} 56" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round"/>`).join(''):'';
+  const clips=look.clips?`<rect x="34" y="40" width="12" height="5" rx="2.5" fill="#4FA3E8" transform="rotate(-30 40 42)"/><rect x="74" y="40" width="12" height="5" rx="2.5" fill="#F28DB2" transform="rotate(30 80 42)"/>`:'';
+  const beads=look.beads?[[27,62,'#F25C5C'],[26,72,'#F2D24B'],[93,62,'#4FA3E8'],[94,72,'#5CC97B']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="3.6" fill="${c}" stroke="#fff" stroke-width="1"/>`).join(''):'';
+  const flowercrown=look.flowercrown?`<path d="M28 34 Q60 14 92 34" stroke="#4CAF50" stroke-width="3" fill="none"/>${[[30,32,'#FF8AB3'],[42,24,'#FFD54F'],[54,20,'#B39DDB'],[66,20,'#FF8AB3'],[78,24,'#FFD54F'],[90,32,'#B39DDB']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="5" fill="${c}"/><circle cx="${x}" cy="${y}" r="1.8" fill="#fff"/>`).join('')}`:'';
+  const tiara=look.tiara?`<path d="M36 28 Q60 16 84 28 L80 22 L72 24 L66 12 L60 20 L54 12 L48 24 L40 22Z" fill="#E6E9F0" stroke="#AAB4C3" stroke-width="1.5" stroke-linejoin="round"/><circle cx="60" cy="18" r="3" fill="#7CC6F0"/><circle cx="48" cy="22" r="2" fill="#F28DB2"/><circle cx="72" cy="22" r="2" fill="#F28DB2"/>`:'';
+  return {defs, back, front:`${front}${streak}${rstreaks}${ties}${bow}${clips}${beads}${flowercrown}${tiara}${glitter}`};
 }
 const GIRL_CATS=[{id:'g-outfit',name:'בגדים'},{id:'g-shoes',name:'נעליים'},{id:'g-head',name:'לראש'},{id:'g-glasses',name:'משקפיים'}];
 const sleeves=c=>`<path d="M38 98 L27 118 L35 122 L45 106Z M82 98 L93 118 L85 122 L75 106Z" fill="${c}"/>`;
 const longSleeves=c=>`<path d="M40 100 L28 146 M80 100 L92 146" stroke="${c}" stroke-width="12" stroke-linecap="round"/>`;
 const GIRL_ITEMS=[
   // clothes: replace the default t-shirt and shorts
-  {cat:'g-outfit', id:'g-dress', name:'שמלה פרחונית', price:6, svg:()=>`${sleeves('#F06292')}<path d="M40 96 Q60 90 80 96 L84 118 L98 176 Q60 186 22 176 L36 118Z" fill="#F06292"/>
+  {cat:'g-outfit', id:'g-dress', main:'#F06292', name:'שמלה פרחונית', price:6, svg:()=>`${sleeves('#F06292')}<path d="M40 96 Q60 90 80 96 L84 118 L98 176 Q60 186 22 176 L36 118Z" fill="#F06292"/>
     ${[[46,128],[70,134],[56,156],[36,162],[80,160]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="#fff"/><circle cx="${x}" cy="${y}" r="2" fill="#FFD54F"/>`).join('')}`},
-  {cat:'g-outfit', id:'g-overalls', name:'סרבל ג׳ינס', price:6, svg:()=>`${sleeves('#FFD54F')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#FFD54F"/>
+  {cat:'g-outfit', id:'g-overalls', main:'#3F6FB5', name:'סרבל ג׳ינס', price:6, svg:()=>`${sleeves('#FFD54F')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#FFD54F"/>
     <path d="M40 118 H80 L84 172 H63 L60 152 L57 172 H36Z" fill="#3F6FB5"/><path d="M45 99 L46 120 M75 99 L74 120" stroke="#3F6FB5" stroke-width="5"/><rect x="51" y="124" width="18" height="12" rx="3" fill="#335C99"/>`},
-  {cat:'g-outfit', id:'g-tutu', name:'שמלת נסיכה', price:10, svg:()=>`${sleeves('#B39DDB')}<path d="M42 98 Q60 92 78 98 L80 132 H40Z" fill="#B39DDB"/>
+  {cat:'g-outfit', id:'g-tutu', main:'#E1BEE7', name:'שמלת נסיכה', price:10, svg:()=>`${sleeves('#B39DDB')}<path d="M42 98 Q60 92 78 98 L80 132 H40Z" fill="#B39DDB"/>
     <path d="M40 128 H80 L106 168 Q60 182 14 168Z" fill="#E1BEE7"/><path d="M40 128 H80 L96 160 Q60 172 24 160Z" fill="#F3E5F5"/>
     <g fill="#fff">${[[30,164],[52,170],[76,168],[94,162],[62,150]].map(([x,y])=>`<path d="M${x} ${y-4} L${x+1.5} ${y-1} L${x+4} ${y} L${x+1.5} ${y+1} L${x} ${y+4} L${x-1.5} ${y+1} L${x-4} ${y} L${x-1.5} ${y-1}Z"/>`).join('')}</g>
     <path d="M52 100 L60 108 L68 100" stroke="#F2C230" stroke-width="3" fill="none"/>`},
-  {cat:'g-outfit', id:'g-sport', name:'חליפת ספורט', price:7, svg:()=>`${longSleeves('#26A69A')}<path d="M36 98 Q60 90 84 98 L86 142 H34Z" fill="#26A69A"/>
+  {cat:'g-outfit', id:'g-sport', main:'#26A69A', name:'חליפת ספורט', price:7, svg:()=>`${longSleeves('#26A69A')}<path d="M36 98 Q60 90 84 98 L86 142 H34Z" fill="#26A69A"/>
     <path d="M60 96 V142" stroke="#fff" stroke-width="2.5"/><path d="M36 140 H84 L84 204 H64 L60 160 L56 204 H36Z" fill="#26A69A"/><path d="M38 144 L38 202 M82 144 L82 202" stroke="#fff" stroke-width="3"/>`},
-  {cat:'g-outfit', id:'g-hoodie', name:'קפוצ׳ון', price:7, svg:()=>`${longSleeves('#FF8A65')}<path d="M40 144 H80 L80 204 H64 L60 160 L56 204 H40Z" fill="#455A64"/>
+  {cat:'g-outfit', id:'g-hoodie', main:'#FF8A65', name:'קפוצ׳ון', price:7, svg:()=>`${longSleeves('#FF8A65')}<path d="M40 144 H80 L80 204 H64 L60 160 L56 204 H40Z" fill="#455A64"/>
     <path d="M34 98 Q60 88 86 98 L88 148 H32Z" fill="#FF8A65"/><path d="M44 128 H76 L72 144 H48Z" fill="#F4724B"/><path d="M54 98 L54 114 M66 98 L66 114" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`},
-  {cat:'g-outfit', id:'g-skirt', name:'חולצה וחצאית', price:5, svg:()=>`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff"/>
+  {cat:'g-outfit', id:'g-skirt', main:'#7444C9', name:'חולצה וחצאית', price:5, svg:()=>`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff"/>
     <path d="M37 108 H83 M36 120 H84 M36 132 H84" stroke="#E8577E" stroke-width="5"/><path d="M36 136 H84 L94 170 H26Z" fill="#7444C9"/>`},
   // shoes
-  {cat:'g-shoes', id:'g-sneakers', name:'נעלי ספורט', price:4, svg:()=>`<g><path d="M36 214 Q36 202 46 202 Q56 202 58 214Z M62 214 Q64 202 74 202 Q84 202 84 214Z" fill="#fff" stroke="#9AA6B8" stroke-width="1.5"/><path d="M40 208 H54 M66 208 H80" stroke="#E8457A" stroke-width="3"/></g>`},
-  {cat:'g-shoes', id:'g-boots', name:'מגפיים', price:5, svg:()=>`<g fill="#E05A47"><rect x="39" y="186" width="16" height="26" rx="4"/><rect x="65" y="186" width="16" height="26" rx="4"/><path d="M37 214 Q37 206 47 206 Q59 206 59 214Z M63 214 Q63 206 73 206 Q85 206 85 214Z"/></g>`},
-  {cat:'g-shoes', id:'g-sparkle', name:'נעליים נוצצות', price:6, svg:()=>`<path d="M36 214 Q36 203 46 203 Q57 203 58 214Z M62 214 Q63 203 74 203 Q84 203 84 214Z" fill="#F2C230"/><g fill="#fff"><circle cx="44" cy="208" r="1.6"/><circle cx="51" cy="210" r="1.6"/><circle cx="70" cy="208" r="1.6"/><circle cx="77" cy="210" r="1.6"/></g>`},
+  {cat:'g-shoes', id:'g-sneakers', main:'#E8457A', name:'נעלי ספורט', price:4, svg:()=>`<g><path d="M36 214 Q36 202 46 202 Q56 202 58 214Z M62 214 Q64 202 74 202 Q84 202 84 214Z" fill="#fff" stroke="#9AA6B8" stroke-width="1.5"/><path d="M40 208 H54 M66 208 H80" stroke="#E8457A" stroke-width="3"/></g>`},
+  {cat:'g-shoes', id:'g-boots', main:'#E05A47', name:'מגפיים', price:5, svg:()=>`<g fill="#E05A47"><rect x="39" y="186" width="16" height="26" rx="4"/><rect x="65" y="186" width="16" height="26" rx="4"/><path d="M37 214 Q37 206 47 206 Q59 206 59 214Z M63 214 Q63 206 73 206 Q85 206 85 214Z"/></g>`},
+  {cat:'g-shoes', id:'g-sparkle', main:'#F2C230', name:'נעליים נוצצות', price:6, svg:()=>`<path d="M36 214 Q36 203 46 203 Q57 203 58 214Z M62 214 Q63 203 74 203 Q84 203 84 214Z" fill="#F2C230"/><g fill="#fff"><circle cx="44" cy="208" r="1.6"/><circle cx="51" cy="210" r="1.6"/><circle cx="70" cy="208" r="1.6"/><circle cx="77" cy="210" r="1.6"/></g>`},
   // on the head
-  {cat:'g-head', id:'g-crown', name:'כתר', price:8, svg:()=>`<path d="M40 26 L42 6 L52 18 L60 2 L68 18 L78 6 L80 26Z" fill="#F2C230" stroke="#C99A12" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="16" r="3" fill="#E8457A"/>`},
-  {cat:'g-head', id:'g-headband', name:'קשת', price:3, svg:()=>`<path d="M27 50 Q30 18 60 17 Q90 18 93 50" stroke="#E8457A" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="34" cy="28" r="5" fill="#FFD54F"/>`},
-  {cat:'g-head', id:'g-cap', name:'כובע מצחייה', price:4, svg:()=>`<path d="M25 42 Q28 12 60 12 Q92 12 95 42Z" fill="#3E7BD8"/><path d="M25 42 Q8 42 4 48 Q20 50 40 44Z" fill="#2F5BD3"/><circle cx="60" cy="13" r="3" fill="#2F5BD3"/>`},
-  {cat:'g-head', id:'g-catears', name:'אוזני חתול', price:4, svg:()=>`<path d="M28 34 L30 6 L48 22Z M92 34 L90 6 L72 22Z" fill="#2E2A33"/><path d="M33 26 L34 14 L42 21Z M87 26 L86 14 L78 21Z" fill="#F4A9B8"/><path d="M27 40 Q30 18 60 17 Q90 18 93 40" stroke="#2E2A33" stroke-width="4" fill="none"/>`},
-  {cat:'g-head', id:'g-flower', name:'פרח בשיער', price:3, svg:()=>`<g fill="#FF8AB3"><circle cx="30" cy="30" r="6"/><circle cx="39" cy="26" r="6"/><circle cx="40" cy="36" r="6"/><circle cx="31" cy="40" r="6"/><circle cx="25" cy="35" r="6"/></g><circle cx="33" cy="34" r="4.5" fill="#FFD54F"/>`},
+  {cat:'g-head', id:'g-crown', main:'#F2C230', name:'כתר', price:8, svg:()=>`<path d="M40 26 L42 6 L52 18 L60 2 L68 18 L78 6 L80 26Z" fill="#F2C230" stroke="#C99A12" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="16" r="3" fill="#E8457A"/>`},
+  {cat:'g-head', id:'g-headband', main:'#E8457A', name:'קשת', price:3, svg:()=>`<path d="M27 50 Q30 18 60 17 Q90 18 93 50" stroke="#E8457A" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="34" cy="28" r="5" fill="#FFD54F"/>`},
+  {cat:'g-head', id:'g-cap', main:'#3E7BD8', name:'כובע מצחייה', price:4, svg:()=>`<path d="M25 42 Q28 12 60 12 Q92 12 95 42Z" fill="#3E7BD8"/><path d="M25 42 Q8 42 4 48 Q20 50 40 44Z" fill="#2F5BD3"/><circle cx="60" cy="13" r="3" fill="#2F5BD3"/>`},
+  {cat:'g-head', id:'g-catears', main:'#2E2A33', name:'אוזני חתול', price:4, svg:()=>`<path d="M28 34 L30 6 L48 22Z M92 34 L90 6 L72 22Z" fill="#2E2A33"/><path d="M33 26 L34 14 L42 21Z M87 26 L86 14 L78 21Z" fill="#F4A9B8"/><path d="M27 40 Q30 18 60 17 Q90 18 93 40" stroke="#2E2A33" stroke-width="4" fill="none"/>`},
+  {cat:'g-head', id:'g-flower', main:'#FF8AB3', name:'פרח בשיער', price:3, svg:()=>`<g fill="#FF8AB3"><circle cx="30" cy="30" r="6"/><circle cx="39" cy="26" r="6"/><circle cx="40" cy="36" r="6"/><circle cx="31" cy="40" r="6"/><circle cx="25" cy="35" r="6"/></g><circle cx="33" cy="34" r="4.5" fill="#FFD54F"/>`},
   // glasses (eyes at 47,60 and 73,60)
-  {cat:'g-glasses', id:'g-round', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="2.5"><circle cx="47" cy="60" r="9"/><circle cx="73" cy="60" r="9"/><path d="M56 59 Q60 56 64 59"/></g>`},
-  {cat:'g-glasses', id:'g-hearts', name:'משקפי לב', price:5, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="2"><path d="M47 70 L37 60 Q34 51 41 51 Q45 51 47 55 Q49 51 53 51 Q60 51 57 60Z"/><path d="M73 70 L63 60 Q60 51 67 51 Q71 51 73 55 Q75 51 79 51 Q86 51 83 60Z"/></g><path d="M57 57 Q60 55 63 57" stroke="#D81B60" stroke-width="2" fill="none"/>`},
-  {cat:'g-glasses', id:'g-shades', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="36" y="54" width="21" height="13" rx="5"/><rect x="63" y="54" width="21" height="13" rx="5"/></g><path d="M57 58 H63" stroke="#263238" stroke-width="2.5"/><path d="M40 57 H46" stroke="#fff" stroke-width="2" opacity=".6" stroke-linecap="round"/>`}
+  {cat:'g-glasses', id:'g-round', main:'#2A2225', name:'משקפיים עגולים', price:4, svg:()=>`<g fill="none" stroke="#2A2225" stroke-width="2.5"><circle cx="47" cy="60" r="9"/><circle cx="73" cy="60" r="9"/><path d="M56 59 Q60 56 64 59"/></g>`},
+  {cat:'g-glasses', id:'g-hearts', main:'#F06292', name:'משקפי לב', price:5, svg:()=>`<g fill="#F06292" fill-opacity=".55" stroke="#D81B60" stroke-width="2"><path d="M47 70 L37 60 Q34 51 41 51 Q45 51 47 55 Q49 51 53 51 Q60 51 57 60Z"/><path d="M73 70 L63 60 Q60 51 67 51 Q71 51 73 55 Q75 51 79 51 Q86 51 83 60Z"/></g><path d="M57 57 Q60 55 63 57" stroke="#D81B60" stroke-width="2" fill="none"/>`},
+  {cat:'g-glasses', id:'g-shades', main:'#263238', name:'משקפי שמש', price:5, svg:()=>`<g fill="#263238"><rect x="36" y="54" width="21" height="13" rx="5"/><rect x="63" y="54" width="21" height="13" rx="5"/></g><path d="M57 58 H63" stroke="#263238" stroke-width="2.5"/><path d="M40 57 H46" stroke="#fff" stroke-width="2" opacity=".6" stroke-linecap="round"/>`}
 ];
 const girlItem=id=>GIRL_ITEMS.find(i=>i.id===id);
+/* an item in its own colour: its main colour swapped for the one she chose (shades and details stay) */
+const paintItem=(it,colors={})=>{ const out=it.svg(); const c=colors[it.id]; return c&&it.main?out.split(it.main).join(c):out; };
 /* where each category is cropped for shop thumbnails */
 const GIRL_CROP={'g-outfit':'4 90 112 126','g-shoes':'22 176 76 44','g-head':'0 -2 120 72','g-glasses':'24 30 72 52'};
-/* look: {hair, color, glitter, ribbon, bow}; leave it out to get her default look */
-function drawGirl(face, worn={}, preview={}, look=null){
+/* look: {hair, color, glitter, ribbon, bow, half+color2, streak+streakColor, clips, beads, rstreaks, flowercrown, tiara};
+   leave it out to get her default look. colors: {itemId:'#hex'} paints her clothes in the colours she chose. */
+function drawGirl(face, worn={}, preview={}, look=null, colors={}){
   const H=hairSvg(lookFor(face,look)), G={...(GIRLS[face]||GIRLS.lili), back:H.defs?`<defs>${H.defs}</defs>${H.back}`:H.back, front:H.front}, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
   const outfit=it('g-outfit'), shoes=it('g-shoes');
   return `<svg viewBox="0 0 120 224" role="img" aria-label="אני">
     ${G.back}
     <rect x="42" y="160" width="12" height="48" rx="5" fill="${sk}"/><rect x="66" y="160" width="12" height="48" rx="5" fill="${sk}"/>
-    ${shoes?shoes.svg():`<path d="M36 214 Q36 204 46 204 Q56 204 57 214Z M63 214 Q64 204 74 204 Q84 204 84 214Z" fill="#5A6577"/>`}
+    ${shoes?paintItem(shoes,colors):`<path d="M36 214 Q36 204 46 204 Q56 204 57 214Z M63 214 Q64 204 74 204 Q84 204 84 214Z" fill="#5A6577"/>`}
     <path d="M40 100 L29 146 M80 100 L91 146" stroke="${sk}" stroke-width="10" stroke-linecap="round"/>
     <circle cx="29" cy="149" r="6" fill="${sk}"/><circle cx="91" cy="149" r="6" fill="${sk}"/>
-    ${outfit?outfit.svg():`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff" stroke="#E3E7EE" stroke-width="1.5"/><path d="M36 138 H84 L86 168 H63 L60 152 L57 168 H34Z" fill="#3E7BD8"/>`}
+    ${outfit?paintItem(outfit,colors):`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff" stroke="#E3E7EE" stroke-width="1.5"/><path d="M36 138 H84 L86 168 H63 L60 152 L57 168 H34Z" fill="#3E7BD8"/>`}
     <rect x="54" y="84" width="12" height="14" rx="4" fill="${sk}"/>
     <circle cx="60" cy="56" r="34" fill="${sk}"/>
     <circle cx="47" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="73" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="48.2" cy="58.8" r="1.1" fill="#fff"/><circle cx="74.2" cy="58.8" r="1.1" fill="#fff"/>
     <ellipse cx="40" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/><ellipse cx="80" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/>
     <path d="M53 73 Q60 79 67 73" stroke="#2B2B2B" stroke-width="2.4" fill="none" stroke-linecap="round"/>
     ${G.front}
-    ${it('g-head')?it('g-head').svg():''}${it('g-glasses')?it('g-glasses').svg():''}
+    ${it('g-head')?paintItem(it('g-head'),colors):''}${it('g-glasses')?paintItem(it('g-glasses'),colors):''}
   </svg>`;
 }
 /* her head alone, for the small round faces in menus */
@@ -799,40 +894,57 @@ const TABS=[{id:'hair',name:'תסרוקת'},{id:'color',name:'צבע שיער'},
 let tab='hair', preview=null, note='';
 const homeState=()=>{ try{ return JSON.parse(localStorage.getItem('home:'+kidId)||'{}'); }catch(e){ return {}; } };
 const styleOf=id=>HAIR_STYLES.find(h=>h.id===id);
+const spec=id=>HAIR_SPECIALS.find(s=>s.id===id);
 // a ribbon needs somewhere to tie it: on a style without a tie it switches to a ponytail
 const withRibbon=(L,on)=>({...L, ribbon:on, hair: on && !styleOf(L.hair)?.ties.length ? 'pony' : L.hair});
-const effect=(L,id)=>{ const sp=HAIR_SPECIALS.find(s=>s.id===id); if(!sp) return {...L,color:id};
-  if(sp.kind==='color') return {...L,color:id}; if(id==='ribbon') return withRibbon(L,true); return {...L,[id]:true}; };
+// colours she may use for a second colour or a streak: the free ones and the ones she bought
+const myColors=L=>HAIR_COLORS.filter(c=>!c.price||L.owned.includes(c.id));
+const effect=(L,id)=>{ const sp=spec(id); if(!sp) return {...L,color:id};
+  if(sp.kind==='color') return {...L,color:id};
+  if(sp.kind==='style') return {...L,hair:id};
+  if(id==='half') return {...L,half:true,color2:L.color2||(L.color==='pink'?'sky':'pink')};
+  if(id==='streak') return {...L,streak:true,streakColor:L.streakColor||(L.color==='pink'?'purple':'pink')};
+  if(id==='ribbon') return withRibbon(L,true);
+  const off=sp.group?Object.fromEntries(HAIR_SPECIALS.filter(x=>x.group===sp.group&&x.id!==id).map(x=>[x.id,false])):{};
+  return {...L,...off,[id]:true}; };
+const isOn=(L,id)=>{ const sp=spec(id); if(!sp) return L.color===id; if(sp.kind==='style') return L.hair===id; if(sp.kind==='color') return L.color===id; return !!L[id]; };
+const badge=p=>{ const t=tierOf(p); return t.badge?`<span class="tier ${t.id}" title="${t.name}">${t.badge} ${t.name}</span>`:''; };
 
 function shopCard(id,name,price,thumb,L){
-  const own=price===0||L.owned.includes(id), coins=Shell.coins(), can=coins>=price;
-  const on = HAIR_SPECIALS.find(s=>s.id===id&&s.kind==='toggle') ? !!L[id] : L.color===id;
-  if(own){ const act=HAIR_SPECIALS.find(s=>s.id===id&&s.kind==='toggle')?'toggle':'color';
-    return `<button class="item ${on?'on':''}" data-act="${act}" data-v="${id}"><div class="th">${thumb}</div><b>${name}</b>${on?`<span class="state">${act==='toggle'?'עליי':'הצבע שלי'}</span>`:''}</button>`; }
-  return `<div class="item ${preview?.id===id?'pv':''}"><div class="th">${thumb}</div><b>${name}</b>
+  const own=price===0||L.owned.includes(id), coins=Shell.coins(), can=coins>=price, sp=spec(id), on=isOn(L,id);
+  if(own){ const act=sp&&(sp.kind==='toggle'||sp.kind==='two')?'toggle':sp?.kind==='style'?'hair':'color';
+    return `<button class="item ${on?'on':''}" data-act="${act}" data-v="${id}"><div class="th">${thumb}</div><b>${name}</b>${on?`<span class="state">${act==='color'?'הצבע שלי':act==='hair'?'התסרוקת שלי':'עליי'}</span>`:''}</button>`; }
+  return `<div class="item ${preview?.id===id?'pv':''}">${badge(price)}<div class="th">${thumb}</div><b>${name}</b>
     <div class="acts"><button class="ib eye" data-act="preview" data-v="${id}" aria-pressed="${preview?.id===id}" aria-label="לראות איך זה נראה" title="לראות איך זה נראה">${IC.eye}</button>
     <button class="ib buy" data-act="buy" data-v="${id}" ${can?'':'disabled'} aria-label="לקנות ב-${price} מטבעות" title="לקנות">${IC.bag}<span class="ltr">${price}</span>${COIN}</button></div>
     ${can?'':`<span class="need">חסרים ${price-coins}</span>`}</div>`;
 }
+// a row of colour dots, to choose the second colour of the half-half or the colour of the streak
+const picker=(L,field,title)=>`<div class="pick"><b>${title}</b><div class="dots">${myColors(L).filter(c=>field!=='color2'||c.id!==L.color).map(c=>`<button class="dot ${L[field]===c.id?'on':''}" data-act="pickc" data-v="${field}|${c.id}" style="background:${c.fill}" aria-label="${c.name}" title="${c.name}"></button>`).join('')}</div></div>`;
 function render(){
   Shell.renderBar({page:'style', title:'לעצב את עצמי', back:'home.html'});
-  const L=Shell.lookOf(kidId), view=preview?effect(L,preview.id):L, worn=homeState().girlWorn||{};
-  let cards='';
-  if(tab==='hair') cards=HAIR_STYLES.map(h=>`<button class="item ${L.hair===h.id?'on':''}" data-act="hair" data-v="${h.id}"><div class="th">${drawGirlHead(FACE,{...L,hair:h.id})}</div><b>${h.name}</b></button>`).join('');
-  else if(tab==='color') cards=HAIR_COLORS.map(c=>shopCard(c.id,c.name,c.price,`<span class="sw" style="background:${c.fill}"></span>`,L)).join('');
-  else cards=HAIR_SPECIALS.map(s=>shopCard(s.id,s.name,s.price,drawGirlHead(FACE,effect(L,s.id)),L)).join('');
+  const L=Shell.lookOf(kidId), view=preview?effect(L,preview.id):L, worn=homeState().girlWorn||{}, colors=homeState().girlColors||{};
+  let cards='', extra='';
+  if(tab==='hair') cards=HAIR_STYLES.map(h=>h.price ? shopCard(h.id,h.name,h.price,drawGirlHead(FACE,{...L,hair:h.id}),L)
+      : `<button class="item ${L.hair===h.id?'on':''}" data-act="hair" data-v="${h.id}"><div class="th">${drawGirlHead(FACE,{...L,hair:h.id})}</div><b>${h.name}</b></button>`).join('');
+  else if(tab==='color'){ cards=HAIR_COLORS.map(c=>shopCard(c.id,c.name,c.price,`<span class="sw" style="background:${c.fill}"></span>`,L)).join('')
+      + ['half','streak'].map(id=>shopCard(id,spec(id).name,spec(id).price,drawGirlHead(FACE,effect(L,id)),L)).join('');
+    if(L.half) extra+=picker(L,'color2','הצבע של הצד השני');
+    if(L.streak) extra+=picker(L,'streakColor','הצבע של הקווצה'); }
+  else cards=HAIR_SPECIALS.filter(s=>s.kind==='toggle'||s.kind==='color').map(s=>shopCard(s.id,s.name,s.price,drawGirlHead(FACE,effect(L,s.id)),L)).join('');
   document.getElementById('app').innerHTML=`
-    <section class="stage">${preview?'<span class="tag">מסתכלת</span>':''}${drawGirl(FACE,worn,{},view)}</section>
-    <section class="card"><h2>איך אני נראית</h2><p class="meta">תסרוקות וצבעים טבעיים בחינם. צבעים שמחים ומיוחדים קונים פעם אחת, והם שלך.</p>
+    <section class="stage">${preview?'<span class="tag">מסתכלת</span>':''}${drawGirl(FACE,worn,{},view,colors)}</section>
+    <section class="card"><h2>איך אני נראית</h2><p class="meta">תסרוקות וצבעים טבעיים בחינם. מה שקונים פעם אחת שלך לתמיד. 💎 נדיר, 👑 אגדי.</p>
       <div class="tabs" role="tablist">${TABS.map(t=>`<button class="tab" role="tab" aria-selected="${tab===t.id}" data-act="tab" data-v="${t.id}">${t.name}</button>`).join('')}</div>
-      ${note?`<p class="meta" role="status">${note}</p>`:''}
+      ${note?`<p class="meta" role="status">${note}</p>`:''}${extra}
       <div class="grid">${cards}</div></section>`;
 }
 const A={
   tab(v){ tab=v; preview=null; note=''; },
   hair(v){ const L=Shell.lookOf(kidId); Shell.saveLook({...L,hair:v, ribbon: L.ribbon && styleOf(v).ties.length ? true : false}); },
-  color(v){ Shell.saveLook({...Shell.lookOf(kidId),color:v}); },
-  toggle(v){ const L=Shell.lookOf(kidId); Shell.saveLook(v==='ribbon'?withRibbon(L,!L.ribbon):{...L,[v]:!L[v]}); },
+  color(v){ const L=Shell.lookOf(kidId); Shell.saveLook({...L,color:v, color2: L.color2===v ? null : L.color2}); },
+  toggle(v){ const L=Shell.lookOf(kidId); Shell.saveLook(L[v] ? (v==='ribbon'?withRibbon(L,false):{...L,[v]:false}) : effect(L,v)); },
+  pickc(v){ const [f,c]=v.split('|'); Shell.saveLook({...Shell.lookOf(kidId),[f]:c}); },
   preview(v){ preview = preview?.id===v ? null : {id:v}; },
   buy(v){ preview=null; if(!Shell.buyLook(v)){ note='עוד לא מספיק מטבעות. אפשר להרוויח בשיעורים ובתרגול הבונוס.'; return; }
     note=''; Shell.saveLook(effect(Shell.lookOf(kidId),v)); }
