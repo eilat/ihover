@@ -361,6 +361,8 @@ const Shell = (() => {
       inflight.delete(k); }
     if(pending.size){ clearTimeout(pushT); pushT=setTimeout(push,1500); } }
   addEventListener('pagehide',()=>{ clearTimeout(pushT); push(); });
+  // a page brought back by the browser's Back button holds an old copy in memory: load it fresh instead
+  addEventListener('pageshow',e=>{ if(e.persisted) location.reload(); });
   async function fullSync(){
     let snap; try{ snap=await DB.collection('store').get(); }catch(e){ cloud='off'; return; }
     const remote={}; const stale=[]; snap.docs.forEach(d=>{ const x=d.data(); if(x&&typeof x.v==='string'&&x.s===SCHEMA) remote[d.id]=x; else stale.push(d.id); });

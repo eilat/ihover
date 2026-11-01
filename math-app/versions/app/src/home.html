@@ -157,8 +157,11 @@ const FACE=Shell.kid()?.face||'lili';
 const kidId=Shell.kid()?.id;
 function fresh(){ return {chosen:false, animal:'cat', animals:[], wallpaper:'wp-plain', items:[], worn:{}, girlWorn:{}, coins:12, level:1, streak:0, best:{}, qn:0, q:null, challenge:null, pendingChallenge:false}; }
 function load(id){ try{ const s=JSON.parse(localStorage.getItem('home:'+id)||'null'); return s?{...fresh(),...s}:fresh(); }catch(e){ return fresh(); } }
-function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); }catch(e){} }
-let S=load(kidId);
+const tsNow=()=>{ try{ return +(localStorage.getItem('mk:ts:home:'+kidId)||0); }catch(e){ return 0; } };
+let seenTs=0;
+function save(){ try{ localStorage.setItem('home:'+kidId, JSON.stringify(S)); seenTs=tsNow(); }catch(e){} }
+function refresh(){ if(tsNow()>seenTs){ S=load(kidId); seenTs=tsNow(); return true; } return false; }
+let S=load(kidId); seenTs=tsNow();
 let side='home', tab='wallpaper', lastTab=null, preview=null, msg=null, banner=null, bannerT=0, modal=null, offer=null;
 const T={ms:0,from:null,running:false,used:false};
 
@@ -315,7 +318,7 @@ function render(){
       <section class="card"><h2>החיות שלי</h2><p class="meta">כל שיעור שמסיימים מביא חיה חדשה לגור בבית. לחיצה על חיה הופכת אותה לראשית.</p>
         <div class="carousel"><button class="arrow" data-act="scrollAn" data-v="-1" aria-label="חיות קודמות">${IC.next}</button><div class="animals">${anim}</div><button class="arrow" data-act="scrollAn" data-v="1" aria-label="עוד חיות">${IC.prev}</button></div></section>
     </div>
-    <aside class="col practice">${practiceHtml()}<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div></aside>`;
+    <aside class="col practice">${practiceHtml()}${Shell.kid()?.trial?`<div class="testbar">לבדיקה בלבד: <button data-act="simLesson">סיימתי שיעור (פותח חיה חדשה)</button><button data-act="reset">להתחיל את הבית מחדש</button></div>`:''}</aside>`;
   fitRoom();
   const sc=document.querySelector('.shop .scroll'); if(sc) sc.scrollTop=keep.shop||0;
   const an=document.querySelector('.animals'); if(an && keep.an!=null){ an.style.scrollBehavior='auto'; an.scrollLeft=keep.an; an.style.scrollBehavior=''; }
@@ -356,11 +359,11 @@ const A={
   skipCh(){ S.pendingChallenge=false; const [a,b]=LEVELS[S.level].gen(); S.q={a,b,wrong:0,level:S.level}; msg=null; save(); },
   pick(v){ grant(v); offer=null; modal=`<div class="th" style="width:200px;height:170px">${thumb(v)}</div><h2>${nameOf(v)}!</h2><p class="meta">זה שלך עכשיו${girlItem(v)?', וכבר עלייך':ITEMS.some(i=>i.id===v&&['outfit','hair','hat','glasses'].includes(i.cat))?', וכבר על החיה':', וכבר בבית'}.</p>`; save(); },
   close(){ modal=null; },
-  simLesson(){ const next=ANIMAL_ORDER.find(a=>!S.animals.includes(a)); if(!next){ modal='<h2>כל החיות כבר בבית!</h2>'; return; } S.animals.push(next); save();
+  simLesson(){ if(!Shell.kid()?.trial) return; const next=ANIMAL_ORDER.find(a=>!S.animals.includes(a)); if(!next){ modal='<h2>כל החיות כבר בבית!</h2>'; return; } S.animals.push(next); save();
     modal=`<h2>סיימת שיעור!</h2>${drawChar(next).replace('<svg','<svg style="width:170px;height:204px"')}<p><b>${ANIMALS[next].name}</b> עוברת לגור אצלך בבית!</p>`; },
-  reset(){ S=fresh(); save(); preview=null; msg=null; modal=null; }
+  reset(){ if(!Shell.kid()?.trial) return; S=fresh(); save(); preview=null; msg=null; modal=null; }
 };
-document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t||t.disabled) return; if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-act]'); if(!t||t.disabled) return; if(refresh()){ render(); return; } if(A[t.dataset.act]?.(t.dataset.v)!==false) render(); });
 document.addEventListener('keydown',e=>{ if(Shell.isOpen()) return; if(e.key==='Enter' && e.target.id==='ans'){ e.preventDefault(); check(); } if(e.key==='Escape' && modal && modal!=='box'){ modal=null; render(); } });
 function welcome(a){ modal=`<h2>יש לך שותפה חדשה בבית!</h2>${drawChar(a).replace('<svg','<svg style="width:170px;height:204px"')}<p><b>${ANIMALS[a].name}</b> עברה לגור אצלך, כי סיימת שיעור.</p>`; }
 if(Shell.start({page:'home', title:'הבית שלי', onParentClose:render})){
