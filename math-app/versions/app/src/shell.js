@@ -46,6 +46,11 @@ const Shell = (() => {
 /*CHARACTERS*/
     return {ANIMALS, drawChar};
   })();
+  // the girls' own drawing (hair styles and colours), private too: the small faces follow her look
+  const GL=(()=>{
+/*GIRL_SCOPED*/
+    return {drawGirlHead, lookFor, HAIR_COLORS, HAIR_SPECIALS};
+  })();
   const COLORS=[{id:'blue',name:'כחול',c:'#2F5BD3'},{id:'purple',name:'סגול',c:'#7444C9'},{id:'pink',name:'ורוד',c:'#C2357C'},{id:'teal',name:'טורקיז',c:'#0B7570'},{id:'orange',name:'כתום',c:'#B04B0C'},{id:'green',name:'ירוק',c:'#2C7A30'}];
   const FACES={
     lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
@@ -97,7 +102,14 @@ const Shell = (() => {
   const kid=()=>KIDS.find(k=>k.id===kidId)||null;
   const accentOf=k=>COLORS.find(c=>c.id===k?.color)?.c||'#7444C9';
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const avatar=k=>`<span class="sh-av" style="background:${accentOf(k)}">${FACES[k.face]||FACES.lili}</span>`;
+  /* her look (hair style, colour, specials she bought) is kept per girl and synced like everything under mk: */
+  const lookOf=(id=kidId)=>{ const k=KIDS.find(x=>x.id===id); return GL.lookFor(k?.face||id, get('mk:look:'+id,null)); };
+  const saveLook=(look,id=kidId)=>{ put('mk:look:'+id,look); renderBar(); renderOv(); };
+  function buyLook(itemId,id=kidId){ // a happy colour or a special: pay once, then it's hers
+    const it=[...GL.HAIR_COLORS,...GL.HAIR_SPECIALS].find(x=>x.id===itemId); const L=lookOf(id);
+    if(!it||L.owned.includes(itemId)) return true; if(coins(id)<it.price) return false;
+    addCoins(-it.price,id); saveLook({...L, owned:[...L.owned,itemId]},id); return true; }
+  const avatar=k=>`<span class="sh-av" style="background:${accentOf(k)}">${GL.drawGirlHead(k.face,lookOf(k.id))}</span>`;
 
   /* coins live in the girl's home, so the home and the lessons share one purse */
   const homeOf=id=>get('home:'+id,{});
@@ -248,6 +260,6 @@ const Shell = (() => {
     renderBar(); renderOv(); return true;
   }
   const isOpen=()=>menu||!!gate;
-  return {start, renderBar:o=>{ Object.assign(opts,o||{}); renderBar(); }, kid, accentOf, coins, addCoins, completeLesson,
+  return {start, renderBar:o=>{ Object.assign(opts,o||{}); renderBar(); }, kid, accentOf, coins, addCoins, completeLesson, lookOf, saveLook, buyLook,
     TOPICS, BUILT, progOf, topicDone, topicOpen, lessonState, saveDiag, isOpen, esc, COIN, IC};
 })();

@@ -1,14 +1,54 @@
 /* The girl herself, standing in her home next to her animal, dressed from the shop's "לעצמי" side.
    One geometry for both girls (viewBox 0 0 120 224: head centre 60,56 r34, shoulders y98, feet y214);
    only hair and skin differ, so every item fits both. Items are drawn in fixed layers. */
-const GIRLS={
-  lili:{skin:'#F6CFAE',
-    back:`<circle cx="28" cy="30" r="14" fill="#6B3E26"/><circle cx="92" cy="30" r="14" fill="#6B3E26"/><circle cx="35" cy="38" r="4.5" fill="#F2B21E"/><circle cx="85" cy="38" r="4.5" fill="#F2B21E"/>`,
-    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C90 46 80 40 70 40 C66 46 58 48 50 44 C40 44 30 48 26 58Z" fill="#6B3E26"/>`},
-  nori:{skin:'#E9B98F',
-    back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L98 106 Q60 114 22 106Z" fill="#2E2A33"/>`,
-    front:`<path d="M26 56 C28 30 44 21 60 21 C78 21 92 32 94 56 C80 52 70 42 66 33 C60 44 44 52 26 56Z" fill="#2E2A33"/><path d="M82 24 l9-6 -1 11z M82 24 l11 3 -8 6z" fill="#E8457A"/><circle cx="84" cy="26" r="3" fill="#C72F63"/>`}
-};
+const GIRLS={lili:{skin:'#F6CFAE'}, nori:{skin:'#E9B98F'}, test:{skin:'#F1C9A5'}};
+/* her look: a hairstyle and a hair colour (free), plus happy colours and specials bought in the shop.
+   Every style is a back part (behind the head and body) and a front part (over the forehead), drawn for the
+   same head (centre 60,56 r34), so hats, ears, the flower and glasses sit on top of any of them. */
+const HAIR_STYLES=[
+  {id:'long', name:'פזור ארוך', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L98 106 Q60 114 22 106Z"/>`,
+    front:`<path d="M26 56 C28 30 44 21 60 21 C78 21 92 32 94 56 C80 52 70 42 66 33 C60 44 44 52 26 56Z"/>`, ties:[]},
+  {id:'buns', name:'שתי בובות', back:`<circle cx="28" cy="30" r="14"/><circle cx="92" cy="30" r="14"/>`,
+    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C90 46 80 40 70 40 C66 46 58 48 50 44 C40 44 30 48 26 58Z"/>`, ties:[[35,38],[85,38]]},
+  {id:'pony', name:'קוקו', back:`<path d="M84 34 C114 34 116 72 104 100 C100 82 96 62 82 44Z"/><circle cx="90" cy="33" r="9"/>`,
+    front:`<path d="M26 58 C24 32 40 20 60 20 C80 20 96 32 94 58 C88 44 76 36 60 36 C46 36 34 44 26 58Z"/>`, ties:[[92,34]]},
+  {id:'braid', name:'צמה', back:`<path d="M26 60 C24 30 42 20 60 20 C78 20 96 30 94 60Z"/>${[[91,64],[94,78],[96,92],[97,106]].map(([x,y],k)=>`<ellipse cx="${x}" cy="${y}" rx="8" ry="8.5" transform="rotate(${k%2?-18:18} ${x} ${y})"/>`).join('')}<path d="M95 116 l4 10 l3-10z"/>`,
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[97,114]]},
+  {id:'curly', name:'תלתלים', back:[[30,30,13],[44,19,13],[60,15,13],[76,19,13],[90,30,13],[97,46,12],[23,46,12],[98,63,11],[22,63,11],[96,79,10],[24,79,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''),
+    front:[[33,42,8],[45,33,8.5],[60,30,9],[75,33,8.5],[87,42,8]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''), ties:[]},
+  {id:'short', name:'קצר', back:`<path d="M24 58 C22 28 40 18 60 18 C80 18 98 28 96 58 L97 84 Q91 91 84 83 L36 83 Q29 91 23 84Z"/>`,
+    front:`<path d="M26 54 C25 30 42 20 60 20 C78 20 95 30 94 54 C80 46 40 46 26 54Z"/>`, ties:[]},
+  {id:'pigtails', name:'קוקיות', back:`<path d="M24 48 C6 58 6 92 16 106 C21 88 26 72 31 58Z"/><path d="M96 48 C114 58 114 92 104 106 C99 88 94 72 89 58Z"/>`,
+    front:`<path d="M26 58 C24 30 42 20 60 20 C78 20 96 30 94 58 C86 46 70 40 62 26 C56 40 38 46 26 58Z"/>`, ties:[[27,52],[93,52]]}
+];
+const HAIR_COLORS=[
+  {id:'black', name:'שחור', fill:'#1F1B24', price:0},{id:'dark', name:'כהה', fill:'#2E2A33', price:0},
+  {id:'darkbrown', name:'חום כהה', fill:'#4A2C1D', price:0},{id:'brown', name:'חום', fill:'#6B3E26', price:0},
+  {id:'lightbrown', name:'חום בהיר', fill:'#A0673A', price:0},{id:'blonde', name:'בלונדיני', fill:'#E2B85C', price:0},
+  {id:'ginger', name:'ג׳ינג׳י', fill:'#C2562A', price:0},
+  {id:'pink', name:'ורוד', fill:'#F28DB2', price:8},{id:'purple', name:'סגול', fill:'#9B6BD6', price:8},{id:'sky', name:'תכלת', fill:'#7CC6F0', price:8}
+];
+const HAIR_SPECIALS=[
+  {id:'rainbow', name:'שיער בצבע קשת', price:15, kind:'color'},
+  {id:'glitter', name:'נצנצים בשיער', price:10, kind:'toggle'},
+  {id:'ribbon', name:'קוקו עם סרט', price:8, kind:'toggle'},
+  {id:'bow', name:'פפיון ורוד', price:6, kind:'toggle'}
+];
+const DEFAULT_LOOKS={lili:{hair:'buns',color:'brown',owned:[]}, nori:{hair:'long',color:'dark',bow:true,owned:['bow']}, test:{hair:'long',color:'pink',owned:['pink']}};
+const lookFor=(face,look)=>({...(DEFAULT_LOOKS[face]||DEFAULT_LOOKS.lili),...(look||{})});
+let hairGrad=0;
+function hairSvg(look){ // returns {defs, back, front, top}
+  const st=HAIR_STYLES.find(h=>h.id===look.hair)||HAIR_STYLES[0];
+  let fill=(HAIR_COLORS.find(c=>c.id===look.color)||HAIR_COLORS[3]).fill, defs='';
+  if(look.color==='rainbow'){ const id='hrb'+(++hairGrad); fill=`url(#${id})`;
+    defs=`<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">${['#F25C5C','#F5A142','#F2D24B','#5CC97B','#4FA3E8','#9B6BD6'].map((c,k)=>`<stop offset="${k/5}" stop-color="${c}"/>`).join('')}</linearGradient>`; }
+  const ribbon=(x,y)=>`<path d="M${x} ${y} l-13 -9 l1 18z M${x} ${y} l13 -9 l-1 18z" fill="#E8457A"/><circle cx="${x}" cy="${y}" r="4.2" fill="#C72F63"/>`;
+  const ties=st.ties.map(([x,y])=>look.ribbon?ribbon(x,y):`<circle cx="${x}" cy="${y}" r="4.5" fill="#F2B21E"/>`).join('');
+  const bow=look.bow&&!(look.ribbon&&st.ties.length)?`<path d="M82 24 l9-6 -1 11z M82 24 l11 3 -8 6z" fill="#E8457A"/><circle cx="84" cy="26" r="3" fill="#C72F63"/>`:'';
+  const spark=(x,y)=>`<path d="M${x} ${y-4} L${x+1.2} ${y-1.2} L${x+4} ${y} L${x+1.2} ${y+1.2} L${x} ${y+4} L${x-1.2} ${y+1.2} L${x-4} ${y} L${x-1.2} ${y-1.2}Z" fill="#fff"/>`;
+  const glitter=look.glitter?[[40,28],[58,23],[78,27],[33,44],[88,42],[50,36],[70,35]].map(([x,y])=>spark(x,y)).join(''):'';
+  return {defs, back:`<g fill="${fill}">${st.back}</g>`, front:`<g fill="${fill}">${st.front}</g>${ties}${bow}${glitter}`};
+}
 const GIRL_CATS=[{id:'g-outfit',name:'בגדים'},{id:'g-shoes',name:'נעליים'},{id:'g-head',name:'לראש'},{id:'g-glasses',name:'משקפיים'}];
 const sleeves=c=>`<path d="M38 98 L27 118 L35 122 L45 106Z M82 98 L93 118 L85 122 L75 106Z" fill="${c}"/>`;
 const longSleeves=c=>`<path d="M40 100 L28 146 M80 100 L92 146" stroke="${c}" stroke-width="12" stroke-linecap="round"/>`;
@@ -46,8 +86,9 @@ const GIRL_ITEMS=[
 const girlItem=id=>GIRL_ITEMS.find(i=>i.id===id);
 /* where each category is cropped for shop thumbnails */
 const GIRL_CROP={'g-outfit':'4 90 112 126','g-shoes':'22 176 76 44','g-head':'0 -2 120 72','g-glasses':'24 30 72 52'};
-function drawGirl(face, worn={}, preview={}){
-  const G=GIRLS[face]||GIRLS.lili, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
+/* look: {hair, color, glitter, ribbon, bow}; leave it out to get her default look */
+function drawGirl(face, worn={}, preview={}, look=null){
+  const H=hairSvg(lookFor(face,look)), G={...(GIRLS[face]||GIRLS.lili), back:H.defs?`<defs>${H.defs}</defs>${H.back}`:H.back, front:H.front}, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
   const outfit=it('g-outfit'), shoes=it('g-shoes');
   return `<svg viewBox="0 0 120 224" role="img" aria-label="אני">
     ${G.back}
@@ -65,3 +106,5 @@ function drawGirl(face, worn={}, preview={}){
     ${it('g-head')?it('g-head').svg():''}${it('g-glasses')?it('g-glasses').svg():''}
   </svg>`;
 }
+/* her head alone, for the small round faces in menus */
+function drawGirlHead(face, look=null){ return drawGirl(face,{},{},look).replace(/viewBox="[^"]*"/,'viewBox="12 2 96 96"'); }

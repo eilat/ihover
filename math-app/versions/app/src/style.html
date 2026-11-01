@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מתמטיקידס · לעצב את עצמי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Assistant:wght@400;600&display=swap">
+<style>
+/* לעצב את עצמי: she is big in the middle, wearing her clothes; tabs for hairstyle, hair colour and specials.
+   Hairstyles and natural colours are free and change on a click; happy colours and specials are bought once. */
+:root{--bg:#EEF1F4;--surface:#fff;--ink:#1E2633;--muted:#5A6577;--line:#D3DAE3;--accent:#7444C9;--good:#1F7A4D;--good-soft:#DDF2E7;
+  --f-display:"Rubik",system-ui,sans-serif;--f-body:"Assistant","Rubik",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161D;--surface:#1B212B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2E3746;--good:#3FB37A;--good-soft:#1C3A2B;color-scheme:dark}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer} button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.coin{width:18px;height:18px;flex:none}
+.wrap{max-width:1180px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start}
+.stage{background:var(--surface);border-radius:20px;display:grid;place-items:center;padding:16px;min-height:520px;position:relative}
+.stage svg{height:500px;width:auto;max-width:100%}
+.stage .tag{position:absolute;top:14px;background:var(--accent);color:#fff;border-radius:999px;padding:3px 14px;font-weight:600;font-size:15px}
+.card{background:var(--surface);border-radius:16px;padding:16px;min-width:0}
+h2{font-family:var(--f-display);font-size:21px;margin:0 0 6px}
+.meta{color:var(--muted);font-size:14px;margin:0 0 10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:10px;margin-bottom:12px;border-bottom:2px solid var(--line)}
+.tab{min-height:44px;padding:4px 16px;border-radius:999px;border:2px solid transparent;background:transparent;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.item{border:2px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;background:var(--surface)}
+button.item:hover{border-color:var(--accent)}
+.item.on{border-color:var(--good);background:var(--good-soft)}
+.item.pv{border-color:var(--accent)}
+.item b{font-size:15px}
+.th{width:96px;height:96px;display:grid;place-items:center}
+.th svg{width:96px;height:96px}
+.sw{width:64px;height:64px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--line)}
+.acts{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;margin-top:2px}
+.ib{min-height:44px;border-radius:999px;border:2px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:4px;padding:0 10px;font-family:var(--f-display);font-weight:600;font-size:17px}
+.ib.eye{width:44px;padding:0;color:var(--muted)}
+.ib.eye[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ib.buy{background:var(--accent);border-color:var(--accent);color:#fff}
+.ib:disabled{opacity:.45;cursor:default}
+.need{font-size:12px;color:var(--muted)}
+.state{font-size:13px;color:var(--good);font-weight:600}
+/*SHELL_CSS*/
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}.stage{min-height:0}.stage svg{height:360px}}
+</style></head>
+<body>
+<header class="bar" id="bar"></header>
+<main class="wrap" id="app"></main>
+<script>
+/*SHELL*/
+/*GIRL*/
+/*STYLE*/
+</script></body></html>
