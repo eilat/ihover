@@ -43,6 +43,14 @@ button.item:hover{border-color:var(--accent)}
 .ib:disabled{opacity:.45;cursor:default}
 .need{font-size:12px;color:var(--muted)}
 .state{font-size:13px;color:var(--good);font-weight:600}
+.item{position:relative}
+.tier{position:absolute;top:6px;inset-inline-start:6px;font-size:12px;font-weight:600;border-radius:999px;padding:1px 8px;background:#EDE7FB;color:#5B3BA8}
+.tier.legend{background:#FFF1C7;color:#7A5B00}
+.pick{margin:0 0 12px;display:flex;flex-direction:column;gap:6px}
+.pick b{font-size:15px}
+.dots{display:flex;gap:8px;flex-wrap:wrap}
+.dot{width:36px;height:36px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--line);padding:0}
+.dot.on{box-shadow:0 0 0 3px var(--ink)}
 /*SHELL_CSS*/
 @media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}.stage{min-height:0}.stage svg{height:360px}}
 </style></head>
