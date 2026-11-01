@@ -140,8 +140,20 @@ function clampMove(e,dx,dy){ const [x,y,w,h]=e.box, cx=x+w/2;
   return [Math.round(dx),Math.round(dy)]; }
 const entTransform=(e,p={})=>{ const [x,,w]=e.box, cx=x+w/2; return `translate(${p.dx||0} ${p.dy||0})${p.flip?` translate(${cx} 0) scale(-1 1) translate(${-cx} 0)`:''}`; };
 
+/* beds and the armchair: where someone can lie down or sit. Slots are in room coordinates before the
+   furniture is moved; lie = the bottom centre of the head (on the blanket's top edge), sit = the seat line. */
+const SEATS={
+  bed:{kind:'lie', slots:[[58,262],[106,262],[154,262],[202,262]], blanket:'#6FA8DC'},
+  'bed-canopy':{kind:'lie', slots:[[60,258],[108,258],[156,258],[204,258]], blanket:'#F48FB1'},
+  armchair:{kind:'sit', slots:[[195,338]]}
+};
+/* a slot where the furniture now stands (moved / flipped with it) */
+function seatXY(fid,k,pos){ const [x,,w]=ITEM_BOX[fid], cx=x+w/2, p=pos[fid]||{}; let [sx,sy]=SEATS[fid].slots[k]; if(p.flip) sx=2*cx-sx; return [sx+(p.dx||0), sy+(p.dy||0)]; }
+/* the front of the armchair, drawn over someone sitting in it so her legs are behind the seat */
+const armFront=c=>`<g transform="translate(150 262)"><rect x="-10" y="34" width="26" height="54" rx="12" fill="${c||'#E8577E'}"/><rect x="74" y="34" width="26" height="54" rx="12" fill="${c||'#E8577E'}"/><rect x="-10" y="34" width="26" height="54" rx="12" fill="rgba(0,0,0,.1)"/><rect x="74" y="34" width="26" height="54" rx="12" fill="rgba(0,0,0,.1)"/><rect x="10" y="56" width="70" height="22" rx="10" fill="${c||'#E8577E'}"/><rect x="10" y="56" width="70" height="22" rx="10" fill="rgba(255,255,255,.2)"/></g>`;
+
 /* everything that stands in the room, with its box and zone (used to draw and to drag) */
-function roomEntities({animal, worn, wornBy={}, items, friends, preview, girl, stored=[], night, colors={}}){
+function roomEntities({animal, worn, wornBy={}, items, friends, preview, girl, stored=[], night, colors={}, pos={}}){
   const A=ANIMALS[animal], show=new Set(items); if(preview && (ROOM_ITEMS.some(r=>r.id===preview)||itemById(preview))) show.add(preview);
   const has=id=>show.has(id)&&!stored.includes(id), strip=s=>s.replace(/^<svg[^>]*>|<\/svg>$/g,''), wearOnly=w=>Object.fromEntries(Object.entries(w||{}).filter(([c])=>['outfit','hair','hat','glasses'].includes(c)));
   const ents=[];
@@ -154,7 +166,26 @@ function roomEntities({animal, worn, wornBy={}, items, friends, preview, girl, s
     ents.push({id, box:[x,y,w,w*1.2], zone:'floor', friend:a, svg:charSvg(a,wornBy[a],[x,y,w,w*1.2])}); });
   const pv=preview && itemById(preview) && ['outfit','hair','hat','glasses'].includes(itemById(preview).cat) ? {[itemById(preview).cat]:preview} : {};
   ents.push({id:'main', box:MAIN_BOX, zone:'floor', svg:charSvg(animal,worn,MAIN_BOX,pv)});
-  if(girl){ const [x,y,w,h]=GIRL_BOX; ents.push({id:'girl', box:GIRL_BOX, zone:'floor', svg:`<ellipse cx="${x+74}" cy="${y+276}" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}, girl.look, colors))}</svg>`}); }
+  if(girl){ const [x,y,w,h]=GIRL_BOX; ents.push({id:'girl', box:GIRL_BOX, zone:'floor', svg:`<ellipse cx="${x+74}" cy="${y+276}" rx="48" ry="7" fill="rgba(0,0,0,.13)"/><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 120 224">${strip(drawGirl(girl.face, girl.worn, preview && girlItem(preview) ? {[girlItem(preview).cat]:preview} : {}, girl.look, colors, {sleep:night}))}</svg>`}); }
+  /* someone lying in a bed or sitting in the armchair: drawn in place, right after the furniture, with the blanket or seat over her */
+  const strip2=s=>s.replace(/^<svg[^>]*>|<\/svg>$/g,'');
+  ents.forEach(e=>{ if(!(e.id==='main'||e.id==='girl'||e.friend)) return; const p=pos[e.id]; const fid=p?.on;
+    if(!fid||!SEATS[fid]||!ents.some(f=>f.id===fid)) return;
+    const seat=SEATS[fid], [sx,sy]=seatXY(fid,p.slot||0,pos), fp=pos[fid]||{}, ft=`translate(${fp.dx||0} ${fp.dy||0})${fp.flip?` translate(${ITEM_BOX[fid][0]+ITEM_BOX[fid][2]/2} 0) scale(-1 1) translate(${-(ITEM_BOX[fid][0]+ITEM_BOX[fid][2]/2)} 0)`:''}`;
+    const a=e.id==='main'?animal:e.friend, isGirl=e.id==='girl', fill=colors[fid]||seat.blanket;
+    let svg, box;
+    if(seat.kind==='lie'){ // just the head on the pillow, the blanket pulled up to the chin
+      const w=isGirl?44:52, h=isGirl?44:43; box=[sx-w/2,sy-h,w,h+12];
+      const head=isGirl?`<svg x="${sx-w/2}" y="${sy-h+4}" width="${w}" height="${w}" viewBox="12 2 96 96">${strip2(drawGirlHead(girl.face,girl.look,{sleep:night}))}</svg>`
+        :`<svg x="${sx-w/2}" y="${sy-h}" width="${w}" height="${h}" viewBox="-6 -18 216 180">${strip2(drawChar(a,{},{},colors))}${night?sleepEyes(a):''}</svg>`;
+      svg=`${head}<path d="M${sx-w/2-4} ${sy+2} Q${sx} ${sy-8} ${sx+w/2+4} ${sy+2} L${sx+w/2+4} ${sy+12} L${sx-w/2-4} ${sy+12}Z" fill="${fill}"/><path d="M${sx-w/2-4} ${sy+2} Q${sx} ${sy-8} ${sx+w/2+4} ${sy+2}" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3"/>`;
+    } else { // sitting: the whole character, smaller, legs behind the seat front
+      if(isGirl){ const w=64, h=119; box=[sx-w/2,sy-h+8,w,h]; svg=`<svg x="${sx-w/2}" y="${sy-h+8}" width="${w}" height="${h}" viewBox="0 0 120 224">${strip2(drawGirl(girl.face, girl.worn, {}, girl.look, colors, {sleep:night}))}</svg>`; }
+      else { const w=72, h=86; box=[sx-w/2,sy-h+6,w,h]; svg=`<svg x="${sx-w/2}" y="${sy-h+6}" width="${w}" height="${h}" viewBox="-6 -18 216 260">${strip2(drawChar(a,Object.fromEntries(Object.entries((e.id==='main'?worn:wornBy[a])||{}).filter(([c])=>['outfit','hair','hat','glasses'].includes(c))),{},colors))}${night?sleepEyes(a):''}</svg>`; }
+      svg+=`<g transform="${ft}">${armFront(colors[fid])}</g>`;
+    }
+    Object.assign(e,{svg, box, baked:true, home:e.box, footY:ITEM_BOX[fid][1]+ITEM_BOX[fid][3]+(fp.dy||0)+0.5});
+  });
   return ents;
 }
 
@@ -166,12 +197,13 @@ function roomSvg(o){
   const flShow = FLOORS.find(f=>f.id===(preview&&isFl(preview)?preview:floor)) || FLOORS[0];
   const cuShow = preview&&isCu(preview) ? preview : curtain;
   const ents=roomEntities(o);
-  const foot=e=>e.box[1]+e.box[3]+(pos[e.id]?.dy||0);
+  const foot=e=>e.footY ?? e.box[1]+e.box[3]+(pos[e.id]?.dy||0);
+  const tf=e=>e.baked?'':entTransform(e,pos[e.id]);
   const order=[...ents.filter(e=>e.under), ...ents.filter(e=>!e.under).sort((a,b)=>foot(a)-foot(b))];
-  const g=e=>`<g class="ent ${arrange?'drag':''} ${e.friend&&!arrange?'friend':''}" data-ent="${e.id}" data-box="${e.box.join(',')}" data-zone="${e.zone}" transform="${entTransform(e,pos[e.id])}" ${e.friend&&!arrange?`data-act="animal" data-v="${e.friend}" role="button" aria-label="לעבור ל${ANIMALS[e.friend].name}"`:''}>${e.svg}</g>`;
+  const g=e=>`<g class="ent ${arrange?'drag':''} ${e.friend&&!arrange?'friend':''}" data-ent="${e.id}" data-box="${e.box.join(',')}" data-zone="${e.zone}" ${e.baked?`data-baked="1" data-home="${e.home.join(',')}"`:''} transform="${tf(e)}" ${e.friend&&!arrange?`data-act="animal" data-v="${e.friend}" role="button" aria-label="לעבור ל${ANIMALS[e.friend].name}"`:''}>${e.svg}</g>`;
   const glows=night?ents.filter(e=>e.glow).map(e=>`<g transform="${entTransform(e,pos[e.id])}">${e.glow}</g>`).join(''):'';
   const se=arrange&&sel?ents.find(e=>e.id===sel):null;
-  const selBox=se?`<g transform="${entTransform(se,pos[se.id])}" pointer-events="none"><rect x="${se.box[0]-6}" y="${se.box[1]-6}" width="${se.box[2]+12}" height="${se.box[3]+12}" rx="10" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="8 6"/></g>`:'';
+  const selBox=se?`<g transform="${tf(se)}" pointer-events="none"><rect x="${se.box[0]-6}" y="${se.box[1]-6}" width="${se.box[2]+12}" height="${se.box[3]+12}" rx="10" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="8 6"/></g>`:'';
   return `<svg class="scene ${arrange?'arranging':''}" viewBox="0 0 800 440" preserveAspectRatio="xMidYMax meet" role="img" aria-label="החדר של ה${A.name}">
     <defs>${WALLPAPERS.map(w=>w.def).join('')}${CURTAINS.map(c=>c.def||'').join('')}<radialGradient id="glow"><stop offset="0" stop-color="#FFE9A8" stop-opacity=".75"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/></radialGradient></defs>
     <rect x="-800" y="-700" width="2400" height="1000" fill="${wpShow.fill}"/>

@@ -706,7 +706,8 @@ const paintItem=(it,colors={})=>{ const out=it.svg(); const c=colors[it.id]; ret
 const GIRL_CROP={'g-outfit':'4 90 112 126','g-shoes':'22 176 76 44','g-head':'0 -2 120 72','g-glasses':'24 30 72 52'};
 /* look: {hair, color, glitter, ribbon, bow, half+color2, streak+streakColor, clips, beads, rstreaks, flowercrown, tiara};
    leave it out to get her default look. colors: {itemId:'#hex'} paints her clothes in the colours she chose. */
-function drawGirl(face, worn={}, preview={}, look=null, colors={}){
+/* opts.sleep: eyes closed (night in the home) */
+function drawGirl(face, worn={}, preview={}, look=null, colors={}, opts={}){
   const H=hairSvg(lookFor(face,look)), G={...(GIRLS[face]||GIRLS.lili), back:H.defs?`<defs>${H.defs}</defs>${H.back}`:H.back, front:H.front}, w={...worn,...preview}, it=c=>w[c]?girlItem(w[c]):null, sk=G.skin;
   const outfit=it('g-outfit'), shoes=it('g-shoes');
   return `<svg viewBox="0 0 120 224" role="img" aria-label="אני">
@@ -718,7 +719,7 @@ function drawGirl(face, worn={}, preview={}, look=null, colors={}){
     ${outfit?paintItem(outfit,colors):`${sleeves('#fff')}<path d="M38 98 Q60 90 82 98 L84 140 L36 140Z" fill="#fff" stroke="#E3E7EE" stroke-width="1.5"/><path d="M36 138 H84 L86 168 H63 L60 152 L57 168 H34Z" fill="#3E7BD8"/>`}
     <rect x="54" y="84" width="12" height="14" rx="4" fill="${sk}"/>
     <circle cx="60" cy="56" r="34" fill="${sk}"/>
-    <circle cx="47" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="73" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="48.2" cy="58.8" r="1.1" fill="#fff"/><circle cx="74.2" cy="58.8" r="1.1" fill="#fff"/>
+    ${opts.sleep?`<path d="M42 60 Q47 64 52 60 M68 60 Q73 64 78 60" stroke="#2B2B2B" stroke-width="2.4" fill="none" stroke-linecap="round"/>`:`<circle cx="47" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="73" cy="60" r="3.4" fill="#2B2B2B"/><circle cx="48.2" cy="58.8" r="1.1" fill="#fff"/><circle cx="74.2" cy="58.8" r="1.1" fill="#fff"/>`}
     <ellipse cx="40" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/><ellipse cx="80" cy="70" rx="5" ry="3.2" fill="#F19A9A" opacity=".65"/>
     <path d="M53 73 Q60 79 67 73" stroke="#2B2B2B" stroke-width="2.4" fill="none" stroke-linecap="round"/>
     ${G.front}
@@ -726,7 +727,7 @@ function drawGirl(face, worn={}, preview={}, look=null, colors={}){
   </svg>`;
 }
 /* her head alone, for the small round faces in menus */
-function drawGirlHead(face, look=null){ return drawGirl(face,{},{},look).replace(/viewBox="[^"]*"/,'viewBox="12 2 96 96"'); }
+function drawGirlHead(face, look=null, opts={}){ return drawGirl(face,{},{},look,{},opts).replace(/viewBox="[^"]*"/,'viewBox="12 2 96 96"'); }
 
     return {drawGirlHead, lookFor, HAIR_COLORS, HAIR_SPECIALS};
   })();

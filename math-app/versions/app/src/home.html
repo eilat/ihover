@@ -378,23 +378,39 @@ function arrangePanel(){
     ${st.length?`<p class="meta" style="margin-top:8px">במחסן:</p><div class="store">${st.map(id=>`<button class="stbtn" data-act="unstore" data-v="${id}" title="להחזיר לחדר"><span class="th">${storedThumb(id)}</span><span>${entName(id)}</span></button>`).join('')}</div>`:''}
   </section>`;
 }
+/* a bed or the armchair under the point where a character was let go, with a free place in it */
+function seatAt(x,y,who){ let best=null;
+  for(const fid of Object.keys(SEATS)){ if(!S.items.includes(fid)||(S.stored||[]).includes(fid)) continue;
+    const [bx,by,bw,bh]=ITEM_BOX[fid], p=S.pos[fid]||{}, x0=bx+(p.dx||0), y0=by+(p.dy||0);
+    if(x<x0||x>x0+bw||y<y0||y>y0+bh+24) continue;
+    const taken=new Set(Object.entries(S.pos).filter(([id,q])=>id!==who&&q?.on===fid).map(([,q])=>q.slot||0));
+    SEATS[fid].slots.forEach((_,k)=>{ if(taken.has(k)) return; const [sx,sy]=seatXY(fid,k,S.pos), d=Math.hypot(sx-x,sy-y);
+      if(!best||d<best.d) best={fid,k,d}; }); }
+  return best; } // the nearest free place wins (a bed and the armchair can overlap)
 /* dragging (arrange mode only): move the group live, keep the offset when the mouse lets go */
 function svgPoint(svg,e){ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
 document.addEventListener('pointerdown',e=>{
   if(!arrange) return; const g=e.target.closest('g.ent'); if(!g) return;
-  const svg=g.ownerSVGElement, id=g.dataset.ent, box=g.dataset.box.split(',').map(Number), p=S.pos[id]||{};
-  drag={id, g, svg, ent:{box, zone:g.dataset.zone}, start:svgPoint(svg,e), dx:p.dx||0, dy:p.dy||0, moved:false};
+  const svg=g.ownerSVGElement, id=g.dataset.ent, box=g.dataset.box.split(',').map(Number), p=S.pos[id]||{}, baked=!!g.dataset.baked;
+  // someone lying or sitting is drawn in place: drag her from where she is (offset 0)
+  drag={id, g, svg, ent:{box, zone:g.dataset.zone}, baked, home:baked?g.dataset.home.split(',').map(Number):null, start:svgPoint(svg,e), dx:baked?0:(p.dx||0), dy:baked?0:(p.dy||0), moved:false};
   g.setPointerCapture?.(e.pointerId); e.preventDefault();
 });
 document.addEventListener('pointermove',e=>{
   if(!drag) return; const pt=svgPoint(drag.svg,e);
   const [dx,dy]=clampMove(drag.ent, drag.dx+pt.x-drag.start.x, drag.dy+pt.y-drag.start.y);
   if(Math.abs(pt.x-drag.start.x)+Math.abs(pt.y-drag.start.y)>3) drag.moved=true;
-  drag.nx=dx; drag.ny=dy; drag.g.setAttribute('transform', entTransform(drag.ent,{...(S.pos[drag.id]||{}),dx,dy}));
+  drag.nx=dx; drag.ny=dy; drag.g.setAttribute('transform', entTransform(drag.ent,drag.baked?{dx,dy}:{...(S.pos[drag.id]||{}),dx,dy}));
 });
 document.addEventListener('pointerup',()=>{
   if(!drag) return; const d=drag; drag=null; refresh();
-  if(d.moved){ const p=S.pos[d.id] ||= {}; p.dx=d.nx; p.dy=d.ny; save(); }
+  if(d.moved){ const p=S.pos[d.id] ||= {}, isChar=d.id==='main'||d.id==='girl'||d.id.startsWith('a:');
+    const [bx,by,bw,bh]=d.ent.box, fx=bx+bw/2+d.nx, fy=by+bh+d.ny; // where her feet (or head) were let go
+    const seat=isChar && seatAt(fx,fy,d.id);
+    if(seat){ p.on=seat.fid; p.slot=seat.k; }                 // into the bed / onto the armchair
+    else if(d.baked){ const [hx,hy,hw,hh]=d.home; delete p.on; delete p.slot; p.dx=Math.round(fx-(hx+hw/2)); p.dy=Math.round(fy-(hy+hh)); } // up again, standing where she was let go
+    else { p.dx=d.nx; p.dy=d.ny; if(isChar){ delete p.on; delete p.slot; } }
+    save(); }
   sel=d.id; render();
 });
 /* the room fills the middle column: grow the drawing taller (more wall above, more floor below) or wider */
