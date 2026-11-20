@@ -74,7 +74,7 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 20px;
   text-align: center; overflow-x: clip;
 }
-.bunting { width: 100%; height: 40px; display: block; margin-bottom: -8px; }
+.bunting { width: 100%; height: 44px; display: block; margin-bottom: -8px; }
 .eyebrow { font-size: 14px; letter-spacing: .08em; color: var(--mint); font-weight: 500; }
 h1 {
   font-family: var(--display); font-weight: 400;
@@ -335,20 +335,22 @@ body:not(.parents-mode) .parents.count-only { display: none !important; }
 .gpage[hidden] { display: none; }
 body.greet-mode .wrap { display: none; }
 .gpage {
-  position: relative; z-index: 2; min-height: 100vh; min-height: 100svh;
-  display: flex; flex-direction: column; overflow-x: clip;
+  position: relative; z-index: 2; height: 100vh; height: 100svh; box-sizing: border-box;
+  display: flex; flex-direction: column; overflow: hidden;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 12px 18px;
+  padding-block: 0 12px;
 }
-.gbar { position: relative; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+body.greet-mode .moon { display: none; }
+.gflags { position: relative; z-index: 4; display: block; width: 100%; height: 44px; flex: none; }
+.gbar { position: relative; z-index: 4; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-top: 6px; flex: none; }
+.gright { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
 .gtitle { font-family: var(--display); font-size: clamp(22px, 5.5vw, 30px); color: var(--gold); text-shadow: 0 3px 0 #b8731c; }
 .gcount { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; direction: ltr; }
 .gscene { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .gscene > * { position: absolute; opacity: 0; transition: opacity .6s ease; }
 .gscene > .on { opacity: 1; }
-.g-bunting { top: 58px; left: 0; width: 100%; height: 40px; }
-.g-lights { top: 62px; left: 0; width: 100%; display: flex; justify-content: space-around; }
+.g-lights { bottom: 8px; left: 0; width: 100%; display: flex; justify-content: space-around; }
 .g-lights i { width: 10px; height: 14px; border-radius: 50% 50% 45% 45%; box-shadow: 0 0 10px rgba(255, 230, 140, .5); }
 .g-bl { left: 1%; top: 18%; width: clamp(60px, 12vw, 120px); }
 .g-br { right: 1%; top: 24%; width: clamp(56px, 11vw, 110px); }
@@ -357,10 +359,11 @@ body.greet-mode .wrap { display: none; }
 .g-rainbow { left: 50%; top: 52%; width: min(880px, 140vw); transform: translate(-50%, -60%); }
 .gscene > .g-rainbow.on { opacity: .45; }
 .g-spark { width: 26px; }
-.gstage { position: relative; z-index: 2; flex: 1; display: flex; align-items: center; justify-content: center; padding-block: 64px 24px; }
-.frame { position: relative; width: 100%; max-width: 560px; }
+.gstage { position: relative; z-index: 2; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding-block: 60px 34px; }
+.frame { position: relative; width: 100%; max-width: 560px; max-height: 100%; display: flex; }
+.frame.photo { width: auto; }
 .gcard {
-  position: relative; z-index: 2; box-sizing: border-box; width: 100%; min-height: 340px;
+  position: relative; z-index: 2; box-sizing: border-box; width: 100%; min-height: min(340px, 100%); max-height: 100%;
   background: var(--paper); color: var(--paper-ink); border-radius: 24px;
   padding: 26px 22px 24px; text-align: center;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
@@ -369,6 +372,9 @@ body.greet-mode .wrap { display: none; }
 }
 @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(.92); } to { opacity: 1; transform: none; } }
 .gcard .who { width: 120px; height: 130px; margin-top: -78px; animation: bob 2.6s ease-in-out infinite; }
+@media (max-height: 700px), (max-width: 480px) { .gcard .who { width: 96px; height: 104px; margin-top: -64px; } .gcard { gap: 8px; padding-block: 18px; } }
+#gBack { white-space: nowrap; flex: none; }
+.gnav .btn, .gcount { white-space: nowrap; }
 .gcard .from { font: 700 42px/1 var(--hand); color: var(--edge, #c9437a); }
 .gcard .text { margin: 0; font-size: clamp(18px, 4.6vw, 22px); line-height: 1.6; white-space: pre-line; text-wrap: pretty; max-width: 40ch; }
 .gcard .special { margin: 4px 0 0; padding: 12px 14px; border-radius: 14px; background: #fde9d2; font-size: 16px; line-height: 1.5; width: 100%; box-sizing: border-box; }
@@ -376,12 +382,17 @@ body.greet-mode .wrap { display: none; }
 .gcard .big { font-family: var(--display); font-size: clamp(30px, 8vw, 44px); color: #c9437a; line-height: 1.2; text-wrap: balance; }
 .gcard .sub2 { margin: 0; font-size: 18px; }
 .gcard .hero { width: min(220px, 60%); }
-.gcard .polaroid { background: #fff; padding: 10px 10px 4px; border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .18); transform: rotate(-2deg); max-width: 100%; box-sizing: border-box; }
-.gcard .polaroid img { display: block; max-width: 100%; max-height: 52vh; border-radius: 3px; }
+.gcard.is-photo {
+  width: auto; min-height: 0; overflow: visible; padding: 12px 12px 4px; gap: 0; border: 0; border-radius: 6px;
+  background: #fff; box-shadow: 0 10px 28px rgba(0, 0, 0, .35); transform: rotate(var(--tilt, -1.5deg));
+}
+.gcard .polaroid { margin: 0; }
+.gcard .polaroid img { display: block; max-width: min(100%, 78vw); max-height: calc(100svh - 270px); border-radius: 2px; }
 .gcard .polaroid .cap { font: 700 28px/1.3 var(--hand); color: var(--paper-ink); padding: 6px 0; }
-.gnav { position: relative; z-index: 4; display: flex; justify-content: center; align-items: center; gap: 12px; padding-bottom: 6px; }
+.gnav { display: flex; align-items: center; gap: 10px; }
 .gnav .btn { min-width: 0; }
-@media (min-width: 480px) { .gnav .btn { min-width: 120px; } }
+.gnav .btn { padding: 9px 16px; font-size: 15px; }
+@media (min-width: 720px) { .gnav .btn { min-width: 110px; } }
 .gnav .btn:disabled { opacity: .45; }
 
 /* dragons that peek out from behind the card */
@@ -412,10 +423,7 @@ body.greet-mode .wrap { display: none; }
 <canvas id="confetti" aria-hidden="true"></canvas>
 
 <main class="wrap">
-  <svg class="bunting" data-deco="bunting" viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0 4 Q200 26 400 4" stroke="#a3c9c2" stroke-width="1.5" fill="none"/>
-    <g id="flags"></g>
-  </svg>
+  <svg class="bunting bunting-auto" data-deco="bunting" aria-hidden="true"></svg>
 
   <div class="layout">
   <div class="side">
@@ -642,7 +650,6 @@ body.greet-mode .wrap { display: none; }
         <path d="M50 160 A100 100 0 0 1 250 160" stroke="#5ec8ff"/><path d="M60 160 A90 90 0 0 1 240 160" stroke="#b98cff"/>
       </g>
     </svg>
-    <svg class="g-bunting" data-set="0 2" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 4 Q200 26 400 4" stroke="#a3c9c2" stroke-width="1.5" fill="none"/><g class="flags2"></g></svg>
     <div class="g-lights" data-set="1 3" id="gLights"></div>
     <svg class="g-bl" data-set="0 2" viewBox="0 0 80 200"><g class="sway"><path d="M40 70 Q32 130 44 200" stroke="#a3c9c2" stroke-width="1.4" fill="none"/><ellipse cx="40" cy="38" rx="28" ry="34" fill="#ff7aa8"/><path d="M35 70 l5 7 l5 -7 z" fill="#ff7aa8"/><ellipse cx="30" cy="26" rx="6" ry="10" fill="#fff" opacity=".35"/></g></svg>
     <svg class="g-br" data-set="0 3" viewBox="0 0 80 200"><g class="sway b"><path d="M40 70 Q48 130 36 200" stroke="#a3c9c2" stroke-width="1.4" fill="none"/><ellipse cx="40" cy="38" rx="27" ry="33" fill="#7fe0b5"/><path d="M35 70 l5 7 l5 -7 z" fill="#7fe0b5"/><ellipse cx="30" cy="26" rx="6" ry="10" fill="#fff" opacity=".35"/></g></svg>
@@ -653,21 +660,23 @@ body.greet-mode .wrap { display: none; }
     <svg class="g-spark" data-set="0 2" style="left:22%;top:16%" viewBox="0 0 20 20"><path class="spark" d="M10 0 Q10 10 20 10 Q10 10 10 20 Q10 10 0 10 Q10 10 10 0 Z" fill="#fff4e2"/></svg>
     <svg class="g-spark" data-set="1 3" style="right:26%;top:12%" viewBox="0 0 20 20"><path class="spark" d="M10 0 Q10 10 20 10 Q10 10 10 20 Q10 10 0 10 Q10 10 10 0 Z" fill="#fff4e2"/></svg>
   </div>
+  <svg class="gflags bunting-auto" aria-hidden="true"></svg>
   <header class="gbar">
-    <button class="link" id="gBack" type="button">→ חזרה לעוגה</button>
-    <div class="gtitle">ברכות לנורי</div>
-    <span aria-hidden="true" style="min-width:110px"></span>
+    <div class="gright">
+      <div class="gtitle">ברכות לנורי</div>
+      <nav class="gnav" aria-label="מעבר בין השקופיות">
+        <button class="btn" id="gPrev" type="button">→ הקודמת</button>
+        <div class="gcount" id="gCount"></div>
+        <button class="btn" id="gNext" type="button">הבאה ←</button>
+      </nav>
+    </div>
+    <button class="link" id="gBack" type="button">חזרה לעוגה</button>
   </header>
   <div class="gstage">
     <div class="frame" id="frame">
       <article class="gcard" id="gcard" aria-live="polite"></article>
     </div>
   </div>
-  <nav class="gnav">
-    <button class="btn" id="gPrev" type="button">→ הקודמת</button>
-    <div class="gcount" id="gCount"></div>
-    <button class="btn" id="gNext" type="button">הבאה ←</button>
-  </nav>
 </section>
 
 <script>
@@ -711,10 +720,26 @@ body.greet-mode .wrap { display: none; }
     $('fireflies').appendChild(f);
   }
   const flagColors = ['#ff7aa8', '#ffc94a', '#7fe0b5', '#5ec8ff', '#b98cff'];
-  for (let i = 0; i < 16; i++) {
-    const x = 12 + i * 24.5, t = x / 400, y = 4 + 2 * t * (1 - t) * 22;
-    svgEl('path', { d: `M${x - 9} ${y} L${x + 9} ${y} L${x} ${y + 18} Z`, fill: flagColors[i % 5] }, $('flags'));
+  // bunting: the same swag of flags repeated across the real width, so flags never stretch
+  function drawBunting(svg) {
+    const w = Math.round(svg.getBoundingClientRect().width);
+    if (!w) return;
+    const n = Math.max(1, Math.round(w / 170)), sw = w / n;
+    svg.setAttribute('viewBox', `0 0 ${w} 44`);
+    let html = '', c = 0;
+    for (let s = 0; s < n; s++) {
+      const x0 = s * sw;
+      html += `<path d="M${x0} 3 Q${x0 + sw / 2} 26 ${x0 + sw} 3" stroke="#a3c9c2" stroke-width="1.5" fill="none"/>`;
+      for (let k = 0; k < 6; k++) {
+        const t = (k + .5) / 6, x = x0 + t * sw, y = 3 + 23 * 2 * t * (1 - t);
+        html += `<path d="M${(x - 9).toFixed(1)} ${y.toFixed(1)} L${(x + 9).toFixed(1)} ${y.toFixed(1)} L${x.toFixed(1)} ${(y + 18).toFixed(1)} Z" fill="${flagColors[c++ % 5]}"/>`;
+      }
+    }
+    svg.innerHTML = html;
   }
+  const drawAllBunting = () => document.querySelectorAll('.bunting-auto').forEach(drawBunting);
+  drawAllBunting();
+  addEventListener('resize', drawAllBunting);
 
   /* ----- cake decorations ----- */
   let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
@@ -778,6 +803,7 @@ body.greet-mode .wrap { display: none; }
       el.classList.toggle('off', i >= count);
       el.classList.toggle('fresh', i === freshIndex);
     }));
+    drawAllBunting();
   }
   const pips = $('pips');
   ITEMS.forEach(() => { const p = document.createElement('span'); p.className = 'pip'; pips.appendChild(p); });
@@ -931,7 +957,13 @@ body.greet-mode .wrap { display: none; }
   const GREETINGS = [
     { from: 'אילת', who: 'owl', text: 'נורי האהובה שלי, המון מזל טוב ליום הולדת', special: 'שהיא רואה את האחיות שלה, את הרגשות שלהן, ודואגת להן' }
   ];
-  const PHOTOS = []; // { src: 'photos/x.jpg', caption: '...' } — mixed in between the greetings
+  // photos from the family's Drive folder, oldest first; spread evenly between the greetings
+  const PHOTOS = [
+    ['p01', 'יולי 2026'], ['p02', 'יולי 2026'], ['p03', 'יולי 2026'], ['p04', 'יולי 2026'], ['p05', 'יולי 2026'],
+    ['p06', 'יולי 2026'], ['p07', 'יולי 2026'], ['p08', 'יולי 2026'], ['p09', 'יולי 2026'], ['p10', 'יולי 2026'],
+    ['p11', 'יולי 2026'], ['p12', 'יולי 2026'], ['p13', 'אוגוסט 2026'], ['p14', 'אוגוסט 2026'], ['p15', 'אוגוסט 2026'],
+    ['p16', 'אוקטובר 2026'], ['p17', 'אוקטובר 2026']
+  ].map(([f, caption]) => ({ src: `photos/${f}.jpg`, caption }));
   const EDGES = ['#c9437a', '#2f9e78', '#d8901e', '#3b8fd0', '#8a5cd6'];
   const DRAGONS = [
     ['#6cc551', '#8bd86f', '#ff9f43'], ['#a78bfa', '#c4b5fd', '#ffc94a'], ['#5ec8ff', '#a5e0ff', '#ff7aa8'],
@@ -992,11 +1024,7 @@ body.greet-mode .wrap { display: none; }
       <ellipse class="b" cx="44" cy="114" rx="15" ry="9"/><ellipse class="b" cx="116" cy="114" rx="15" ry="9"/>
     </svg>`;
 
-  // flags and bulbs for the greetings page scenery
-  document.querySelectorAll('.flags2').forEach(g => { for (let i = 0; i < 16; i++) {
-    const x = 12 + i * 24.5, t = x / 400, y = 4 + 2 * t * (1 - t) * 22;
-    svgEl('path', { d: `M${x - 9} ${y} L${x + 9} ${y} L${x} ${y + 18} Z`, fill: flagColors[i % 5] }, g);
-  } });
+  // bulbs for the greetings page scenery
   for (let i = 0; i < 18; i++) {
     const b = document.createElement('i');
     b.className = 'bulb';
@@ -1007,13 +1035,14 @@ body.greet-mode .wrap { display: none; }
 
   function buildSlides() {
     const out = [{ kind: 'intro' }];
-    const gap = PHOTOS.length ? Math.max(1, Math.round(GREETINGS.length / PHOTOS.length)) : Infinity;
-    let pi = 0;
-    GREETINGS.forEach((g, i) => {
-      out.push({ kind: 'greet', ...g });
-      if ((i + 1) % gap === 0 && pi < PHOTOS.length) out.push({ kind: 'photo', ...PHOTOS[pi++] });
-    });
-    while (pi < PHOTOS.length) out.push({ kind: 'photo', ...PHOTOS[pi++] });
+    const total = GREETINGS.length + PHOTOS.length;
+    let gi = 0, pi = 0;
+    for (let k = 0; k < total; k++) {
+      // greeting i sits at position floor(i * total / G): the first one comes right after the intro
+      const due = gi < GREETINGS.length && k >= Math.floor(gi * total / GREETINGS.length);
+      if (due || pi >= PHOTOS.length) out.push({ kind: 'greet', ...GREETINGS[gi++] });
+      else out.push({ kind: 'photo', ...PHOTOS[pi++] });
+    }
     out.push({ kind: 'end' });
     return out;
   }
@@ -1022,6 +1051,9 @@ body.greet-mode .wrap { display: none; }
   function renderSlide() {
     const sl = SLIDES[at];
     gcard.style.setProperty('--edge', EDGES[at % EDGES.length]);
+    gcard.style.setProperty('--tilt', (at % 2 ? 1.5 : -1.5) + 'deg');
+    gcard.classList.toggle('is-photo', sl.kind === 'photo');
+    gframe.classList.toggle('photo', sl.kind === 'photo');
     gcard.replaceChildren();
     const add = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text) e.textContent = text; gcard.appendChild(e); return e; };
     if (sl.kind === 'intro') {
@@ -1036,8 +1068,8 @@ body.greet-mode .wrap { display: none; }
       add('p', 'text', sl.text);
       if (sl.special) { const sp = add('p', 'special', sl.special); const b = document.createElement('b'); b.textContent = 'הכי מיוחד בך:'; sp.prepend(b); }
     } else if (sl.kind === 'photo') {
-      const pol = add('figure', 'polaroid'); pol.style.margin = '0';
-      const img = document.createElement('img'); img.src = sl.src; img.alt = sl.caption || 'תמונה של נורי'; pol.appendChild(img);
+      const pol = add('figure', 'polaroid');
+      const img = document.createElement('img'); img.src = sl.src; img.alt = 'תמונה מהמשפחה, ' + (sl.caption || ''); pol.appendChild(img);
       if (sl.caption) { const c = document.createElement('figcaption'); c.className = 'cap'; c.textContent = sl.caption; pol.appendChild(c); }
     } else {
       add('div', 'big', 'ועוד המון המון אהבה מכולנו!');
@@ -1062,6 +1094,8 @@ body.greet-mode .wrap { display: none; }
       gframe.appendChild(pk);
       requestAnimationFrame(() => requestAnimationFrame(() => pk.classList.add('in')));
     }
+    const nx = SLIDES[at + 1];
+    if (nx && nx.kind === 'photo') new Image().src = nx.src;
     $('gCount').textContent = `${at + 1} / ${SLIDES.length}`;
     $('gPrev').disabled = at === 0;
     $('gNext').textContent = at === SLIDES.length - 1 ? 'מההתחלה' : 'הבאה ←';
@@ -1071,7 +1105,7 @@ body.greet-mode .wrap { display: none; }
     const on = location.hash === '#greetings';
     gpage.hidden = !on;
     document.body.classList.toggle('greet-mode', on);
-    if (on) { showDecor(ITEMS.length, -1); SLIDES = buildSlides(); at = 0; renderSlide(); scrollTo(0, 0); }
+    if (on) { showDecor(ITEMS.length, -1); drawAllBunting(); SLIDES = buildSlides(); at = 0; renderSlide(); scrollTo(0, 0); }
     else if (!partyStarted) showDecor(earned, todayIndex);
   }
   $('greetBtn').addEventListener('click', () => { location.hash = 'greetings'; });
