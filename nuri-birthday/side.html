@@ -331,42 +331,73 @@ body:not(.parents-mode) .parents.count-only { display: none !important; }
   .tile { padding: 10px 2px 8px; border-radius: 14px; }
 }
 
-/* ---------- greetings slideshow ---------- */
-.greet-btn { margin-top: 4px; }
-.show[hidden] { display: none; }
-.show {
-  position: fixed; inset: 0; z-index: 15; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 18px;
-  padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  background: rgba(8, 30, 34, .94);
+/* ---------- greetings page (#greetings): its own full page ---------- */
+.gpage[hidden] { display: none; }
+body.greet-mode .wrap { display: none; }
+.gpage {
+  position: relative; z-index: 2; min-height: 100vh; min-height: 100svh;
+  display: flex; flex-direction: column; overflow-x: clip;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 18px;
 }
-.show .slide {
-  position: relative; box-sizing: border-box; width: 100%; max-width: 520px; min-height: 300px;
-  background: var(--paper); color: var(--paper-ink); border-radius: 22px;
-  padding: 30px 24px 26px; text-align: center;
-  display: flex; flex-direction: column; justify-content: center; gap: 14px;
-  box-shadow: 0 12px 0 var(--slide-edge, #c9437a);
-  border-top: 10px solid var(--slide-edge, #c9437a);
+.gbar { position: relative; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.gtitle { font-family: var(--display); font-size: clamp(22px, 5.5vw, 30px); color: var(--gold); text-shadow: 0 3px 0 #b8731c; }
+.gcount { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; direction: ltr; }
+.gscene { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.gscene > * { position: absolute; opacity: 0; transition: opacity .6s ease; }
+.gscene > .on { opacity: 1; }
+.g-bunting { top: 58px; left: 0; width: 100%; height: 40px; }
+.g-lights { top: 62px; left: 0; width: 100%; display: flex; justify-content: space-around; }
+.g-lights i { width: 10px; height: 14px; border-radius: 50% 50% 45% 45%; box-shadow: 0 0 10px rgba(255, 230, 140, .5); }
+.g-bl { left: 1%; top: 18%; width: clamp(60px, 12vw, 120px); }
+.g-br { right: 1%; top: 24%; width: clamp(56px, 11vw, 110px); }
+.g-gl { left: 2%; bottom: 10px; width: clamp(60px, 10vw, 110px); }
+.g-gr { right: 2%; bottom: 10px; width: clamp(56px, 9vw, 100px); }
+.g-rainbow { left: 50%; top: 52%; width: min(880px, 140vw); transform: translate(-50%, -60%); }
+.gscene > .g-rainbow.on { opacity: .45; }
+.g-spark { width: 26px; }
+.gstage { position: relative; z-index: 2; flex: 1; display: flex; align-items: center; justify-content: center; padding-block: 64px 24px; }
+.frame { position: relative; width: 100%; max-width: 560px; }
+.gcard {
+  position: relative; z-index: 2; box-sizing: border-box; width: 100%; min-height: 340px;
+  background: var(--paper); color: var(--paper-ink); border-radius: 24px;
+  padding: 26px 22px 24px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  border-top: 10px solid var(--edge, #c9437a); box-shadow: 0 12px 0 var(--edge, #c9437a);
   animation: slideIn .5s cubic-bezier(.3, 1.4, .5, 1) both;
 }
 @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(.92); } to { opacity: 1; transform: none; } }
-.slide .from { font: 700 40px/1 var(--hand); color: var(--slide-edge, #c9437a); }
-.slide .text { margin: 0; font-size: clamp(18px, 4.6vw, 22px); line-height: 1.6; white-space: pre-line; text-wrap: pretty; }
-.slide .special {
-  margin: 4px 0 0; padding: 12px 14px; border-radius: 14px; background: #fde9d2;
-  font-size: 16px; line-height: 1.5;
-}
-.slide .special b { display: block; font-size: 13px; letter-spacing: .04em; color: #9a6b3c; margin-bottom: 2px; }
-.slide .big { font-family: var(--display); font-size: clamp(30px, 8vw, 42px); color: #c9437a; line-height: 1.2; }
-.show .count { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
-.show .nav { display: flex; gap: 12px; align-items: center; }
-.show .nav .btn { min-width: 110px; }
-.show .close {
-  position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px));
-  width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--tile-line);
-  background: var(--tile); color: var(--ink); font-size: 22px; cursor: pointer;
-}
-.show .close:focus-visible, .show .btn:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
+.gcard .who { width: 120px; height: 130px; margin-top: -78px; animation: bob 2.6s ease-in-out infinite; }
+.gcard .from { font: 700 42px/1 var(--hand); color: var(--edge, #c9437a); }
+.gcard .text { margin: 0; font-size: clamp(18px, 4.6vw, 22px); line-height: 1.6; white-space: pre-line; text-wrap: pretty; max-width: 40ch; }
+.gcard .special { margin: 4px 0 0; padding: 12px 14px; border-radius: 14px; background: #fde9d2; font-size: 16px; line-height: 1.5; width: 100%; box-sizing: border-box; }
+.gcard .special b { display: block; font-size: 13px; letter-spacing: .04em; color: #9a6b3c; margin-bottom: 2px; }
+.gcard .big { font-family: var(--display); font-size: clamp(30px, 8vw, 44px); color: #c9437a; line-height: 1.2; text-wrap: balance; }
+.gcard .sub2 { margin: 0; font-size: 18px; }
+.gcard .hero { width: min(220px, 60%); }
+.gcard .polaroid { background: #fff; padding: 10px 10px 4px; border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .18); transform: rotate(-2deg); max-width: 100%; box-sizing: border-box; }
+.gcard .polaroid img { display: block; max-width: 100%; max-height: 52vh; border-radius: 3px; }
+.gcard .polaroid .cap { font: 700 28px/1.3 var(--hand); color: var(--paper-ink); padding: 6px 0; }
+.gnav { position: relative; z-index: 4; display: flex; justify-content: center; align-items: center; gap: 12px; padding-bottom: 6px; }
+.gnav .btn { min-width: 0; }
+@media (min-width: 480px) { .gnav .btn { min-width: 120px; } }
+.gnav .btn:disabled { opacity: .45; }
+
+/* dragons that peek out from behind the card */
+.peeker { position: absolute; z-index: 1; width: 110px; transition: transform .7s cubic-bezier(.3, 1.6, .5, 1) .5s; }
+.peeker svg { display: block; width: 100%; height: auto; overflow: visible; }
+.peeker .b { fill: var(--b); } .peeker .l { fill: var(--l); } .peeker .w { fill: var(--w); }
+.pk-top-l { bottom: calc(100% - 16px); left: 8%; transform: translateY(90%); }
+.pk-top-r { bottom: calc(100% - 16px); right: 8%; transform: translateY(90%); }
+.pk-side-r { top: 34%; left: calc(100% - 30px); transform: rotate(90deg) translateY(90%); }
+.pk-side-l { top: 34%; right: calc(100% - 30px); transform: rotate(-90deg) translateY(90%); }
+.pk-bottom { top: calc(100% - 4px); left: 38%; transform: rotate(180deg) translateY(90%); }
+.pk-top-l.in, .pk-top-r.in { transform: none; }
+.pk-side-r.in { transform: rotate(90deg); }
+.pk-side-l.in { transform: rotate(-90deg); }
+.pk-bottom.in { transform: rotate(180deg) translateY(-6%); }
+@media (prefers-reduced-motion: reduce) { .gcard .who { animation: none; } }
 </style>
 
 <div class="sky" id="sky" aria-hidden="true">
@@ -602,15 +633,42 @@ body:not(.parents-mode) .parents.count-only { display: none !important; }
   </div>
 </main>
 
-<div class="show" id="show" role="dialog" aria-modal="true" aria-label="ברכות מכל המשפחה" hidden>
-  <button class="close" id="showClose" type="button" aria-label="סגירה">✕</button>
-  <div class="slide" id="slide"></div>
-  <div class="count" id="showCount"></div>
-  <div class="nav">
-    <button class="btn" id="showPrev" type="button">→ הקודמת</button>
-    <button class="btn" id="showNext" type="button">הבאה ←</button>
+<section class="gpage" id="gpage" aria-label="ברכות לנורי מכל המשפחה" hidden>
+  <div class="gscene" id="gscene" aria-hidden="true">
+    <svg class="g-rainbow" data-set="1 3" viewBox="0 0 300 160">
+      <g fill="none" stroke-width="10">
+        <path d="M10 160 A140 140 0 0 1 290 160" stroke="#ff7aa8"/><path d="M20 160 A130 130 0 0 1 280 160" stroke="#ffb35c"/>
+        <path d="M30 160 A120 120 0 0 1 270 160" stroke="#ffe066"/><path d="M40 160 A110 110 0 0 1 260 160" stroke="#7fe0b5"/>
+        <path d="M50 160 A100 100 0 0 1 250 160" stroke="#5ec8ff"/><path d="M60 160 A90 90 0 0 1 240 160" stroke="#b98cff"/>
+      </g>
+    </svg>
+    <svg class="g-bunting" data-set="0 2" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 4 Q200 26 400 4" stroke="#a3c9c2" stroke-width="1.5" fill="none"/><g class="flags2"></g></svg>
+    <div class="g-lights" data-set="1 3" id="gLights"></div>
+    <svg class="g-bl" data-set="0 2" viewBox="0 0 80 200"><g class="sway"><path d="M40 70 Q32 130 44 200" stroke="#a3c9c2" stroke-width="1.4" fill="none"/><ellipse cx="40" cy="38" rx="28" ry="34" fill="#ff7aa8"/><path d="M35 70 l5 7 l5 -7 z" fill="#ff7aa8"/><ellipse cx="30" cy="26" rx="6" ry="10" fill="#fff" opacity=".35"/></g></svg>
+    <svg class="g-br" data-set="0 3" viewBox="0 0 80 200"><g class="sway b"><path d="M40 70 Q48 130 36 200" stroke="#a3c9c2" stroke-width="1.4" fill="none"/><ellipse cx="40" cy="38" rx="27" ry="33" fill="#7fe0b5"/><path d="M35 70 l5 7 l5 -7 z" fill="#7fe0b5"/><ellipse cx="30" cy="26" rx="6" ry="10" fill="#fff" opacity=".35"/></g></svg>
+    <svg class="g-gl" data-set="2 3" viewBox="0 0 60 56"><rect x="4" y="16" width="52" height="40" rx="4" fill="#b98cff"/><rect x="26" y="16" width="8" height="40" fill="#ffc94a"/><rect x="4" y="28" width="52" height="7" fill="#ffc94a"/><path d="M30 16 Q16 0 13 10 Q16 18 30 16 Q44 0 47 10 Q44 18 30 16" fill="#ffc94a"/></svg>
+    <svg class="g-gr" data-set="1 2" viewBox="0 0 60 56"><rect x="6" y="20" width="48" height="36" rx="4" fill="#5ec8ff"/><rect x="26" y="20" width="8" height="36" fill="#ff7aa8"/><path d="M30 20 Q18 6 15 14 Q18 22 30 20 Q42 6 45 14 Q42 22 30 20" fill="#ff7aa8"/></svg>
+    <svg class="g-spark spark-a" data-set="1 2 3" style="left:12%;top:58%" viewBox="0 0 20 20"><path class="spark" d="M10 0 Q10 10 20 10 Q10 10 10 20 Q10 10 0 10 Q10 10 10 0 Z" fill="#ffc94a"/></svg>
+    <svg class="g-spark" data-set="0 1 3" style="right:14%;top:66%" viewBox="0 0 20 20"><path class="spark" d="M10 0 Q10 10 20 10 Q10 10 10 20 Q10 10 0 10 Q10 10 10 0 Z" fill="#ffc94a"/></svg>
+    <svg class="g-spark" data-set="0 2" style="left:22%;top:16%" viewBox="0 0 20 20"><path class="spark" d="M10 0 Q10 10 20 10 Q10 10 10 20 Q10 10 0 10 Q10 10 10 0 Z" fill="#fff4e2"/></svg>
+    <svg class="g-spark" data-set="1 3" style="right:26%;top:12%" viewBox="0 0 20 20"><path class="spark" d="M10 0 Q10 10 20 10 Q10 10 10 20 Q10 10 0 10 Q10 10 10 0 Z" fill="#fff4e2"/></svg>
   </div>
-</div>
+  <header class="gbar">
+    <button class="link" id="gBack" type="button">→ חזרה לעוגה</button>
+    <div class="gtitle">ברכות לנורי</div>
+    <span aria-hidden="true" style="min-width:110px"></span>
+  </header>
+  <div class="gstage">
+    <div class="frame" id="frame">
+      <article class="gcard" id="gcard" aria-live="polite"></article>
+    </div>
+  </div>
+  <nav class="gnav">
+    <button class="btn" id="gPrev" type="button">→ הקודמת</button>
+    <div class="gcount" id="gCount"></div>
+    <button class="btn" id="gNext" type="button">הבאה ←</button>
+  </nav>
+</section>
 
 <script>
 (() => {
@@ -868,47 +926,169 @@ body:not(.parents-mode) .parents.count-only { display: none !important; }
     if (GREETINGS.length) $('greetBtn').hidden = false;
   });
 
-  /* ----- greetings slideshow (from the family's form answers) ----- */
+  /* ----- greetings page (#greetings), from the family's form answers ----- */
+  // Each writer gets a character drawn in the same style as the dragon.
   const GREETINGS = [
-    { from: 'אילת', text: 'נורי האהובה שלי, המון מזל טוב ליום הולדת', special: 'שהיא רואה את האחיות שלה, את הרגשות שלהן, ודואגת להן' }
+    { from: 'אילת', who: 'owl', text: 'נורי האהובה שלי, המון מזל טוב ליום הולדת', special: 'שהיא רואה את האחיות שלה, את הרגשות שלהן, ודואגת להן' }
   ];
+  const PHOTOS = []; // { src: 'photos/x.jpg', caption: '...' } — mixed in between the greetings
   const EDGES = ['#c9437a', '#2f9e78', '#d8901e', '#3b8fd0', '#8a5cd6'];
-  const show = $('show'), slide = $('slide');
-  let at = 0;
-  function renderSlide() {
-    const last = at === GREETINGS.length;
-    slide.style.setProperty('--slide-edge', EDGES[at % EDGES.length]);
-    slide.replaceChildren();
-    const add = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; e.textContent = text; slide.appendChild(e); return e; };
-    if (last) {
-      add('div', 'big', 'ועוד המון המון אהבה מכולנו!');
-      add('p', 'text', 'מזל טוב נורי, בת 8!');
-      burst(200);
-    } else {
-      const g = GREETINGS[at];
-      add('div', 'from', g.from);
-      add('p', 'text', g.text);
-      if (g.special) { const sp = add('p', 'special', g.special); const b = document.createElement('b'); b.textContent = 'הכי מיוחד בך:'; sp.prepend(b); }
-    }
-    slide.style.animation = 'none'; void slide.offsetWidth; slide.style.animation = '';
-    $('showCount').textContent = last ? '' : `${at + 1} מתוך ${GREETINGS.length}`;
-    $('showPrev').disabled = at === 0;
-    $('showNext').textContent = last ? 'מההתחלה' : 'הבאה ←';
+  const DRAGONS = [
+    ['#6cc551', '#8bd86f', '#ff9f43'], ['#a78bfa', '#c4b5fd', '#ffc94a'], ['#5ec8ff', '#a5e0ff', '#ff7aa8'],
+    ['#ff9f43', '#ffc58a', '#7fe0b5'], ['#ff7aa8', '#ffb3cc', '#7fe0b5']
+  ];
+  const eyes = (x1, x2, y, r) => [x1, x2].map(x =>
+    `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/><circle cx="${x + r * .25}" cy="${y + r * .15}" r="${r * .52}" fill="#1d2a2b"/><circle cx="${x + r * .45}" cy="${y - r * .25}" r="${r * .2}" fill="#fff"/>`).join('');
+  const cheeks = (x1, x2, y) => `<ellipse cx="${x1}" cy="${y}" rx="7" ry="4" fill="#ff7aa8" opacity=".55"/><ellipse cx="${x2}" cy="${y}" rx="7" ry="4" fill="#ff7aa8" opacity=".55"/>`;
+  const hat = (x, y, c) => `<path d="M${x - 13} ${y} L${x} ${y - 30} L${x + 13} ${y} Z" fill="${c}"/><circle cx="${x}" cy="${y - 30}" r="5" fill="#fff4e2"/><path d="M${x - 9} ${y - 9} L${x + 9} ${y - 9}" stroke="#fff4e2" stroke-width="3"/>`;
+  const CHARACTERS = {
+    owl: `<ellipse cx="24" cy="90" rx="10" ry="22" fill="#8e5e3a"/><ellipse cx="96" cy="90" rx="10" ry="22" fill="#8e5e3a"/>
+      <path d="M30 46 L24 18 L46 38 Z M90 46 L96 18 L74 38 Z" fill="#8e5e3a"/>
+      <ellipse cx="60" cy="80" rx="38" ry="44" fill="#b07a4f"/><ellipse cx="60" cy="96" rx="24" ry="26" fill="#f3d9b1"/>
+      <path d="M50 92 l4 4 l4 -4 M62 92 l4 4 l4 -4 M56 104 l4 4 l4 -4" stroke="#d9b98c" stroke-width="2" fill="none"/>
+      <circle cx="45" cy="62" r="16" fill="#f3d9b1"/><circle cx="75" cy="62" r="16" fill="#f3d9b1"/>
+      ${eyes(45, 75, 62, 10)}<path d="M55 74 L65 74 L60 84 Z" fill="#ff9f43"/>${cheeks(36, 84, 78)}
+      <ellipse cx="50" cy="124" rx="7" ry="4" fill="#ff9f43"/><ellipse cx="70" cy="124" rx="7" ry="4" fill="#ff9f43"/>`,
+    bunny: `<ellipse cx="44" cy="26" rx="10" ry="26" fill="#c9b6ff"/><ellipse cx="76" cy="26" rx="10" ry="26" fill="#c9b6ff"/>
+      <ellipse cx="44" cy="28" rx="5" ry="18" fill="#ffb3cc"/><ellipse cx="76" cy="28" rx="5" ry="18" fill="#ffb3cc"/>
+      <ellipse cx="60" cy="106" rx="28" ry="22" fill="#c9b6ff"/><ellipse cx="60" cy="110" rx="16" ry="14" fill="#f4efff"/>
+      <ellipse cx="60" cy="66" rx="34" ry="30" fill="#c9b6ff"/>${eyes(47, 73, 62, 8)}
+      <path d="M56 72 L64 72 L60 77 Z" fill="#ff7aa8"/><path d="M52 80 Q60 86 68 80" stroke="#5b4a8a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <rect x="57" y="81" width="6" height="6" rx="1" fill="#fff"/>${cheeks(38, 82, 76)}`,
+    bear: `<circle cx="32" cy="38" r="13" fill="#a8744f"/><circle cx="88" cy="38" r="13" fill="#a8744f"/>
+      <circle cx="32" cy="38" r="6" fill="#e8c39e"/><circle cx="88" cy="38" r="6" fill="#e8c39e"/>
+      <ellipse cx="60" cy="108" rx="30" ry="22" fill="#a8744f"/><ellipse cx="60" cy="110" rx="18" ry="14" fill="#e8c39e"/>
+      <ellipse cx="60" cy="64" rx="36" ry="32" fill="#a8744f"/><ellipse cx="60" cy="78" rx="17" ry="12" fill="#e8c39e"/>
+      <ellipse cx="60" cy="72" rx="6" ry="4" fill="#3a2a22"/><path d="M54 82 Q60 87 66 82" stroke="#3a2a22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      ${eyes(46, 74, 58, 8)}${cheeks(34, 86, 74)}${hat(60, 34, '#5ec8ff')}`,
+    cat: `<path d="M98 110 Q118 96 108 76" stroke="#ffb35c" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="M28 50 L32 16 L54 36 Z M92 50 L88 16 L66 36 Z" fill="#ffb35c"/><path d="M33 40 L35 24 L46 34 Z M87 40 L85 24 L74 34 Z" fill="#ffb3cc"/>
+      <ellipse cx="60" cy="108" rx="28" ry="20" fill="#ffb35c"/><ellipse cx="60" cy="62" rx="36" ry="30" fill="#ffb35c"/>
+      <path d="M52 36 l2 10 M60 34 l0 11 M68 36 l-2 10" stroke="#e8892c" stroke-width="3" stroke-linecap="round"/>
+      ${eyes(46, 74, 60, 9)}<path d="M56 72 L64 72 L60 77 Z" fill="#ff7aa8"/>
+      <path d="M53 81 Q60 86 67 81" stroke="#8a4b12" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M18 70 L38 72 M18 78 L38 76 M102 70 L82 72 M102 78 L82 76" stroke="#8a4b12" stroke-width="1.5"/>${cheeks(36, 84, 74)}`,
+    fox: `<path d="M96 114 Q122 104 112 74 Q106 92 92 100 Z" fill="#ff7a3d"/><path d="M112 74 Q117 84 114 92 Q108 86 106 80 Z" fill="#fff4e2"/>
+      <path d="M26 52 L30 14 L54 38 Z M94 52 L90 14 L66 38 Z" fill="#ff7a3d"/><path d="M29 24 L30 14 L38 22 Z M91 24 L90 14 L82 22 Z" fill="#3a2a22"/>
+      <ellipse cx="60" cy="108" rx="26" ry="20" fill="#ff7a3d"/><ellipse cx="60" cy="112" rx="14" ry="12" fill="#fff4e2"/>
+      <ellipse cx="60" cy="62" rx="36" ry="30" fill="#ff7a3d"/>
+      <path d="M26 66 Q42 92 60 88 Q78 92 94 66 Q78 76 60 74 Q42 76 26 66 Z" fill="#fff4e2"/>
+      ${eyes(46, 74, 58, 8)}<ellipse cx="60" cy="76" rx="5" ry="3.5" fill="#3a2a22"/>
+      <path d="M54 82 Q60 86 66 82" stroke="#3a2a22" stroke-width="2.2" fill="none" stroke-linecap="round"/>${cheeks(36, 84, 74)}`,
+    penguin: `<ellipse cx="24" cy="86" rx="9" ry="22" fill="#2f4858" transform="rotate(18 24 86)"/><ellipse cx="96" cy="86" rx="9" ry="22" fill="#2f4858" transform="rotate(-18 96 86)"/>
+      <ellipse cx="60" cy="76" rx="36" ry="48" fill="#2f4858"/><ellipse cx="60" cy="84" rx="26" ry="38" fill="#fff"/>
+      ${eyes(50, 70, 60, 8)}<path d="M54 70 L66 70 L60 78 Z" fill="#ff9f43"/>${cheeks(42, 78, 74)}
+      <ellipse cx="50" cy="124" rx="8" ry="4" fill="#ff9f43"/><ellipse cx="70" cy="124" rx="8" ry="4" fill="#ff9f43"/>${hat(60, 30, '#ff7aa8')}`
+  };
+  const charSvg = kind => `<svg class="who" viewBox="0 0 120 130" aria-hidden="true">${CHARACTERS[kind] || CHARACTERS.owl}</svg>`;
+  const peekerSvg = `<svg viewBox="0 0 160 120" aria-hidden="true">
+      <path class="w" d="M30 70 Q2 40 8 82 Q20 74 30 90 Z"/><path class="w" d="M130 70 Q158 40 152 82 Q140 74 130 90 Z"/>
+      <path class="w" d="M56 34 L64 14 L72 30 L80 10 L88 30 L96 14 L104 34 Z"/>
+      <path d="M52 36 Q42 18 48 8 Q58 22 64 32 Z M108 36 Q118 18 112 8 Q102 22 96 32 Z" fill="#fff4e2"/>
+      <ellipse class="b" cx="80" cy="70" rx="50" ry="42"/><ellipse class="l" cx="80" cy="90" rx="28" ry="18"/>
+      <circle cx="72" cy="86" r="2.6" fill="#2f3a2a"/><circle cx="88" cy="86" r="2.6" fill="#2f3a2a"/>
+      <path d="M68 96 Q80 106 92 96" stroke="#2f3a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <g class="eyes">${eyes(62, 98, 62, 12)}</g>${cheeks(50, 110, 84)}
+      <ellipse class="b" cx="44" cy="114" rx="15" ry="9"/><ellipse class="b" cx="116" cy="114" rx="15" ry="9"/>
+    </svg>`;
+
+  // flags and bulbs for the greetings page scenery
+  document.querySelectorAll('.flags2').forEach(g => { for (let i = 0; i < 16; i++) {
+    const x = 12 + i * 24.5, t = x / 400, y = 4 + 2 * t * (1 - t) * 22;
+    svgEl('path', { d: `M${x - 9} ${y} L${x + 9} ${y} L${x} ${y + 18} Z`, fill: flagColors[i % 5] }, g);
+  } });
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement('i');
+    b.className = 'bulb';
+    b.style.background = flagColors[i % 5];
+    b.style.transform = `translateY(${Math.round(Math.sin((i % 9) / 8 * Math.PI) * 16)}px)`;
+    $('gLights').appendChild(b);
   }
-  function go(d) { at = Math.max(0, Math.min(GREETINGS.length, at + d)); renderSlide(); }
-  $('greetBtn').addEventListener('click', () => { at = 0; show.hidden = false; renderSlide(); $('showNext').focus(); });
-  $('showNext').addEventListener('click', () => { if (at === GREETINGS.length) { at = 0; renderSlide(); } else go(1); });
-  $('showPrev').addEventListener('click', () => go(-1));
-  $('showClose').addEventListener('click', () => { show.hidden = true; $('greetBtn').focus(); });
+
+  function buildSlides() {
+    const out = [{ kind: 'intro' }];
+    const gap = PHOTOS.length ? Math.max(1, Math.round(GREETINGS.length / PHOTOS.length)) : Infinity;
+    let pi = 0;
+    GREETINGS.forEach((g, i) => {
+      out.push({ kind: 'greet', ...g });
+      if ((i + 1) % gap === 0 && pi < PHOTOS.length) out.push({ kind: 'photo', ...PHOTOS[pi++] });
+    });
+    while (pi < PHOTOS.length) out.push({ kind: 'photo', ...PHOTOS[pi++] });
+    out.push({ kind: 'end' });
+    return out;
+  }
+  const gpage = $('gpage'), gcard = $('gcard'), gframe = $('frame');
+  let SLIDES = buildSlides(), at = 0;
+  function renderSlide() {
+    const sl = SLIDES[at];
+    gcard.style.setProperty('--edge', EDGES[at % EDGES.length]);
+    gcard.replaceChildren();
+    const add = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text) e.textContent = text; gcard.appendChild(e); return e; };
+    if (sl.kind === 'intro') {
+      const hero = add('div', 'hero'); hero.innerHTML = peekerSvg;
+      hero.querySelector('svg').style.cssText = '--b:#6cc551;--l:#8bd86f;--w:#ff9f43';
+      hero.querySelectorAll('.b,.l,.w').forEach(e => e.style.fill = `var(--${e.getAttribute('class')})`);
+      add('div', 'big', 'ברכות לנורי מכל המשפחה');
+      add('p', 'sub2', GREETINGS.length === 1 ? 'ברכה אחת מחכה לך' : `${GREETINGS.length} ברכות מחכות לך`);
+    } else if (sl.kind === 'greet') {
+      gcard.insertAdjacentHTML('beforeend', charSvg(sl.who));
+      add('div', 'from', sl.from);
+      add('p', 'text', sl.text);
+      if (sl.special) { const sp = add('p', 'special', sl.special); const b = document.createElement('b'); b.textContent = 'הכי מיוחד בך:'; sp.prepend(b); }
+    } else if (sl.kind === 'photo') {
+      const pol = add('figure', 'polaroid'); pol.style.margin = '0';
+      const img = document.createElement('img'); img.src = sl.src; img.alt = sl.caption || 'תמונה של נורי'; pol.appendChild(img);
+      if (sl.caption) { const c = document.createElement('figcaption'); c.className = 'cap'; c.textContent = sl.caption; pol.appendChild(c); }
+    } else {
+      add('div', 'big', 'ועוד המון המון אהבה מכולנו!');
+      add('p', 'sub2', 'מזל טוב נורי, בת 8!');
+      burst(200); stream(1500);
+    }
+    gcard.style.animation = 'none'; void gcard.offsetWidth; gcard.style.animation = '';
+    // scenery: one of four sets per slide
+    const set = String(at % 4);
+    $('gscene').querySelectorAll('[data-set]').forEach(el => el.classList.toggle('on', el.dataset.set.split(' ').includes(set)));
+    // a dragon peeks out from a different place each time (and two on the last slide)
+    gframe.querySelectorAll('.peeker').forEach(p => p.remove());
+    const wide = innerWidth > 720;
+    const spots = wide ? ['pk-top-l', 'pk-side-r', 'pk-top-r', 'pk-side-l', 'pk-bottom'] : ['pk-top-l', 'pk-top-r', 'pk-bottom'];
+    const n = sl.kind === 'end' ? 2 : 1;
+    for (let k = 0; k < n; k++) {
+      const pk = document.createElement('div');
+      const [b, l, w] = DRAGONS[(at + k * 2) % DRAGONS.length];
+      pk.className = 'peeker ' + spots[(at + k * 2 + (sl.kind === 'greet' ? 0 : 1)) % spots.length];
+      pk.style.cssText = `--b:${b};--l:${l};--w:${w}`;
+      pk.innerHTML = peekerSvg;
+      gframe.appendChild(pk);
+      requestAnimationFrame(() => requestAnimationFrame(() => pk.classList.add('in')));
+    }
+    $('gCount').textContent = `${at + 1} / ${SLIDES.length}`;
+    $('gPrev').disabled = at === 0;
+    $('gNext').textContent = at === SLIDES.length - 1 ? 'מההתחלה' : 'הבאה ←';
+  }
+  function go(d) { at = Math.max(0, Math.min(SLIDES.length - 1, at + d)); renderSlide(); }
+  function route() {
+    const on = location.hash === '#greetings';
+    gpage.hidden = !on;
+    document.body.classList.toggle('greet-mode', on);
+    if (on) { showDecor(ITEMS.length, -1); SLIDES = buildSlides(); at = 0; renderSlide(); scrollTo(0, 0); }
+    else if (!partyStarted) showDecor(earned, todayIndex);
+  }
+  $('greetBtn').addEventListener('click', () => { location.hash = 'greetings'; });
+  $('gBack').addEventListener('click', () => {
+    if (partyStarted) { history.replaceState(null, '', location.pathname + location.search); route(); }
+    else location.hash = 'party';
+  });
+  $('gNext').addEventListener('click', () => { if (at === SLIDES.length - 1) { at = 0; renderSlide(); } else go(1); });
+  $('gPrev').addEventListener('click', () => go(-1));
   addEventListener('keydown', e => {
-    if (show.hidden) return;
-    if (e.key === 'Escape') { show.hidden = true; $('greetBtn').focus(); }
-    else if (e.key === 'ArrowLeft') go(1);
+    if (gpage.hidden) return;
+    if (e.key === 'ArrowLeft') go(1);
     else if (e.key === 'ArrowRight') go(-1);
   });
   let touchX = null;
-  slide.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
-  slide.addEventListener('touchend', e => {
+  gpage.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+  gpage.addEventListener('touchend', e => {
     if (touchX === null) return;
     const dx = e.changedTouches[0].clientX - touchX; touchX = null;
     if (Math.abs(dx) > 40) go(dx > 0 ? 1 : -1); // swipe right = next, like turning a page in Hebrew
@@ -921,7 +1101,7 @@ body:not(.parents-mode) .parents.count-only { display: none !important; }
     if (location.hash === '#parents') document.body.classList.add('parents-mode');
   };
   showFamily();
-  addEventListener('hashchange', () => { if (location.hash === '#party') startParty(true); showFamily(); });
+  addEventListener('hashchange', () => { if (location.hash === '#party') startParty(true); showFamily(); route(); });
 
   /* ----- confetti ----- */
   const cv = $('confetti'), ctx = cv.getContext('2d');
@@ -989,5 +1169,6 @@ body:not(.parents-mode) .parents.count-only { display: none !important; }
   if (isBirthday(new Date())) startParty(false);
   else if (location.hash === '#party') startParty(true);
   else { tick(); timer = setInterval(tick, 1000); }
+  if (location.hash === '#greetings') route();
 })();
 </script>
