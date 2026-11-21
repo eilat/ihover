@@ -343,7 +343,15 @@ body.greet-mode .wrap { display: none; }
 }
 body.greet-mode .moon { display: none; }
 .gflags { position: relative; z-index: 4; display: block; width: 100%; height: 44px; flex: none; }
-.gbar { position: relative; z-index: 4; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-top: 6px; flex: none; }
+.gbar { position: relative; z-index: 4; display: grid; grid-template-columns: 46px minmax(0, 1fr) 46px; align-items: start; gap: 10px; margin-top: 6px; flex: none; }
+.gmid { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.icon-btn {
+  width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--tile-line); background: var(--tile);
+  color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0;
+}
+.icon-btn svg { width: 24px; height: 24px; }
+.icon-btn:hover { border-color: var(--mint); }
+.icon-btn:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
 .gright { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
 .gtitle { font-family: var(--display); font-size: clamp(22px, 5.5vw, 30px); color: var(--gold); text-shadow: 0 3px 0 #b8731c; }
 .gcount { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; direction: ltr; }
@@ -402,7 +410,7 @@ body.greet-mode .moon { display: none; }
 .prow .pol img { display: block; border-radius: 2px; max-width: none; }
 @keyframes polIn { from { opacity: 0; transform: rotate(var(--r, 0deg)) translateY(40px) scale(.7); } to { opacity: 1; transform: rotate(var(--r, 0deg)); } }
 .gpage.bento-mode .gstage { padding-block: 14px 26px; }
-.bento { flex: 1; min-height: 0; width: 100%; display: grid; gap: 10px; }
+.bento { flex: 1; min-height: 0; width: 100%; display: grid; gap: 18px; }
 .bento .tile {
   position: relative; overflow: hidden; margin: 0; border-radius: 16px; background: var(--tile);
   box-shadow: 0 8px 22px rgba(0, 0, 0, .35); animation: tileIn .6s cubic-bezier(.3, 1.4, .5, 1) both;
@@ -413,6 +421,25 @@ body.greet-mode .moon { display: none; }
 .peeker.pk-floor-l, .peeker.pk-floor-r { position: absolute; bottom: 0; z-index: 3; width: 92px; transform: translateY(105%); }
 .peeker.pk-floor-l { left: 20%; } .peeker.pk-floor-r { right: 22%; }
 .peeker.pk-floor-l.in, .peeker.pk-floor-r.in { transform: translateY(28%); }
+.peeker.pk-edge-l, .peeker.pk-edge-r { position: absolute; top: 44%; z-index: 3; width: 96px; }
+.peeker.pk-edge-l { left: -14px; transform: rotate(90deg) translateY(110%); }
+.peeker.pk-edge-r { right: -14px; transform: rotate(-90deg) translateY(110%); }
+.peeker.pk-edge-l.in { transform: rotate(90deg) translateY(30%); }
+.peeker.pk-edge-r.in { transform: rotate(-90deg) translateY(30%); }
+
+/* a greeting with its own photo beside it */
+.frame.with-photo { max-width: 1000px; gap: 34px; align-items: flex-start; }
+.frame.with-photo .gcard { flex: 1 1 0; min-width: 0; }
+.gphoto {
+  --r: 3deg; position: relative; z-index: 2; flex: none; margin: 0; padding: 10px 10px 30px; border-radius: 4px;
+  background: #fff; box-shadow: 0 10px 26px rgba(0, 0, 0, .4); animation: polIn .6s cubic-bezier(.3, 1.5, .5, 1) .25s both;
+}
+.gphoto img { display: block; height: min(56vh, 460px); width: auto; max-width: none; border-radius: 2px; }
+@media (max-width: 720px) {
+  .frame.with-photo { gap: 0; }
+  .gphoto { --r: -7deg; position: absolute; left: -4px; top: -70px; padding: 6px 6px 16px; z-index: 3; }
+  .gphoto img { height: 130px; }
+}
 .gcard .polaroid img { display: block; max-width: min(100%, 78vw); max-height: calc(100svh - 270px); border-radius: 2px; }
 .gcard .polaroid .cap { font: 700 28px/1.3 var(--hand); color: var(--paper-ink); padding: 6px 0; }
 .gnav { display: flex; align-items: center; gap: 10px; }
@@ -688,16 +715,26 @@ body.greet-mode .moon { display: none; }
   </div>
   <svg class="gflags bunting-auto" aria-hidden="true"></svg>
   <header class="gbar">
-    <div class="gright">
+    <button class="icon-btn" id="gStart" type="button" aria-label="חזרה לשקופית הראשונה" title="להתחלה">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 1 0 2.2-5.1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M4 3.5v5h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="gmid">
       <div class="gtitle">ברכות לנורי</div>
       <nav class="gnav" aria-label="מעבר בין השקופיות">
         <button class="btn" id="gPrev" type="button">→ הקודמת</button>
         <div class="gcount" id="gCount"></div>
         <button class="btn" id="gNext" type="button">הבאה ←</button>
-        <button class="link" id="gStart" type="button">להתחלה ↺</button>
       </nav>
     </div>
-    <button class="link" id="gBack" type="button">חזרה לעוגה</button>
+    <button class="icon-btn" id="gBack" type="button" aria-label="חזרה לעוגה" title="חזרה לעוגה">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="11.2" y="2.5" width="1.6" height="4" rx=".8" fill="#5ec8ff"/><path d="M12 0.6c1 1 1 1.8 0 2.2c-1-.4-1-1.2 0-2.2z" fill="#ffb22e"/>
+        <rect x="7.5" y="6.5" width="9" height="4.5" rx="1.2" fill="#ffb3cc"/>
+        <rect x="5.5" y="11" width="13" height="4.5" rx="1.2" fill="#8fe3c0"/>
+        <rect x="3.5" y="15.5" width="17" height="5" rx="1.2" fill="#ff7aa8"/>
+        <rect x="2" y="20.5" width="20" height="1.6" rx=".8" fill="#fff4e2"/>
+      </svg>
+    </button>
   </header>
   <div class="gstage">
     <div class="frame" id="frame">
@@ -1061,10 +1098,16 @@ body.greet-mode .moon { display: none; }
   }
 
   function buildSlides() {
-    // photos rotate through three layouts: a bento of 5, a row of 3 at one height, one big polaroid
-    const PATTERN = [['bento', 5], ['row', 3], ['row', 1]];
+    // one photo goes beside each greeting (picked evenly through the year); the rest alternate
+    // between a bento of 5 and a row of 3 at one height
+    const G = GREETINGS.length, P = PHOTOS.length, withPhoto = Math.min(G, P);
+    const reserved = new Set();
+    for (let i = 0; i < withPhoto; i++) reserved.add(Math.floor((i + .5) * P / withPhoto));
+    const pool = PHOTOS.filter((_, i) => !reserved.has(i));
+    const besides = PHOTOS.filter((_, i) => reserved.has(i));
+    const PATTERN = [['bento', 5], ['row', 3]];
     const sizes = [];
-    let left = PHOTOS.length;
+    let left = pool.length;
     for (let k = 0; left > 0; k++) {
       const [layout, size] = PATTERN[k % PATTERN.length];
       if (left >= size) { sizes.push([layout, size]); left -= size; }
@@ -1073,7 +1116,7 @@ body.greet-mode .moon { display: none; }
     const groups = [];
     let pi = 0;
     for (const [layout, size] of sizes) {
-      const photos = PHOTOS.slice(pi, pi += size);
+      const photos = pool.slice(pi, pi += size);
       const caps = [...new Set(photos.map(p => p.caption))];
       groups.push({ kind: 'collage', layout, photos, caption: caps.length > 1 ? `${caps[0].split(' ')[0]}–${caps[caps.length - 1]}` : caps[0] });
     }
@@ -1083,7 +1126,7 @@ body.greet-mode .moon { display: none; }
     for (let k = 0; k < total; k++) {
       // greeting i sits at position floor(i * total / G): the first one comes right after the intro
       const due = gi < GREETINGS.length && k >= Math.floor(gi * total / GREETINGS.length);
-      if (due || ci >= groups.length) out.push({ kind: 'greet', ...GREETINGS[gi++] });
+      if (due || ci >= groups.length) { out.push({ kind: 'greet', ...GREETINGS[gi], photo: besides[gi] }); gi++; }
       else out.push(groups[ci++]);
     }
     out.push({ kind: 'end' });
@@ -1098,6 +1141,15 @@ body.greet-mode .moon { display: none; }
     gcard.classList.toggle('is-collage', sl.kind === 'collage');
     gframe.classList.toggle('collage', sl.kind === 'collage');
     gpage.classList.toggle('bento-mode', sl.kind === 'collage' && sl.layout === 'bento');
+    gframe.classList.toggle('with-photo', !!sl.photo);
+    gframe.querySelectorAll('.gphoto').forEach(e => e.remove());
+    if (sl.photo) {
+      const fig = document.createElement('figure');
+      fig.className = 'gphoto';
+      const img = document.createElement('img');
+      img.src = sl.photo.src; img.alt = 'תמונה מהמשפחה, ' + sl.photo.caption;
+      fig.appendChild(img); gframe.appendChild(fig);
+    }
     gcard.replaceChildren();
     const add = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text) e.textContent = text; gcard.appendChild(e); return e; };
     if (sl.kind === 'intro') {
@@ -1173,13 +1225,17 @@ body.greet-mode .moon { display: none; }
     gpage.querySelectorAll('.peeker').forEach(p => p.remove());
     const wide = innerWidth > 720;
     // on a collage there is no card to hide behind, so the dragons climb up from the bottom of the screen
-    const spots = sl.kind === 'collage' ? ['pk-floor-l', 'pk-floor-r']
+    // on the puzzle they come in from both sides of the screen; with a photo beside a greeting, from the card's top
+    const bento = sl.kind === 'collage' && sl.layout === 'bento';
+    const spots = bento ? ['pk-edge-r', 'pk-edge-l']
+      : sl.kind === 'collage' ? ['pk-floor-l', 'pk-floor-r']
+      : sl.photo ? ['pk-top-r']
       : wide ? ['pk-top-l', 'pk-side-r', 'pk-top-r', 'pk-side-l', 'pk-bottom'] : ['pk-top-l', 'pk-top-r', 'pk-bottom'];
-    const n = sl.kind === 'end' ? 2 : 1;
+    const n = sl.kind === 'end' || bento ? 2 : 1;
     for (let k = 0; k < n; k++) {
       const pk = document.createElement('div');
       const [b, l, w] = DRAGONS[(at + k * 2) % DRAGONS.length];
-      pk.className = 'peeker ' + spots[(at + k * 2 + (sl.kind === 'greet' ? 0 : 1)) % spots.length];
+      pk.className = 'peeker ' + (bento ? spots[k] : spots[(at + k * 2 + (sl.kind === 'greet' ? 0 : 1)) % spots.length]);
       pk.style.cssText = `--b:${b};--l:${l};--w:${w}`;
       pk.innerHTML = peekerSvg;
       (sl.kind === 'collage' ? gpage : gframe).appendChild(pk);
@@ -1187,9 +1243,10 @@ body.greet-mode .moon { display: none; }
     }
     const nx = SLIDES[at + 1];
     if (nx && nx.kind === 'collage') nx.photos.forEach(ph => { new Image().src = ph.src; });
+    if (nx && nx.photo) new Image().src = nx.photo.src;
     $('gCount').textContent = `${at + 1} / ${SLIDES.length}`;
     $('gPrev').disabled = at === 0;
-    $('gStart').hidden = at === 0;
+    $('gStart').style.visibility = at === 0 ? 'hidden' : '';
     $('gNext').textContent = at === SLIDES.length - 1 ? 'מההתחלה' : 'הבאה ←';
   }
   function go(d) { at = Math.max(0, Math.min(SLIDES.length - 1, at + d)); renderSlide(); }
