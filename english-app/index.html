@@ -274,6 +274,15 @@ td input.gen{border-style:dashed}
 .quiz-list div{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:6px 10px}
 .quiz-list .en{flex:1;text-align:left}
 .grammar-card{padding:18px;border-radius:16px;background:var(--hint-bg);display:flex;flex-direction:column;gap:8px;width:100%;max-width:620px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.ltile{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:14px;border:2px solid var(--line);background:var(--surface);min-height:96px}
+.ltile:hover{border-color:var(--accent)}
+.ltile .lt{font-size:26px;font-weight:700}
+.ltile .lp{font-size:22px;min-height:28px}
+.ltile.locked{opacity:.45}
+.btn.primary .pat{color:inherit;text-decoration-color:currentColor}
+.keycap{min-width:84px;height:84px;border-radius:16px;border:3px dashed var(--muted);display:grid;place-items:center;font-size:48px;font-weight:700}
+.keycap.done{border-style:solid;border-color:var(--good);color:var(--good)}
 .grammar-card .ex{font-family:var(--f-en);direction:ltr;text-align:left;font-size:21px}
 </style>
 <script>
@@ -483,7 +492,7 @@ const Store = {
 };
 
 /* ---------- routing ---------- */
-const PASSIVE = new Set(['loading','home','kid','lesson','parent']);
+const PASSIVE = new Set(['loading','home','kid','lesson','parent','letters']);
 function boot(){
   if(!(S.loaded.family && S.loaded.lessons && S.loaded.progress)) return;
   if(S.view==='loading'){
@@ -499,7 +508,7 @@ function go(view, extra){ clearTimeout(S.timer); Object.assign(S, extra||{}, {vi
 function render(){
   const k = kid();
   document.documentElement.className = 'c-' + (k?.color || 'grape');
-  const v = ({mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
+  const v = ({letters:vLetters, mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
   app.innerHTML = (v ? v() : '');
   after[S.view]?.();
 }
@@ -569,6 +578,7 @@ function vKid(){
       </div>
       ${due.length ? `<button class="btn primary" data-act="daily">להתחיל</button>` : ''}
     </div>
+    <button class="lesson-row" data-go="letters" style="border-color:var(--accent)"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span><span class="prev en" style="font-size:22px">Aa Bb Cc</span></button>
     <div class="meta">${known?`<span>מילים שאת כבר מכירה טוב: <strong>${known}</strong></span>`:''}${p.stars?`<span>כוכבים: <strong>${p.stars}</strong></span>`:''}${(p.streak||0)>1?`<span>${p.streak} ימים ברצף</span>`:''}</div>
     <h2>השיעורים שלי</h2>
     <div class="lessons">${ls.map(l=>{
@@ -578,7 +588,7 @@ function vKid(){
       return `<button class="lesson-row" data-lesson="${l.id}">
       <span class="t"><b>${mixed(l.title||'שיעור')}</b><small>${what}${l.date?` · <span class="date-tag">${heDate(l.date)}</span>`:''}</small></span>
       <span class="prev">${esc(prev)}</span></button>`;}).join('')}</div>`
-    : `<div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
+    : `<button class="lesson-row" data-go="letters"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span></button><div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
   </div>`;
 }
 
@@ -658,7 +668,7 @@ function startSession(mode, opts={}){
   const k = kid(); if(!k) return;
   let lessons, entries;
   if(mode==='daily'){ lessons = kidLessons(k.id); entries = dueEntries(k.id); }
-  else { const l = lessonById(S.lessonId); lessons=[l]; entries = entriesOf([l]); }
+  else if(!opts.items){ const l = lessonById(S.lessonId); lessons=[l]; entries = entriesOf([l]); }
   const items = opts.items || buildItems(mode, lessons, entries);
   if(!items.length){
     toast(mode==='spell' ? 'קודם נכיר את המילים בתרגול המעורב, ואחר כך נכתוב אותן.' : 'אין כאן עדיין מה לתרגל');
@@ -689,8 +699,8 @@ function grade(item, ok, {hinted}={}){
     s.prog.words[key] = st;
     if(!ok && !s.requeued.has(key)){
       s.requeued.add(key);
-      const easy = item.w.ph ? (canSpeak?'hear':'read') : s.mode==='flash' ? 'flash' : (canSpeak?'listen':'choose');
-      s.items.push({type: easy, w:item.w, again:true});
+      const easy = item.w.letter ? 'lpic' : item.w.ph ? (canSpeak?'hear':'read') : s.mode==='flash' ? 'flash' : (canSpeak?'listen':'choose');
+      s.items.push({type: easy, w:item.w, again:true, opts: item.w.letter ? shuffle(item.opts||[item.w.letter]) : undefined});
       item.willReturn = true;
     }
   }
@@ -712,6 +722,110 @@ async function finishSession(complete){
   if(p.lastDay !== t){ p.streak = (p.lastDay === addDays(t,-1)) ? (p.streak||0)+1 : 1; p.lastDay = t; }
   go('finish');
   await Store.saveProgress(k.id, p);
+}
+
+/* ---------- letters: sound first, a picture she chooses, then the letter ---------- */
+// a common synthetic-phonics order: a few consonants and a vowel first, so short words can be read early
+const LETTER_ORDER = 'satpinmdgockeurhbflvwjyxzq'.split('');
+const LETTERS = {
+  s:{pics:[['sun','☀️'],['snake','🐍'],['sock','🧦']], words:['sun','sit','sock','six']},
+  a:{pics:[['apple','🍎'],['ant','🐜'],['alligator','🐊']], words:['apple','ant','and','at']},
+  t:{pics:[['tent','⛺'],['tiger','🐯'],['tomato','🍅']], words:['ten','top','tub','tap']},
+  p:{pics:[['pig','🐷'],['pizza','🍕'],['pen','🖊️']], words:['pig','pen','pop','pin']},
+  i:{pics:[['insect','🐛'],['ink','🖋️'],['in','📥']], words:['in','it','ink','is']},
+  n:{pics:[['nose','👃'],['nut','🥜'],['nest','🪺']], words:['nose','net','nut','nine']},
+  m:{pics:[['monkey','🐒'],['moon','🌙'],['milk','🥛']], words:['mom','map','milk','mud']},
+  d:{pics:[['dog','🐶'],['duck','🦆'],['door','🚪']], words:['dog','dad','duck','dot']},
+  g:{pics:[['goat','🐐'],['gift','🎁'],['guitar','🎸']], words:['go','got','gum','gas']},
+  o:{pics:[['octopus','🐙'],['orange','🍊'],['ox','🐂']], words:['on','off','ox','odd']},
+  c:{pics:[['cat','🐱'],['cake','🎂'],['car','🚗']], words:['cat','cup','cub','car']},
+  k:{pics:[['key','🔑'],['kite','🪁'],['kangaroo','🦘']], words:['kid','kite','key','kick']},
+  e:{pics:[['egg','🥚'],['elephant','🐘'],['elf','🧝']], words:['egg','end','elf','elbow']},
+  u:{pics:[['umbrella','☂️'],['up','⬆️'],['under','👇']], words:['up','us','under','umbrella']},
+  r:{pics:[['rabbit','🐇'],['rainbow','🌈'],['robot','🤖']], words:['red','run','rat','rug']},
+  h:{pics:[['hat','🎩'],['house','🏠'],['horse','🐴']], words:['hat','hot','hug','hen']},
+  b:{pics:[['banana','🍌'],['ball','⚽'],['bus','🚌']], words:['bed','big','bus','bat']},
+  f:{pics:[['fish','🐟'],['frog','🐸'],['fox','🦊']], words:['fish','fan','fun','fig']},
+  l:{pics:[['lemon','🍋'],['lion','🦁'],['leaf','🍃']], words:['leg','lip','log','lid']},
+  v:{pics:[['violin','🎻'],['van','🚐'],['volcano','🌋']], words:['van','vet','vest','very']},
+  w:{pics:[['watermelon','🍉'],['whale','🐳'],['web','🕸️']], words:['web','wet','win','wig']},
+  j:{pics:[['juice','🧃'],['jellyfish','🪼'],['jeans','👖']], words:['jam','jet','jug','job']},
+  y:{pics:[['yo-yo','🪀'],['yellow','💛'],['yak','🐃']], words:['yes','yell','yam','yum']},
+  x:{pics:[['fox','🦊'],['box','📦'],['six','6️⃣']], words:['fox','box','six','mix'], end:true},
+  z:{pics:[['zebra','🦓'],['zoo','🦁'],['zero','0️⃣']], words:['zoo','zip','zap','zig']},
+  q:{pics:[['queen','👸'],['quilt','🛏️'],['question','❓']], words:['queen','quiz','quick','quilt']},
+};
+// letters that are easy to mix up, used as wrong options so practice is real
+const LOOKALIKE = {b:'dpq',d:'bpq',p:'qbd',q:'pdg',n:'muh',m:'nw',u:'nv',h:'nb',i:'jl',j:'ig',l:'it',f:'tk',t:'fl',g:'qj',a:'oe',o:'ac',e:'ac',c:'oe',v:'wu',w:'vm',k:'hx',x:'kz',y:'vj',z:'sx',s:'zc',r:'nh'};
+const lkey = c => 'ltr_'+c;
+function letterEntry(c, p){ const pic = LETTERS[c].pics.find(x=>x[0]===p?.letterPics?.[c]) || LETTERS[c].pics[0]; return {key:lkey(c), en:c, letter:c, pic:pic[1], word:pic[0]}; }
+function letterOptions(c, known){
+  const pool = [...new Set([...(LOOKALIKE[c]||'').split(''), ...shuffle(known)])].filter(x=>x!==c && LETTERS[x]);
+  return shuffle([c, ...pool.slice(0,2)]);
+}
+function letterStats(kidId){
+  const p = prog(kidId), st = c => p.words?.[lkey(c)];
+  const seen = LETTER_ORDER.filter(c=>st(c)), known = LETTER_ORDER.filter(c=>(st(c)?.b||0)>=3);
+  const due = seen.filter(c=>(st(c).due||'') <= today());
+  const next = LETTER_ORDER.filter(c=>!st(c));
+  return {p, seen, known, due, next};
+}
+function buildLetterItems(){
+  const k = kid(), {p, seen, due, next} = letterStats(k.id);
+  const box = c => p.words?.[lkey(c)]?.b || 0;
+  const fresh = next.slice(0, seen.length ? 2 : 3);
+  const review = due.sort((a,b)=>box(a)-box(b)).slice(0, 8-fresh.length);
+  const known = [...seen, ...fresh];
+  const items = [], later = [];
+  for(const c of fresh){
+    items.push({type:'lintro', w:letterEntry(c,p)});
+    later.push({type:'lpic', w:letterEntry(c,p), opts:letterOptions(c, known)});
+  }
+  for(const c of shuffle(review)){
+    const w = letterEntry(c,p), b = box(c);
+    const kinds = b<2 ? ['lpic', canSpeak?'lfirst':'lpic'] : ['lfirst','lcase','ltype'].filter(t=>canSpeak || t==='lcase');
+    const t = pick(kinds);
+    const it = {type:t, w, opts:letterOptions(c, known)};
+    if(t==='lfirst' || t==='ltype') it.say = LETTERS[c].end ? w.word : pick(LETTERS[c].words);
+    items.push(it);
+    if(later.length) items.push(later.shift());
+  }
+  items.push(...later);
+  return items;
+}
+function startLetters(){
+  const items = buildLetterItems();
+  if(!items.length){ toast('כל האותיות של היום חזרו. מחר יחכו לך עוד.'); return; }
+  startSession('letters', {items, back:'letters'});
+}
+const bigLetter = c => `<div class="ruled word-big" style="font-size:clamp(56px,11vw,88px)">${c.toUpperCase()} ${c}</div>`;
+function vLetters(){
+  const k = kid(); if(!k) return vHome();
+  const {p, seen, known, due, next} = letterStats(k.id);
+  const waiting = due.length + Math.min(next.length, seen.length?2:3);
+  return `${topBar({back:true, backTo:'kid'})}
+  <div class="sheet paper">
+    <h1>האותיות שלי</h1>
+    <div class="today"><div class="txt">${waiting ? `<b>אימון אותיות</b><span class="muted">${!seen.length ? 'נתחיל משלוש אותיות ראשונות' : [due.length===1?'אות אחת לחזרה':due.length?`${due.length} אותיות לחזרה`:'', next.length?'שתי אותיות חדשות':''].filter(Boolean).join(' ו')}</span>` : `<b>כל האותיות של היום חזרו</b><span class="muted">מחר יחכו לך עוד</span>`}</div>
+      ${waiting?`<button class="btn primary" data-play="letters">להתחיל</button>`:''}</div>
+    <p class="muted" style="font-size:16px">לחצי על אות כדי לשמוע מילה שמתחילה בה. באות שכבר פגשת אפשר לבחור תמונה אחרת.</p>
+    <div class="lgrid">${LETTER_ORDER.map(c=>{
+      const st = p.words?.[lkey(c)], w = letterEntry(c,p), b = st?.b||0;
+      return `<button class="ltile ${st?'':'locked'}" data-ltile="${c}" aria-label="${c}"><span class="lt en">${c.toUpperCase()}${c}</span><span class="lp">${st?w.pic:''}</span><span class="box-dots">${[1,2,3,4,5].map(i=>`<i class="${i<=b?'on':''}"></i>`).join('')}</span></button>`;}).join('')}</div>
+    ${S.lpick ? letterPicker(S.lpick, p) : ''}
+    <div class="meta"><span>אותיות שאת מכירה טוב: <strong>${known.length}</strong> מתוך 26</span></div>
+  </div>`;
+}
+function letterPicker(c, p){
+  const cur = letterEntry(c,p).word;
+  return `<div class="grammar-card" style="max-width:none"><h3>האות <span class="en" style="font-size:26px">${c.toUpperCase()} ${c}</span>${LETTERS[c].end?' (בסוף המילה)':''}. איזו תמונה תעזור לך לזכור אותה?</h3>
+    <div class="row">${LETTERS[c].pics.map(([wd,em])=>`<button class="btn ${wd===cur?'primary':''}" data-lpic="${c}:${wd}"><span style="font-size:26px">${em}</span> <span class="en">${markFirst(wd,c)}</span></button>`).join('')}</div></div>`;
+}
+const markFirst = (word, c) => { const i = LETTERS[c]?.end ? word.lastIndexOf(c) : word.indexOf(c); return i<0 ? esc(word) : esc(word.slice(0,i))+`<span class="pat">${esc(word.slice(i,i+1))}</span>`+esc(word.slice(i+1)); };
+async function chooseLetterPic(c, wd){
+  const k = kid(), p = structuredClone(prog(k.id)); p.words = p.words||{};
+  p.letterPics = {...(p.letterPics||{}), [c]:wd};
+  await Store.saveProgress(k.id, p); speak(wd); render();
 }
 
 /* ---------- practice screens ---------- */
@@ -813,9 +927,34 @@ function vPlay(){
       ${it.q.q?`<div class="prompt"><div class="sentence">${esc(it.q.q).replace(/_{2,}/g,'<span class="gap" id="gap">&nbsp;</span>')}</div></div>`:''}
       <div class="answer-area">${optBtns(it.q.options,true)}<div id="fb"></div></div>`;
   }
+  if(it.type==='lintro'){
+    const c = it.w.letter;
+    body = `<p class="task">אות חדשה</p>
+      <div class="prompt">${bigLetter(c)}<div style="font-size:64px;line-height:1">${it.w.pic}</div>
+      <div class="row">${canSpeak?`<button class="say" data-say="${esc(it.w.word)}" aria-label="להשמיע">${I.speak}</button>`:''}<span class="en" style="font-size:30px">${markFirst(it.w.word,c)}</span></div>
+      <div class="muted" style="font-size:18px">${LETTERS[c].end?'שומעים אותה בסוף המילה':'זה הצליל שבהתחלה'}. <span class="en">${c.toUpperCase()}</span> גדולה, <span class="en">${c}</span> קטנה.</div></div>
+      ${letterPicker(c, {letterPics:{...(S.progress[kid().id]?.letterPics||{}), ...(S.session.prog.letterPics||{})}})}
+      <div class="ctrl"><button class="btn primary" data-act="next" id="nextBtn">הכרתי, אפשר להמשיך</button></div>`;
+  } else if(it.type==='lpic'){
+    body = `<p class="task">באיזו אות מתחילה המילה?</p>
+      <div class="prompt"><div style="font-size:72px;line-height:1">${it.w.pic}</div><div class="row">${canSpeak?`<button class="say" data-say="${esc(it.w.word)}" aria-label="להשמיע">${I.speak}</button>`:''}</div></div>
+      <div class="answer-area"><div class="opts" style="grid-template-columns:repeat(3,minmax(0,1fr))">${it.opts.map((o,i)=>`<button class="opt en-opt" style="justify-content:center;font-size:40px" data-opt="${i}"><span class="k">${i+1}</span>${o}</button>`).join('')}</div><div id="fb"></div></div>`;
+  } else if(it.type==='lfirst'){
+    body = `<p class="task">הקשיבי למילה. באיזו אות היא ${LETTERS[it.w.letter].end?'נגמרת':'מתחילה'}?</p>
+      <div class="prompt"><div class="row">${sayBtns(it.say)}</div></div>
+      <div class="answer-area"><div class="opts" style="grid-template-columns:repeat(3,minmax(0,1fr))">${it.opts.map((o,i)=>`<button class="opt en-opt" style="justify-content:center;font-size:40px" data-opt="${i}"><span class="k">${i+1}</span>${o}</button>`).join('')}</div><div id="fb"></div></div>`;
+  } else if(it.type==='lcase'){
+    body = `<p class="task">מצאי את האות הקטנה של האות הגדולה</p>
+      <div class="prompt"><div class="ruled word-big" style="font-size:clamp(64px,12vw,96px)">${it.w.letter.toUpperCase()}</div></div>
+      <div class="answer-area"><div class="opts" style="grid-template-columns:repeat(3,minmax(0,1fr))">${it.opts.map((o,i)=>`<button class="opt en-opt" style="justify-content:center;font-size:40px" data-opt="${i}"><span class="k">${i+1}</span>${o}</button>`).join('')}</div><div id="fb"></div></div>`;
+  } else if(it.type==='ltype'){
+    body = `<p class="task">הקשיבי למילה, ולחצי במקלדת על האות ש${LETTERS[it.w.letter].end?'בסוף':'בהתחלה'}</p>
+      <div class="prompt"><div class="row">${sayBtns(it.say)}</div><div class="keycap en" id="keycap">?</div></div>
+      <div class="answer-area"><div class="muted" style="font-size:16px">מקלדת באנגלית. אפשר גם ללחוץ כאן:</div><div class="opts" style="grid-template-columns:repeat(3,minmax(0,1fr))">${it.opts.map((o,i)=>`<button class="opt en-opt" style="justify-content:center;font-size:40px" data-opt="${i}"><span class="k">${i+1}</span>${o}</button>`).join('')}</div><div id="fb"></div></div>`;
+  }
   // progress counts the planned items only: a second chance does not push the end further away
   const counted = s.items.slice(0, s.i+1).filter(x=>!x.again && x.type!=='explain').length;
-  const unit = s.quiz ? 'שאלה' : 'צעד';
+  const unit = s.quiz ? 'שאלה' : s.mode==='letters' ? 'אות' : 'צעד';
   const prog = it.again ? `<span>עוד פעם, בדרך אחרת</span>` : it.type==='explain' ? '' : `<span>${unit} ${counted} מתוך ${s.base}</span>`;
   return `<div class="top"><button class="icon-btn" data-act="quit" aria-label="לצאת מהתרגול">${I.x}</button></div>
   <div class="sheet">
@@ -829,11 +968,14 @@ after.play = () => {
   if(['listen','hear','choose','intro','phfill'].includes(it.type)) setTimeout(()=>speak(it.w.en),250);
   if(it.type==='flash' && !it.flipped) document.getElementById('card')?.focus();
   if(it.type==='flash' && it.flipped) document.getElementById('knewBtn')?.focus();
-  if(it.type==='intro' || it.type==='explain') document.getElementById('nextBtn')?.focus();
+  if(it.type==='intro' || it.type==='explain' || it.type==='lintro') document.getElementById('nextBtn')?.focus();
+  if(it.type==='lintro' || it.type==='lpic') setTimeout(()=>speak(it.w.word),250);
+  if(it.type==='lfirst' || it.type==='ltype') setTimeout(()=>speak(it.say),250);
 };
 const nextLabel = () => {
   const s = S.session; const nx = s.items[s.i+1];
   if(!nx) return 'לסיום';
+  if(s.mode==='letters') return 'לאות הבאה';
   return nx.type==='order' ? 'למשפט הבא' : nx.type==='mcq' ? 'לשאלה הבאה' : 'למילה הבאה';
 };
 function showFeedback(ok, html, auto){
@@ -852,6 +994,7 @@ const comesBack = it => it.willReturn ? `<span class="mine">היא תחזור א
 function answerOption(idx){
   const s = S.session, it = s.items[s.i]; if(s.answered) return;
   const opts = it.type==='mcq' ? it.q.options : it.opts;
+  if(it.w?.letter) return answerLetter(idx);
   const right = it.type==='choose' ? it.w.he : it.type==='mcq' ? it.q.options[it.q.answer] : it.type==='phfill' ? it.w.pattern : it.w.en;
   const ok = norm(opts[idx]) === norm(right);
   document.querySelectorAll('.opt').forEach((b,i)=>{ b.disabled=true; if(norm(opts[i])===norm(right)) b.classList.add('right'); else if(i===idx) b.classList.add('picked'); });
@@ -870,6 +1013,19 @@ function answerOption(idx){
   const pair = it.w.he ? `<span class="en">${esc(it.w.en)}</span> זה ${esc(it.w.he)}` : `<span class="en">${esc(it.w.en)}</span>`;
   if(ok) showFeedback(true, it.type==='blank' ? 'נכון. המשפט שלם.' : `נכון. ${pair}`, true);
   else showFeedback(false, `<span>התשובה מסומנת בירוק.</span><span>${pair}</span>${comesBack(it)}`);
+}
+
+function answerLetter(idx){
+  const s = S.session, it = s.items[s.i]; if(s.answered) return;
+  const c = it.w.letter, ok = it.opts[idx]===c;
+  document.querySelectorAll('.opt').forEach((b,i)=>{ b.disabled=true; if(it.opts[i]===c) b.classList.add('right'); else if(i===idx) b.classList.add('picked'); });
+  const kc = document.getElementById('keycap'); if(kc){ kc.textContent = c; kc.classList.add('done'); }
+  grade(it, ok);
+  const w = it.say || it.w.word;
+  if(canSpeak) speak(w);
+  const show = `<span class="en" style="font-size:30px">${c.toUpperCase()} ${c}</span> <span class="en">${markFirst(w,c)}</span>`;
+  if(ok) showFeedback(true, `נכון. ${show}`, true);
+  else showFeedback(false, `<span>האות היא:</span><span>${show} ${it.w.pic}</span>${comesBack(it)}`);
 }
 
 /* spelling: line the two words up, so a missing letter is shown as one missing letter */
@@ -951,8 +1107,8 @@ function vFinish(){
   if(s.quiz) line = s.complete ? `עברת על כל ${s.base} השאלות.${n?` ${n===1?'אחת מהן ידעת':`${n} מהן ידעת`} כבר בפעם הראשונה.`:''}` : 'עצרת באמצע. אפשר להמשיך בפעם אחרת.';
   else {
     line = !s.complete ? 'עצרת באמצע. מה שתרגלת נשמר.' : n===0 ? `תרגלת ${plural(s.done,'צעד אחד','צעדים')}.` : n===1 ? 'תשובה אחת מהניסיון הראשון.' : `${n} תשובות מהניסיון הראשון.`;
-    if(review.length) line += ' המילים האלה יחזרו אלייך מחר:';
-    else if(s.complete && s.items.some(x=>x.w)) line += ' כל המילים התקדמו.';
+    if(review.length) line += s.mode==='letters' ? ' האותיות האלה יחזרו אלייך מחר:' : ' המילים האלה יחזרו אלייך מחר:';
+    else if(s.complete && s.items.some(x=>x.w)) line += s.mode==='letters' ? ' כל האותיות התקדמו.' : ' כל המילים התקדמו.';
   }
   return `${topBar()}
   <div class="sheet finish">
@@ -961,7 +1117,7 @@ function vFinish(){
     <p class="lead">${line}</p>
     ${review.length?`<div class="review-list">${review.map(w=>`<span class="${s.fixed.has(w)?'fixed':''}">${esc(w)}${s.fixed.has(w)?' · וכבר הצלחת':''}</span>`).join('')}</div>`:''}
     <div class="ctrl">
-      <button class="btn primary" data-go="${s.back}">${s.back==='kid'?'למחברת שלי':s.back==='story'?'לסיפור':'לשיעור'}</button>
+      <button class="btn primary" data-go="${s.back}">${s.back==='kid'?'למחברת שלי':s.back==='story'?'לסיפור':s.back==='letters'?'לאותיות שלי':'לשיעור'}</button>
       ${s.mode!=='daily' && !s.quiz ? `<button class="btn" data-play="${s.mode}">לתרגל שוב</button>`:''}
     </div>
   </div>`;
@@ -1363,6 +1519,7 @@ document.addEventListener('click', async e => {
   if(d.play){
     if(d.play==='story'){ go('story'); if(!S.story[S.lessonId] || S.story[S.lessonId].error) makeStory(); return; }
     if(d.play==='grammar'){ makeGrammar(); return; }
+    if(d.play==='letters'){ startLetters(); return; }
     startSession(d.play); return;
   }
   if(d.sq){ const [qi,oi] = d.sq.split(':').map(Number); const st = S.story[S.lessonId]; if(st.ans[qi]==null){ st.ans[qi]=oi; render(); } return; }
@@ -1377,6 +1534,10 @@ document.addEventListener('click', async e => {
   if(d.rmg!==undefined){ syncAddInputs(); S.add.grammar.splice(+d.rmg,1); render(); return; }
   if(d.rmq!==undefined){ syncAddInputs(); S.add.quiz.splice(+d.rmq,1); render(); return; }
   if(d.rmph!==undefined){ syncAddInputs(); S.add.phonics.splice(+d.rmph,1); render(); return; }
+  if(d.ltile){ const c=d.ltile, p=prog(kid().id); speak(letterEntry(c,p).word); S.lpick = p.words?.[lkey(c)] ? c : null; if(!S.lpick) toast('את האות הזאת עוד נכיר באימון'); render(); return; }
+  if(d.lpic){ const [c,wd]=d.lpic.split(':');
+    if(S.view==='play'){ const it=S.session.items[S.session.i]; S.session.prog.letterPics = {...(S.session.prog.letterPics||{}), [c]:wd}; for(const x of S.session.items) if(x.w?.letter===c) x.w = {...x.w, ...letterEntry(c,{letterPics:S.session.prog.letterPics})}; speak(wd); render(); }
+    else chooseLetterPic(c,wd); return; }
   if(d.mailuse){ useNote(d.mailuse); return; }
   if(d.mailskip){ await Store.markImport(d.mailskip,'skipped'); toast('ההערה סומנה לדילוג'); render(); return; }
   if(d.edit){ S.add = newAdd(lessonById(d.edit)); go('add'); return; }
@@ -1407,7 +1568,7 @@ document.addEventListener('click', async e => {
     case 'adds': syncAddInputs(); S.add.sentences.push({en:'',he:''}); render(); break;
     case 'savelesson': saveLesson(); break;
     case 'quit': if(s && s.done>0) finishSession(false); else go(s?.back||'kid'); break;
-    case 'next': if(it && it.type==='intro'){ markSeen(it.w); } if(it && it.type==='spell' && !s.answered) grade(it,false); nextItem(); break;
+    case 'next': if(it && (it.type==='intro' || it.type==='lintro')){ markSeen(it.w); } if(it && it.type==='spell' && !s.answered) grade(it,false); nextItem(); break;
     case 'check': checkSpell(); break;
     case 'hint': giveHint(); break;
     case 'checkorder': checkOrder(); break;
@@ -1441,6 +1602,12 @@ document.addEventListener('keydown', e => {
     if(s.answered){ e.preventDefault(); document.getElementById('nextBtn')?.click(); return; }
     if(it.type==='order' && it.built.length===it.tiles.length){ e.preventDefault(); checkOrder(); }
     return;
+  }
+  if(it.type==='ltype' && !s.answered && e.key.length===1 && !e.ctrlKey && !e.metaKey){
+    if(HEB.test(e.key)){ toast('המקלדת בעברית. צריך להחליף לאנגלית.'); return; }
+    const c = e.key.toLowerCase(); if(!/^[a-z]$/.test(c)) return;
+    let i = it.opts.indexOf(c); if(i<0){ it.opts = [...it.opts, c]; i = it.opts.length-1; }
+    answerLetter(i); return;
   }
   if(s.answered || !/^[1-4]$/.test(e.key) || e.target.tagName==='INPUT') return;
   const opts = it.type==='mcq' ? it.q.options : it.opts;
