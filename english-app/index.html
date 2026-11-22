@@ -1,3 +1,4 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <title>מחברת אנגלית</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Andika:wght@400;700&display=swap">
@@ -230,6 +231,7 @@ td input.flag{border-color:var(--margin);background:var(--hint-bg)}
 @media (max-width:520px){.opts{grid-template-columns:1fr}.lesson-row .prev{display:none}.sheet.paper{padding-inline-start:20px;background-image:none}}
 </style>
 
+</head><body>
 <div class="wrap" id="app" aria-live="polite">
   <div class="sheet"><div class="row"><div class="spinner"></div><p class="lead">פותחת את המחברת…</p></div></div>
 </div>
@@ -290,6 +292,7 @@ const I = {
   book:'<svg viewBox="0 0 24 24"><path d="M4 5c3-1.5 5.5-1.5 8 0v15c-2.5-1.5-5-1.5-8 0z"/><path d="M12 5c2.5-1.5 5-1.5 8 0v15c-3-1.5-5.5-1.5-8 0"/></svg>',
   rule:'<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
   ear:'<svg viewBox="0 0 24 24"><path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-6 0"/><path d="M10 9a2 2 0 0 1 4 0"/></svg>',
+  mail:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
   plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
   save:'<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>',
@@ -410,7 +413,8 @@ const S = {
   loaded:{family:false,lessons:false,progress:false},
   kidId:null, view:'loading', lessonId:null,
   session:null, story:{}, add:null, parentOk:false,
-  sample:null, canImages:false, mode:'local', timer:null
+  sample:null, canImages:false, mode:'local', timer:null,
+  mcp:null, imports:{}, mail:null
 };
 const kid = () => S.family?.kids?.find(k=>k.id===S.kidId) || null;
 const kidLessons = id => S.lessons.filter(l => (l.kids||[]).includes(id));
@@ -442,8 +446,8 @@ const Store = {
   db:null,
   async init(){
     const use = window.claude && window.claude.use ? (n)=>window.claude.use(n).catch(()=>null) : async()=>null;
-    const [db, sample] = await Promise.all([use('db'), use('sample')]);
-    S.sample = sample;
+    const [db, sample, mcp] = await Promise.all([use('db'), use('sample'), use('mcp')]);
+    S.sample = sample; S.mcp = mcp;
     if(sample){ try{ const lim = await sample.limits(); S.canImages = !!lim?.images; S.imgLimits = lim?.images||null; }catch(e){} }
     if(db){ this.db = db; S.mode='db'; this.subscribe(); }
     else { this.loadLocal(); }
@@ -459,6 +463,7 @@ const Store = {
     this.db.doc('config/family').onSnapshot(s => { S.family = s.exists ? s.data() : null; S.loaded.family=true; boot(); }, fail);
     this.db.collection('lessons').onSnapshot(q => { S.lessons = q.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); S.loaded.lessons=true; boot(); }, fail);
     this.db.collection('progress').onSnapshot(q => { S.progress = Object.fromEntries(q.docs.map(d=>[d.id, d.data()])); S.loaded.progress=true; boot(); }, fail);
+    this.db.doc('config/imports').onSnapshot(s => { S.imports = (s.exists ? s.data().done : null) || {}; if(S.view==='mail') render(); }, fail);
   },
   async write(fn, local){
     local();
@@ -473,6 +478,7 @@ const Store = {
   saveFamily(f){ return this.write(db=>db.doc('config/family').set(f), ()=>{ S.family=f; }); },
   saveLesson(l){ const {id,...body}=l; return this.write(db=>db.collection('lessons').doc(id).set(body), ()=>{ const i=S.lessons.findIndex(x=>x.id===id); if(i>=0) S.lessons[i]=l; else S.lessons.unshift(l); }); },
   deleteLesson(id){ return this.write(db=>db.collection('lessons').doc(id).delete(), ()=>{ S.lessons=S.lessons.filter(x=>x.id!==id); }); },
+  markImport(id, how){ const done = {...S.imports, [id]: how}; return this.write(db=>db.doc('config/imports').set({done}), ()=>{ S.imports = done; }); },
   saveProgress(kidId,p){ return this.write(db=>db.doc('progress/'+kidId).set(p), ()=>{ S.progress[kidId]=p; }); }
 };
 
@@ -493,7 +499,7 @@ function go(view, extra){ clearTimeout(S.timer); Object.assign(S, extra||{}, {vi
 function render(){
   const k = kid();
   document.documentElement.className = 'c-' + (k?.color || 'grape');
-  const v = ({home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
+  const v = ({mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
   app.innerHTML = (v ? v() : '');
   after[S.view]?.();
 }
@@ -1070,7 +1076,7 @@ function vParent(){
   const kids = S.family?.kids||[];
   return `${topBar({back:true, backTo: S.kidId?'kid':'home'})}
   <div class="sheet">
-    <div class="row"><h1 style="margin-inline-end:auto">אזור ההורים</h1><button class="btn primary" data-act="addlesson">${I.plus} הוספת שיעור</button></div>
+    <div class="row"><h1 style="margin-inline-end:auto">אזור ההורים</h1>${S.mcp?`<button class="btn" data-act="mail">${I.mail} ייבוא הערות מהמייל</button>`:''}<button class="btn primary" data-act="addlesson">${I.plus} הוספת שיעור</button></div>
     ${S.mode!=='db'?`<div class="notice">הנתונים נשמרים רק בדפדפן הזה. כשפותחים את הקישור ב-Claude, הנתונים נשמרים שם ומופיעים בכל מחשב.</div>`:''}
     ${!S.sample?`<div class="notice">קריאת ההערות מתמונה והסיפורים עובדים רק כשפותחים את הקישור ב-Claude. כאן אפשר להזין מילים ידנית.</div>`:''}
     <div class="p-grid">${kids.map(k=>{
@@ -1105,7 +1111,7 @@ function speechCard(){
 }
 
 /* ---------- add / edit a lesson ---------- */
-const LESSON_FIELDS = ['title','date','kids','words','sentences','grammar','phonics','pairs','tip','quiz','homework','createdAt'];
+const LESSON_FIELDS = ['title','date','kids','words','sentences','grammar','phonics','pairs','tip','quiz','homework','createdAt','source'];
 function newAdd(l){
   if(l){ const a = {step:'review', id:l.id}; for(const f of LESSON_FIELDS) a[f] = structuredClone(l[f] ?? (['words','sentences','grammar','phonics','pairs','quiz','kids'].includes(f)?[]:'')); return a; }
   return {step:'input', id:uid(), title:'', date:today(), kids: S.kidId?[S.kidId]:(S.family?.kids||[]).map(k=>k.id), images:[], text:'', words:[], sentences:[], grammar:[], phonics:[], pairs:[], tip:'', quiz:[], homework:''};
@@ -1202,7 +1208,7 @@ async function extract(){
   const a = S.add;
   if(!a.images.length && !a.text.trim()){ toast('צריך תמונה או טקסט של ההערות'); return; }
   a.step='extracting'; render();
-  const prompt = `You help an Israeli parent turn an English teacher's lesson notes into practice material for her daughters, aged 8 and 9, who are beginner English learners and native Hebrew speakers. The notes are often a long, friendly message: ignore the praise and keep only what was taught.
+  const prompt = `You help an Israeli parent turn an English teacher's lesson notes into practice material for her daughters, aged 8 and 9, who are beginner English learners and native Hebrew speakers. The notes are often a long, friendly message: ignore the praise and keep only what was taught. They may be an automatic Hebrew translation of the teacher's English message: the English examples are in quotes, and grammar terms may appear in English (e.g. Present Continuous). Build English words, sentences and examples from the English parts and from what the Hebrew describes; never translate the Hebrew praise into practice.
 ${a.images.length?`The ${a.images.length} attached image(s) are the teacher's notes (a message, handwriting, a notebook, a whiteboard or a worksheet). They may mix Hebrew and English.`:''}
 ${a.text.trim()?`Notes pasted by the parent:\n"""${a.text.trim()}"""`:''}
 Extract only what is actually in the notes. Do not add vocabulary the teacher did not teach.
@@ -1255,10 +1261,91 @@ async function saveLesson(){
   if(!a.kids.length){ toast('צריך לבחור למי השיעור'); return; }
   const lesson = {id:a.id, title:a.title.trim()||'שיעור', date:a.date||'', kids:a.kids, words,
     sentences:a.sentences.filter(s=>s.en?.trim()).map(s=>({en:s.en.trim(), he:(s.he||'').trim()})),
-    grammar:a.grammar, phonics:a.phonics, pairs:a.pairs, tip:a.tip||'', quiz:a.quiz, homework:(a.homework||'').trim(), createdAt:a.createdAt||Date.now()};
+    grammar:a.grammar, phonics:a.phonics, pairs:a.pairs, tip:a.tip||'', quiz:a.quiz, homework:(a.homework||'').trim(), createdAt:a.createdAt||Date.now(), ...(a.source?{source:a.source}:{})};
   const btn = document.querySelector('[data-act="savelesson"]'); if(btn) btn.disabled = true;
   const ok = await Store.saveLesson(lesson);
-  if(ok){ toast('השיעור נשמר'); S.add=null; go('parent'); } else if(btn) btn.disabled=false;
+  if(ok){
+    if(a.source?.gmail) await Store.markImport(a.source.gmail, 'lesson');
+    toast('השיעור נשמר'); const back = a.source?.gmail ? 'mail' : 'parent'; S.add=null; go(back);
+  } else if(btn) btn.disabled=false;
+}
+
+/* ---------- teacher notes from Gmail (Novakid sends them as "הערה מהמורה שלך") ---------- */
+const MAIL_QUERY = 'from:message@bmr.novakidschool.com subject:"הערה מהמורה" after:2026/09/01';
+const HE2EN = {'א':'a','ב':'b','ג':'g','ד':'d','ה':'h','ו':'v','ז':'z','ח':'h','ט':'t','י':'y','כ':'k','ל':'l','מ':'m','נ':'n','ס':'s','ע':'a','פ':'p','צ':'t','ק':'k','ר':'r','ש':'s','ת':'t'};
+function kidForName(name){
+  const kids = S.family?.kids||[], n = (name||'').toLowerCase();
+  const known = kids.find(k => (k.enName||'').toLowerCase() === n); if(known) return known.id;
+  const guess = kids.filter(k => HE2EN[k.name.trim()[0]] === n[0]);
+  return guess.length===1 ? guess[0].id : '';
+}
+function parseNote(body){
+  const text = String(body||'').replace(/\[https?:[^\]]*\]/g,'').replace(/\*/g,'');
+  const name = (text.match(/שיעור עם\s+([A-Za-z\u0590-\u05FF'-]+)/)||[])[1] || '';
+  const dm = text.match(/בתאריך\s+(\d{1,2})-(\d{1,2})-(\d{4})/);
+  const date = dm ? `${dm[3]}-${dm[2].padStart(2,'0')}-${dm[1].padStart(2,'0')}` : '';
+  const teacher = ((text.match(/אני המורה\s+([^\n]+)/)||[])[1]||'').trim().replace(/\.$/,'');
+  let core = text;
+  const a = core.search(/בתאריך/); if(a>=0) core = core.slice(a);
+  const b = core.search(/צפייה במשוב המלא|לימוד שפה הוא יותר|אנא דרג/); if(b>0) core = core.slice(0,b);
+  core = core.replace(/\n{3,}/g,'\n\n').trim();
+  const succ = (core.split(/תחומים של הצלחה/)[1]||core).trim().split(/\n/).find(x=>x.trim()) || '';
+  return {name, date, teacher, text: core, summary: succ.slice(0,170)};
+}
+const mailError = e => ({
+  needs_reauth:'החיבור ל-Gmail פג. צריך לחבר אותו מחדש ב-claude.ai: הגדרות ← מחברים.',
+  server_not_connected:'Gmail לא מחובר לחשבון. אפשר לחבר אותו ב-claude.ai: הגדרות ← מחברים.',
+  selection_required:'יש יותר מחשבון Gmail אחד. צריך לבחור באיזה להשתמש בחלון שנפתח.',
+  not_in_manifest:'לא ניתנה הרשאה לקרוא את המייל בדף הזה. אפשר לאשר דרך תפריט ההרשאות של הדף.',
+  blocked_by_policy:'הארגון חוסם את הגישה ל-Gmail מהדף הזה.',
+  approval_required:'צריך לאשר את הקריאה מהמייל. נסי שוב ואשרי בחלון שנפתח.',
+})[e?.code] || 'המייל לא נקרא הפעם. אפשר לנסות שוב בעוד רגע.';
+async function loadMail(){
+  S.mail = {loading:true, notes:[], done:0, total:0}; go('mail');
+  try{
+    const r = await S.mcp.callTool('Gmail','search_threads',{query:MAIL_QUERY, pageSize:50, view:'THREAD_VIEW_IDS_ONLY'},{cache:false});
+    const ids = ((r.payload||{}).threads||[]).map(t=>t.id).filter(Boolean);
+    S.mail.total = ids.length; render();
+    for(const id of ids){
+      if(S.view!=='mail') return;
+      if(S.imports[id]){ S.mail.done++; continue; }
+      try{
+        const t = await S.mcp.callTool('Gmail','get_thread',{threadId:id, messageFormat:'PLAIN_TEXT'},{cache:{staleTime:300000, gcTime:86400000}});
+        const m = ((t.payload||{}).messages||[])[0] || {};
+        const p = parseNote(m.plaintextBody || m.snippet);
+        S.mail.notes.push({id, ...p, kidId: kidForName(p.name), received: m.date||''});
+      }catch(e){ if(e?.code && e.code!=='tool_error' && e.code!=='server_unavailable') throw e; }
+      S.mail.done++; if(S.view==='mail') render();
+    }
+    S.mail.notes.sort((x,y)=>(y.date||y.received).localeCompare(x.date||x.received));
+    S.mail.loading = false;
+  }catch(e){ S.mail = {error: mailError(e)}; }
+  if(S.view==='mail') render();
+}
+function vMail(){
+  const m = S.mail || {}, kids = S.family?.kids||[];
+  const fresh = (m.notes||[]).filter(n=>!S.imports[n.id]);
+  const body = m.error ? `<div class="notice">${esc(m.error)}</div><div class="row"><button class="btn primary" data-act="mail">לנסות שוב</button></div>`
+    : `${m.loading?`<div class="row"><div class="spinner"></div><p class="lead">קוראת את ההערות של Novakid מהמייל… ${m.total?`${m.done} מתוך ${m.total}`:''}</p></div>`:''}
+      ${!m.loading && !fresh.length ? `<div class="empty"><p>אין הערות חדשות. כל ההערות מהמייל כבר הפכו לשיעורים או סומנו לדילוג.</p></div>`:''}
+      ${fresh.length?`<p class="muted" style="font-size:16px">כל הערה הופכת לשיעור אחד. Claude קורא אותה, ואת בודקת לפני השמירה.</p>`:''}
+      <div class="lessons">${fresh.map(n=>`<div class="lesson-row" style="flex-wrap:wrap">
+        <span class="t"><b>${n.date?heDate(n.date):''} · ${esc(n.name||'?')}${n.teacher?` <span class="muted" style="font-weight:400">· ${esc(n.teacher)}</span>`:''}</b><small>${esc(n.summary)}…</small></span>
+        <select data-mailkid="${n.id}" aria-label="למי ההערה" style="min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);padding:4px 8px">
+          <option value="">למי?</option>${kids.map(k=>`<option value="${k.id}" ${n.kidId===k.id?'selected':''}>${esc(k.name)}</option>`).join('')}</select>
+        <button class="btn small primary" data-mailuse="${n.id}">להכין שיעור</button>
+        <button class="btn small" data-mailskip="${n.id}">לדלג</button>
+      </div>`).join('')}</div>`;
+  return `${topBar({back:true, backTo:'parent'})}<div class="sheet"><h1>הערות מהמורה במייל</h1>${body}</div>`;
+}
+async function useNote(id){
+  const n = S.mail.notes.find(x=>x.id===id); if(!n) return;
+  if(!n.kidId){ toast('צריך לבחור למי ההערה'); return; }
+  // remember which English name belongs to which girl, so the next notes are matched by themselves
+  const f = structuredClone(S.family); const k = f.kids.find(x=>x.id===n.kidId);
+  if(k && n.name && (k.enName||'').toLowerCase() !== n.name.toLowerCase()){ k.enName = n.name; await Store.saveFamily(f); }
+  S.add = newAdd(); S.add.text = n.text; S.add.kids = [n.kidId]; S.add.date = n.date || today(); S.add.source = {gmail:id};
+  go('add'); extract();
 }
 
 /* ---------- events ---------- */
@@ -1290,6 +1377,8 @@ document.addEventListener('click', async e => {
   if(d.rmg!==undefined){ syncAddInputs(); S.add.grammar.splice(+d.rmg,1); render(); return; }
   if(d.rmq!==undefined){ syncAddInputs(); S.add.quiz.splice(+d.rmq,1); render(); return; }
   if(d.rmph!==undefined){ syncAddInputs(); S.add.phonics.splice(+d.rmph,1); render(); return; }
+  if(d.mailuse){ useNote(d.mailuse); return; }
+  if(d.mailskip){ await Store.markImport(d.mailskip,'skipped'); toast('ההערה סומנה לדילוג'); render(); return; }
   if(d.edit){ S.add = newAdd(lessonById(d.edit)); go('add'); return; }
   if(d.del){
     if(t.dataset.armed){ await Store.deleteLesson(d.del); toast('השיעור נמחק'); render(); }
@@ -1311,6 +1400,7 @@ document.addEventListener('click', async e => {
       break; }
     case 'editkids': S.setupKids=null; go('setup'); break;
     case 'addlesson': S.add = newAdd(); go('add'); break;
+    case 'mail': loadMail(); break;
     case 'extract': extract(); break;
     case 'manual': manual(); break;
     case 'addw': syncAddInputs(); S.add.words.push({en:'',he:'',example:''}); render(); break;
@@ -1335,6 +1425,7 @@ function markSeen(w){
   s.prog.words[w.key] = {b:0, r:0, w:0, due: today(), last: today()};
   s.done++;
 }
+document.addEventListener('change', e => { const id = e.target.dataset?.mailkid; if(id && S.mail?.notes){ const n = S.mail.notes.find(x=>x.id===id); if(n) n.kidId = e.target.value; } });
 function syncSetup(){ document.querySelectorAll('[data-kn]').forEach(i=>{ S.setupKids[+i.dataset.kn].name=i.value; }); }
 document.addEventListener('keydown', e => {
   if(document.querySelector('.scrim')){
@@ -1358,3 +1449,5 @@ document.addEventListener('keydown', e => {
 
 Store.init();
 </script>
+
+</body></html>
