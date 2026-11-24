@@ -8,7 +8,7 @@
   --bg:#EDF0F5;--surface:#FFFFFF;--ink:#1E2633;--muted:#5A6577;--line:#D3DAE3;
   --rule:#B9C8E4;--margin:#E07A8A;--hl:#FFE89A;--hint-bg:#FFF1C9;
   --good:#1F7A4D;--good-soft:#DDF2E7;--soft:#F4F6FA;
-  --grape:#7444C9;--sea:#14809A;--coral:#D2553B;--leaf:#3F8A2E;--rose:#C23C7E;--blue:#2F5BD3;
+  --grape:#7444C9;--sea:#0B7570;--coral:#B04B0C;--leaf:#2C7A30;--rose:#C2357C;--blue:#2F5BD3;
   --accent:var(--grape);
   --f-body:"Rubik",system-ui,"Segoe UI",Arial,sans-serif;
   --f-en:"Andika","Comic Sans MS",system-ui,sans-serif;
@@ -38,6 +38,52 @@ svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-lin
 .en{font-family:var(--f-en);direction:ltr;unicode-bidi:isolate}
 .muted{color:var(--muted)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* the shared bar and frame, from the math app's shell */
+.sh-bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1.5px solid var(--line);min-height:68px;position:sticky;top:0;z-index:30}
+.sh-bar svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sh-logo{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--f-en);font-weight:700;font-size:20px;flex:none}
+.sh-title{flex:1;margin:0;text-align:start;font-size:24px;font-weight:600;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-back{display:flex;align-items:center;gap:6px;min-height:50px;padding:6px 18px 6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:17px;flex:none}
+.sh-back:hover{border-color:var(--accent)}
+.sh-back svg{width:22px;height:22px}
+.sh-bank{position:relative;display:flex;align-items:center;gap:8px;font-weight:600;font-size:22px;background:#FFF1C7;color:#5A4300;padding:6px 16px;border-radius:999px;flex:none}
+.sh-coin{width:24px;height:24px;flex:none;stroke-width:2!important}
+.sh-bank.bump{animation:sh-bump .5s ease}
+.sh-av,.sh-pet{border-radius:50%;display:grid;place-items:center;overflow:hidden;flex:none;background:var(--accent)}
+.sh-av{width:42px;height:42px}
+.sh-pet{width:56px;height:56px}
+.sh-av svg,.sh-pet svg{width:100%;height:100%;display:block;stroke:none!important}
+.sh-pet svg{width:52px;height:52px;transform-origin:50% 85%;animation:sh-idle 5s ease-in-out infinite}
+.sh-pet.happy svg{animation:sh-hop .6s ease 2}
+@keyframes sh-idle{0%,62%,100%{transform:none}68%{transform:translateY(-3px) rotate(-7deg)}76%{transform:translateY(0) rotate(5deg)}84%{transform:rotate(-2deg)}}
+@keyframes sh-hop{0%,100%{transform:none}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(1px) scale(.98)}}
+@keyframes sh-bump{40%{transform:scale(1.15)}}
+.sh-me{position:relative;flex:none}
+.sh-gear{width:48px;height:48px;border:0;background:transparent;display:grid;place-items:center;color:var(--muted);padding:0;border-radius:12px}
+.sh-gear:hover,.sh-gear[aria-expanded="true"]{color:var(--accent)}
+.sh-gear svg{width:30px;height:30px}
+.sh-menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px;width:330px;max-width:calc(100vw - 32px);display:flex;flex-direction:column;gap:6px;z-index:40}
+.sh-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 10px;border-radius:12px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);text-align:start}
+.sh-row:hover{background:var(--bg)}
+.sh-row .sh-av{width:38px;height:38px}
+.sh-now{cursor:default;font-size:19px}.sh-now:hover{background:transparent}
+.sh-parent{color:var(--muted);font-weight:400;font-size:15px}
+.sh-lock{width:38px;display:grid;place-items:center}.sh-lock svg{width:20px;height:20px}
+.sh-sep{height:1.5px;background:var(--line);margin:4px 0}
+.sh-h{margin:4px 10px 0;font-size:14px;color:var(--muted);font-weight:600}
+.sh-sws{display:grid;grid-template-columns:repeat(6,40px);gap:8px;padding:4px 10px}
+.sh-sw{width:40px;height:40px;border-radius:50%;border:3px solid var(--surface);background:var(--accent);box-shadow:0 0 0 2px var(--line);display:grid;place-items:center;color:#fff;padding:0}
+.sh-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.sh-sw svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:3}
+.sh-card{background:var(--surface);border-radius:20px;padding:40px 28px;display:flex;flex-direction:column;gap:24px;align-items:center;text-align:center}
+.sh-card h1{margin:0;font-size:30px}
+.sh-who{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.sh-whocard{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 30px;border-radius:20px;border:3px solid var(--accent);background:var(--surface);font:inherit;font-size:24px;font-weight:600;color:var(--ink)}
+.sh-whocard:hover{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.sh-whocard .sh-av{width:110px;height:110px}
+@media (max-width:700px){.sh-back span{display:none}.sh-back{padding:6px 12px}.sh-title{font-size:18px}.sh-bank{font-size:18px;padding:4px 12px}.sh-pet{width:46px;height:46px}.sh-pet svg{width:42px;height:42px}}
+@media (prefers-reduced-motion: reduce){.sh-pet svg{animation:none}}
 
 /* frame */
 .wrap{max-width:880px;margin-inline:auto;padding-block:16px 48px;padding-inline:16px;display:flex;flex-direction:column;gap:18px}
@@ -232,6 +278,7 @@ td input.flag{border-color:var(--margin);background:var(--hint-bg)}
 </style>
 
 </head><body>
+<header class="sh-bar" id="bar"></header>
 <div class="wrap" id="app" aria-live="polite">
   <div class="sheet"><div class="row"><div class="spinner"></div><p class="lead">פותחת את המחברת…</p></div></div>
 </div>
@@ -510,17 +557,58 @@ function render(){
   document.documentElement.className = 'c-' + (k?.color || 'grape');
   const v = ({letters:vLetters, mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
   app.innerHTML = (v ? v() : '');
+  renderBar();
   after[S.view]?.();
 }
 const after = {};
 
-function topBar({back, backTo}={}){
-  const k = kid();
-  return `<div class="top">
-    ${back ? `<button class="icon-btn" data-go="${backTo}" aria-label="חזרה">${I.back}</button>` : ''}
-    <div class="logo"><span class="logo-mark" aria-hidden="true">Aa</span>מחברת אנגלית</div>
-    ${k ? `<button class="chip" data-go="home" title="להחליף ילדה"><span class="avatar">${esc(k.name.slice(0,1))}</span>${esc(k.name)}</button>` : ''}
-    <button class="icon-btn" data-act="parent" aria-label="אזור ההורים" title="אזור ההורים">${I.parent}</button>
+/* ---------- the top bar, shared by every screen (the same frame as the math app) ----------
+   right side: (back) · her stars · her face · the page title. Left side: settings, on her home page only. */
+const FACES = {
+  lili:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="13" cy="24" r="8" fill="#6B3E26"/><circle cx="51" cy="24" r="8" fill="#6B3E26"/><circle cx="13" cy="24" r="3" fill="#F2B21E"/><circle cx="51" cy="24" r="3" fill="#F2B21E"/><ellipse cx="32" cy="38" rx="17" ry="18" fill="#F6CFAE"/><path d="M15 34c0-12 8-19 17-19s17 7 17 19c-4-6-10-9-17-9s-13 3-17 9z" fill="#6B3E26"/><circle cx="25.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="38.5" cy="38" r="2.3" fill="#2B2B2B"/><circle cx="22" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="42" cy="44" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27 46c2.8 2.6 7.2 2.6 10 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  nori:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40c-1-16 8-27 20-27s21 11 20 27c0 6-2 10-4 12H16c-2-2-4-6-4-12z" fill="#2E2A33"/><ellipse cx="32" cy="38" rx="15.5" ry="17" fill="#E9B98F"/><path d="M16 33c2-10 9-15 16-15s14 5 16 15c-6-2-11-6-14-11-3 6-10 10-18 11z" fill="#2E2A33"/><path d="M42 15l7-4-1 8z M42 15l8 3-6 4z" fill="#E8457A"/><circle cx="43.5" cy="16.5" r="2.4" fill="#C72F63"/><circle cx="26" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="38" cy="39" r="2.3" fill="#2B2B2B"/><circle cx="22.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><circle cx="41.5" cy="45" r="2.6" fill="#F19A9A" opacity=".7"/><path d="M27.5 47c2.6 2.3 6.4 2.3 9 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  star:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8l6.5 14 15.2 1.7-11.3 10.3 3.2 15L32 41.4 18.4 49l3.2-15L10.3 23.7 25.5 22z" fill="#FFD54F" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/><circle cx="27" cy="31" r="2.3" fill="#2B2B2B"/><circle cx="37" cy="31" r="2.3" fill="#2B2B2B"/><path d="M28 37c2.4 2.2 5.6 2.2 8 0" stroke="#2B2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
+};
+// which drawn face each girl gets: chosen by the parent, else guessed from the name
+const faceOf = k => FACES[k?.face] ? k.face : /^ל/.test(k?.name||'') ? 'lili' : /^נ/.test(k?.name||'') ? 'nori' : 'star';
+const faceHtml = (k, cls='sh-av') => `<span class="${cls} c-${k.color}">${FACES[faceOf(k)]}</span>`;
+const STAR_IC = '<svg class="sh-coin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5-4.9-4.5 6.6-.8z" fill="#F2C230" stroke="#C99A12" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+const GEAR_IC = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/><circle cx="12" cy="12" r="6.6"/></svg>';
+const LOCK_IC = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+function topBar(opts={}){ S.barOpts = opts; queueMicrotask(renderBar); return ''; }
+function barTitle(){
+  const k = kid(), v = S.view, l = lessonById(S.lessonId);
+  if(v==='kid' && k) return `מה לומדים היום, ${esc(k.name)}?`;
+  if(v==='lesson' && l) return mixed(l.title||'שיעור');
+  if(v==='letters') return 'האותיות שלי';
+  if(v==='story') return 'סיפור עם המילים שלי';
+  if(v==='play' && S.session) return S.session.mode==='letters' ? 'אימון אותיות' : S.session.quiz ? 'תרגול דקדוק' : S.session.mode==='daily' ? 'התרגול של היום' : (l ? mixed(l.title||'') : 'תרגול');
+  if(v==='finish') return 'סיימת!';
+  if(['parent','add','mail','setup'].includes(v)) return 'אזור הורים';
+  return 'מחברת אנגלית';
+}
+function renderBar(){
+  const bar = document.getElementById('bar'); if(!bar) return;
+  const k = kid(), v = S.view, o = S.barOpts || {};
+  if(!k || v==='home' || v==='loading'){ bar.innerHTML = `<span class="sh-logo" aria-hidden="true">Aa</span><h1 class="sh-title">${barTitle()}</h1>`; return; }
+  const stars = prog(k.id).stars || 0;
+  const back = v==='kid' ? '' : v==='play'
+    ? `<button class="sh-back" data-act="quit">${I.back}<span>לצאת</span></button>`
+    : `<button class="sh-back" data-go="${o.backTo||'kid'}">${I.back}<span>חזרה</span></button>`;
+  const gear = v==='kid' ? `<div class="sh-me"><button class="sh-gear" data-act="menu" aria-expanded="${!!S.menu}" aria-haspopup="true" aria-label="הגדרות">${GEAR_IC}</button>${S.menu?menuHtml(k):''}</div>` : '';
+  bar.innerHTML = `${back}<span class="sh-bank ${S.bump?'bump':''}" aria-label="כוכבים: ${stars}">${STAR_IC}<span dir="ltr">${stars}</span></span>
+    ${faceHtml(k, 'sh-pet'+(S.bump?' happy':''))}<h1 class="sh-title">${barTitle()}</h1>${gear}`;
+}
+function menuHtml(k){
+  const others = (S.family?.kids||[]).filter(x=>x.id!==k.id);
+  return `<div class="sh-menu" role="menu">
+    <div class="sh-row sh-now">${faceHtml(k)}<span>${esc(k.name)}</span></div>
+    ${others.map(x=>`<button class="sh-row" role="menuitem" data-kid="${x.id}">${faceHtml(x)}<span>לעבור ל${esc(x.name)}</span></button>`).join('')}
+    <div class="sh-sep"></div>
+    <p class="sh-h">הצבע שלי</p>
+    <div class="sh-sws">${COLORS.map(c=>`<button class="sh-sw c-${c}" data-mycolor="${c}" aria-label="${c}" aria-pressed="${k.color===c}">${k.color===c?I.check:''}</button>`).join('')}</div>
+    <div class="sh-sep"></div>
+    <button class="sh-row sh-parent" role="menuitem" data-act="parent"><span class="sh-lock">${LOCK_IC}</span><span>אזור הורים</span></button>
   </div>`;
 }
 
@@ -549,9 +637,9 @@ function vSetup(){
 function vHome(){
   const kids = S.family?.kids || [];
   return `${topBar()}
-  <div class="sheet paper">
-    <h1>מי לומדת עכשיו?</h1>
-    <div class="kids">${kids.map(k=>`<button class="kid-card c-${k.color}" data-kid="${k.id}"><span class="avatar">${esc(k.name.slice(0,1))}</span><span><b>${esc(k.name)}</b><span>המחברת של ${esc(k.name)}</span></span></button>`).join('')}</div>
+  <div class="sh-card">
+    <h1>מי לומדת היום?</h1>
+    <div class="sh-who">${kids.map(k=>`<button class="sh-whocard c-${k.color}" data-kid="${k.id}">${faceHtml(k)}${esc(k.name)}</button>`).join('')}</div>
   </div>`;
 }
 
@@ -569,8 +657,7 @@ function vKid(){
   const known = all.filter(w => (p.words?.[w.key]?.b||0) >= 4).length;
   return `${topBar()}
   <div class="sheet paper">
-    <div class="row"><h1 style="margin-inline-end:auto">שלום ${esc(k.name)}</h1>
-      <div class="mykid"><span>הצבע שלי</span><div class="sws">${COLORS.map(c=>`<button class="sw c-${c}" data-mycolor="${c}" aria-pressed="${k.color===c}" aria-label="${c}">${k.color===c?I.check:''}</button>`).join('')}</div></div></div>
+
     ${ls.length ? `
     <div class="today">
       <div class="txt">
@@ -720,6 +807,7 @@ async function finishSession(complete){
   const p = s.prog, t = today();
   p.stars = (p.stars||0) + s.firstTry;
   if(p.lastDay !== t){ p.streak = (p.lastDay === addDays(t,-1)) ? (p.streak||0)+1 : 1; p.lastDay = t; }
+  if(s.firstTry){ S.bump = true; setTimeout(()=>{ S.bump=false; renderBar(); }, 1600); }
   go('finish');
   await Store.saveProgress(k.id, p);
 }
@@ -956,8 +1044,7 @@ function vPlay(){
   const counted = s.items.slice(0, s.i+1).filter(x=>!x.again && x.type!=='explain').length;
   const unit = s.quiz ? 'שאלה' : s.mode==='letters' ? 'אות' : 'צעד';
   const prog = it.again ? `<span>עוד פעם, בדרך אחרת</span>` : it.type==='explain' ? '' : `<span>${unit} ${counted} מתוך ${s.base}</span>`;
-  return `<div class="top"><button class="icon-btn" data-act="quit" aria-label="לצאת מהתרגול">${I.x}</button></div>
-  <div class="sheet">
+  return `<div class="sheet">
     ${body}
     <div class="progress"><div class="bar"><i style="width:${Math.round(Math.max(0,Math.min(counted-(it.again?0:1), s.base))/s.base*100)}%"></i></div>${prog}</div>
   </div>`;
@@ -1506,6 +1593,7 @@ async function useNote(id){
 
 /* ---------- events ---------- */
 document.addEventListener('click', async e => {
+  if(S.menu && !e.target.closest('.sh-me')){ S.menu=false; renderBar(); }
   const t = e.target.closest('button,[data-act]'); if(!t) return;
   if(t.classList.contains('scrim') && e.target!==t) return;
   const d = t.dataset;
@@ -1513,7 +1601,7 @@ document.addEventListener('click', async e => {
   if(d.sayslow!==undefined){ speak(d.sayslow, true); return; }
   if(d.gl){ showGloss(t); return; }
   if(d.go){ if(d.go==='home') S.kidId=null; go(d.go); return; }
-  if(d.kid){ S.kidId=d.kid; try{ localStorage.setItem(LS+':kid', d.kid); }catch(_){} go('kid'); return; }
+  if(d.kid){ S.menu=false; S.kidId=d.kid; try{ localStorage.setItem(LS+':kid', d.kid); }catch(_){} go('kid'); return; }
   if(d.lesson){ S.lessonId=d.lesson; go('lesson'); return; }
   if(d.mycolor){ const f = structuredClone(S.family); const k = f.kids.find(x=>x.id===S.kidId); if(k && k.color!==d.mycolor){ k.color=d.mycolor; await Store.saveFamily(f); render(); } return; }
   if(d.play){
@@ -1549,8 +1637,9 @@ document.addEventListener('click', async e => {
   const act = d.act; if(!act) return;
   const s = S.session, it = s?.items?.[s.i];
   switch(act){
+    case 'menu': S.menu = !S.menu; renderBar(); break;
     case 'daily': startSession('daily'); break;
-    case 'parent': if(S.parentOk) go('parent'); else gate(); break;
+    case 'parent': S.menu=false; renderBar(); if(S.parentOk) go('parent'); else gate(); break;
     case 'gateok': { const v = +document.getElementById('gate').value; if(v===S.gateAns){ S.parentOk=true; document.querySelector('.scrim')?.remove(); go(S.family?.kids?.length?'parent':'setup'); } else { gate(); toast('זה לא המספר. הנה תרגיל אחר.'); } break; }
     case 'gateno': document.querySelector('.scrim')?.remove(); break;
     case 'kadd': syncSetup(); S.setupKids.push({id:uid(), name:'', color:COLORS.find(c=>!S.setupKids.some(k=>k.color===c))||'grape'}); render(); break;
