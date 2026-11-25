@@ -93,6 +93,41 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .who b{font-family:"Henny Penny",serif;font-weight:400;font-size:22px;direction:ltr}
 .who small{color:var(--muted);font-size:14px}
 @media (max-width:640px){.pick{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* motion: breathing always, a personality move now and then and on tap, a hop of joy on buying.
+   Only whole-body moves and wings for now; faces and head tilts need a separate head from the artist. */
+.rig,.breath{position:absolute;inset:0}
+.breath{transform-origin:50% 87%;animation:breath 3.8s ease-in-out infinite}
+@keyframes breath{50%{transform:scale(1.012,1.02)}}
+.shadow{position:absolute;left:27%;right:27%;bottom:11.4%;height:2.6%;border-radius:50%;background:rgba(20,10,25,.38);filter:blur(3px)}
+.fig.luna .rig{animation:hover 4.6s ease-in-out infinite}
+.fig.luna .shadow{animation:shade 4.6s ease-in-out infinite}
+@keyframes hover{50%{transform:translateY(-1.8%)}}
+@keyframes shade{50%{transform:scale(.82);opacity:.6}}
+.fig img.wingL,.fig img.wingR{transform-origin:50% 44%;animation:flap 2.8s ease-in-out infinite}
+@keyframes flap{50%{transform:scaleX(.84)}}
+.fig .rig.m-sway{transform-origin:50% 87%;animation:sway 2.8s ease-in-out}
+@keyframes sway{30%{transform:rotate(-2.6deg) scaleY(.975)}65%{transform:rotate(1.6deg)}}
+.fig .rig.m-stomp{transform-origin:50% 87%;animation:stomp 1s ease-out}
+@keyframes stomp{14%{transform:translateY(-3.5%)}28%{transform:scale(1.05,.94)}38%{transform:translateX(-1.2%)}48%{transform:translateX(1.2%)}58%{transform:translateY(-2.5%)}72%{transform:scale(1.04,.95)}84%{transform:translateX(.6%)}}
+.fig .rig.m-bob{animation:bob 2.6s ease-in-out}
+@keyframes bob{25%{transform:translateY(.8%) rotate(1.2deg)}50%{transform:none}75%{transform:translateY(.8%) rotate(-1.2deg)}}
+.fig .rig.m-bob img.k-glasses{animation:nudge 2.6s ease-in-out}
+@keyframes nudge{38%,62%{translate:0 0}46%,54%{translate:0 -1.4%}}
+.fig .rig.m-float{animation:float 3.2s ease-in-out}
+@keyframes float{35%,65%{transform:translateY(-6%) rotate(1deg)}}
+.fig.luna .rig.m-float{animation:float 3.2s ease-in-out}
+.fig .rig.m-hop{transform-origin:50% 87%;animation:hop .6s ease-out}
+@keyframes hop{35%{transform:translateY(-4%) scale(.97,1.04)}70%{transform:scale(1.04,.96)}}
+.fig .rig.m-joy{transform-origin:50% 87%;animation:joy 1.3s ease-out}
+@keyframes joy{18%{transform:translateY(-5%) rotate(-3deg)}36%{transform:scale(1.04,.96)}56%{transform:translateY(-4%) rotate(3deg)}76%{transform:scale(1.03,.97)}}
+.fig .rig.m-joy img.wingL,.fig .rig.m-joy img.wingR{animation-duration:.35s}
+.spark{position:absolute;font-size:clamp(18px,2.4vw,30px);pointer-events:none;animation:spark 1.1s ease-out forwards}
+@keyframes spark{from{opacity:0;transform:translate(0,0) scale(.4)}25%{opacity:1}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1)}}
+.me{cursor:pointer}
+.still .breath,.still .rig,.still .shadow,.still .fig img,.still .spark{animation:none!important}
+@media (prefers-reduced-motion:reduce){.breath,.rig,.shadow,.fig img,.spark{animation:none!important}}
+.motion{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:14px;color:var(--muted)}
 @media (max-width:900px){
   .scene{aspect-ratio:auto;display:grid;grid-template-columns:minmax(0,1fr);background-position:12% center}
   .scene .me{position:relative;left:auto;width:auto;top:auto;bottom:auto;height:min(70vh,520px);margin:34px auto 6px}
@@ -123,6 +158,7 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
   <div class="actions"><button class="btn" id="undress">להוריד הכל</button><button class="btn" id="again">🔊 עוד פעם</button></div>
   <p class="note">לכל דמות יש מלתחה משלה: מה שקנית נשאר אצל הדמות שקנתה. החלפת דמות: פעם אחת בחינם, ואחר כך עולה 5. שמלה מחליפה חולצה וחצאית, ולהפך.</p>
   <div class="curpick" id="curpick"></div>
+  <div class="motion" id="motion"></div>
   <div class="actions"><button class="btn" id="add">לבדיקה: להוסיף 20</button><button class="btn" id="reset">לבדיקה: להתחיל מחדש</button></div>
 </div></section>
 <div class="chooser" id="chooser" role="dialog" aria-modal="true" aria-labelledby="chooseTitle"><div class="card">
@@ -190,13 +226,40 @@ function wear(list,id){
   return list.filter(x=>!out.has(byId[x].kind)).concat(id);
 }
 function layers(c,worn,fresh){
-  const list=[{id:'base_'+c.id,z:Z.base}].concat(worn.map(id=>byId[id]).filter(Boolean).map(i=>({id:i.id,z:Z[i.kind],kind:i.kind})));
+  const list=[{id:'base_'+c.id,z:Z.base,kind:'base'}].concat(worn.map(id=>byId[id]).filter(Boolean).map(i=>({id:i.id,z:Z[i.kind],kind:i.kind})));
   list.sort((a,b)=>a.z-b.z);
-  return list.map(l=>{
-    const dy=l.kind&&c.shift[l.kind]; const style=dy?` style="transform:translateY(${dy}%)"`:'';
-    return `<img src="img/${l.id}.webp" alt=""${style}${l.id===fresh?' class="pop"':''}>`;
+  const imgs=list.map(l=>{
+    const dy=c.shift[l.kind]; const style=dy?` style="transform:translateY(${dy}%)"`:'';
+    const cls=`k-${l.kind}${l.id===fresh?' pop':''}`;
+    if(l.kind==='wings') return ['L','R'].map(sd=>`<img src="img/${l.id}_${sd}.webp" alt="" class="${cls} wing${sd}">`).join('');
+    return `<img src="img/${l.id}.webp" alt=""${style} class="${cls}">`;
   }).join('');
+  return `<div class="shadow"></div><div class="rig"><div class="breath">${imgs}</div></div>`;
 }
+/* each girl's own move; the face moves (eye roll, wink, tongue) wait for the artist's expression frames */
+const MOVES={raven:['sway','מתנדנדת בעצלות'],pumpkin:['stomp','רוקעת ברגל'],moth:['bob','מהנהנת ומסדרת משקפיים'],luna:['float','מרחפת']};
+let lastMove=Date.now(), nextGap=8000;
+function play(name){
+  if(st.still||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const r=$('stage').querySelector('.rig'); if(!r) return;
+  r.className='rig'; void r.offsetWidth; r.classList.add('m-'+name);
+  r.onanimationend=e=>{ if(e.target===r) r.classList.remove('m-'+name); };
+  lastMove=Date.now(); nextGap=7000+Math.random()*6000;
+  if(name==='joy') sparkle();
+}
+function sparkle(){
+  const f=$('stage');
+  for(let i=0;i<8;i++){
+    const sp=document.createElement('span'); sp.className='spark'; sp.textContent=i%2?'✨':'⭐';
+    sp.style.left=(30+Math.random()*40)+'%'; sp.style.top=(25+Math.random()*35)+'%';
+    sp.style.setProperty('--dx',(Math.random()*120-60)+'px'); sp.style.setProperty('--dy',(-40-Math.random()*80)+'px');
+    sp.style.animationDelay=(i*60)+'ms'; f.appendChild(sp); setTimeout(()=>sp.remove(),1500);
+  }
+}
+setInterval(()=>{
+  if(!st.me||document.hidden||trying||$('chooser').classList.contains('on')) return;
+  if(Date.now()-lastMove>nextGap) play(MOVES[char().id][0]);
+},1000);
 
 /* speech: prefer the nicer voices a Mac has, as in the main app */
 let voice=null;
@@ -217,7 +280,12 @@ function draw(fresh){
   $('me').innerHTML=st.me?`<span class="head" aria-hidden="true"><span class="ring"><img src="img/base_${c.id}.webp" alt=""></span><b>${c.name}</b></span>`:'';
   $('switch').textContent=switchLabel();
   const shown=trying?wear(w.worn,trying):w.worn;
-  $('stage').innerHTML=layers(c,shown,fresh);
+  /* redraw the figure only when what she wears changed, so breathing and floating don't restart on every tap */
+  const html=layers(c,shown,fresh), key=c.id+'|'+shown.join(',');
+  if($('stage').dataset.key!==key){ $('stage').innerHTML=html; $('stage').dataset.key=key; }
+  $('stage').className='fig '+c.id;
+  document.body.classList.toggle('still',!!st.still);
+  $('motion').innerHTML=`בדיקת תנועות: <button class="btn" data-move="${MOVES[c.id][0]}">${c.name} ${MOVES[c.id][1]}</button><button class="btn" data-move="hop">קפיצה</button><button class="btn" data-move="joy">שמחה (כמו בקנייה)</button><button class="btn" data-still>${st.still?'להפעיל תנועה':'לכבות תנועה'}</button>`;
   $('stage').setAttribute('aria-label',c.he);
   $('tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');
   const kinds=(TABS.find(t=>t[0]===st.tab)||TABS[0])[2];
@@ -240,7 +308,7 @@ function openChooser(){
   const first=!st.me;
   $('chooseNote').textContent=first?'בוחרים דמות אחת, והיא מגיעה עם הבגדים שלה. אפשר להחליף אחר כך: פעם אחת בחינם.'
     :(st.switches===0?'ההחלפה הזאת בחינם. כל דמות שומרת את הבגדים שלה.':`החלפה עולה ${SWITCH_PRICE} ${CUR[st.cur].he}. כל דמות שומרת את הבגדים שלה.`);
-  $('pick').innerHTML=CHARS.map(c=>`<button class="who" data-pick="${c.id}" aria-pressed="${c.id===st.me}"><span class="fig">${layers(c,st.chars[c.id].given?st.chars[c.id].worn:c.outfit)}</span><b>${c.name}</b><small>${c.he}</small></button>`).join('');
+  $('pick').innerHTML=CHARS.map(c=>`<button class="who" data-pick="${c.id}" aria-pressed="${c.id===st.me}"><span class="fig ${c.id}">${layers(c,st.chars[c.id].given?st.chars[c.id].worn:c.outfit)}</span><b>${c.name}</b><small>${c.he}</small></button>`).join('');
   $('chooseClose').hidden=first;
   $('chooser').classList.add('on');
 }
@@ -252,13 +320,15 @@ document.addEventListener('click',e=>{
   const w=ward();
   if(t.dataset.pick){
     const id=t.dataset.pick;
-    if(!st.me){ st.me=id; gift(id); closeChooser(); trying=null; draw(); return; }
+    if(!st.me){ st.me=id; gift(id); closeChooser(); trying=null; draw(); play('joy'); return; }
     if(id===st.me){ closeChooser(); return; }
     const cost=st.switches===0?0:SWITCH_PRICE;
     if(cost>st.wallet){ $('chooseNote').textContent=`בשביל להחליף צריך ${SWITCH_PRICE} ${CUR[st.cur].he}, ויש לך ${st.wallet}.`; return; }
     if(cost) pay(cost);
-    st.switches++; st.me=id; gift(id); trying=null; $('say').textContent=''; closeChooser(); draw(); return;
+    st.switches++; st.me=id; gift(id); trying=null; $('say').textContent=''; closeChooser(); draw(); play('hop'); return;
   }
+  if(t.dataset.move){ play(t.dataset.move); return; }
+  if('still' in t.dataset){ st.still=!st.still; draw(); return; }
   if(t.id==='chooseClose'){ closeChooser(); return; }
   if(t.id==='switch'){ openChooser(); return; }
   if(t.dataset.tab){ st.tab=t.dataset.tab; draw(); return; }
@@ -266,7 +336,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.act==='cancel'){ trying=null; $('say').textContent=''; draw(); return; }
   if(t.dataset.act==='buy'&&trying){
     const it=byId[trying]; if(it.price>st.wallet) return;
-    pay(it.price); w.owned.push(it.id); w.worn=wear(w.worn,it.id); trying=null; draw(); return;
+    pay(it.price); w.owned.push(it.id); w.worn=wear(w.worn,it.id); trying=null; draw(); play('joy'); return;
   }
   if(t.dataset.item){
     const id=t.dataset.item, it=byId[id];
@@ -283,6 +353,7 @@ document.addEventListener('click',e=>{
   if(t.id==='add'){ pay(-20); draw(); }
   if(t.id==='reset'){ st=fresh(); trying=null; $('say').textContent=''; closeChooser(); draw(); }
 });
+document.querySelector('.scene .me').addEventListener('click',()=>{ if(st.me) play(MOVES[char().id][0]); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&st.me) closeChooser(); });
 draw();
 }
