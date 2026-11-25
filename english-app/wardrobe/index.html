@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ארון הבגדים</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@700&family=Rubik:wght@400;500;600&family=Andika:wght@400;700&family=Henny+Penny&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Karantina:wght@700&family=Rubik:wght@400;500;600&family=Andika:wght@400;700&family=Henny+Penny&display=swap">
 <style>
 /* VOICE a children's dress-up toy, playful and a little spooky like the drawings it comes from
    PICTURE the attic: the character stands on the rug, the clothes wait on the wardrobe shelves
@@ -42,17 +42,6 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .say{position:absolute;left:1%;width:44%;top:2%;margin:0;min-height:1.4em;font-family:"Andika",sans-serif;font-weight:700;direction:ltr;text-align:center;color:#fff;text-shadow:0 2px 0 #2B1D2E,0 0 10px #2B1D2E;font-size:clamp(18px,2.4vw,30px);pointer-events:none}
 
 /* the wardrobe: tabs on the top shelf, items on the shelves below */
-.shelves{position:absolute;left:47.6%;right:16.6%;top:26%;bottom:17.5%;display:flex;flex-direction:column;gap:1%;padding:.6%}
-.tabs{display:flex;gap:4px;flex-wrap:wrap}
-.tab{min-height:34px;padding:2px 10px;border-radius:999px;border:2px solid var(--ink);background:rgba(244,231,200,.92);font-weight:500;font-size:clamp(12px,1.05vw,15px)}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
-.items{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(84px,9vw,124px),1fr));align-content:start;gap:6px;padding:2px}
-.item{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:2px;padding:6px 4px 4px;border-radius:14px;border:2.5px solid var(--line);background:rgba(251,243,223,.95);text-align:center}
-.item:hover{border-color:var(--wine)}
-.item[aria-pressed="true"]{border-color:var(--ink);background:#fff;box-shadow:inset 0 0 0 2px var(--gold)}
-.item img{height:clamp(46px,5.6vw,84px);width:100%;object-fit:contain}
-.item b{font-family:"Andika",sans-serif;font-size:clamp(11px,1.05vw,14px);direction:ltr;line-height:1.15}
-.price{position:absolute;top:3px;inset-inline-start:3px;font-size:11px;font-weight:600;background:var(--gold);border-radius:999px;padding:0 6px;line-height:18px}
 
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .btn{min-height:44px;padding:4px 16px;border-radius:999px;border:2px solid var(--ink);background:transparent;font-weight:500}
@@ -65,16 +54,8 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .wallet.bump{animation:bump .4s}
 @keyframes bump{50%{transform:scale(1.15)}}
 .cur{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.22em}
-.price .cur{width:15px;height:15px;vertical-align:-3px}
-.item.owned .price{background:#CFE3B4}
-.item.trying{border-color:var(--wine);background:#fff;box-shadow:inset 0 0 0 2px var(--wine)}
-.buy{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border-radius:14px;background:rgba(244,231,200,.96);border:2.5px solid var(--ink)}
-.buy.on{display:flex}
-.buy b{font-family:"Andika",sans-serif;direction:ltr}
-.buy .btn{min-height:38px;padding:2px 12px}
 .btn.primary{background:var(--wine);border-color:var(--wine);color:#fff}
 .btn[disabled]{opacity:.45;cursor:default}
-.buy .need{font-size:14px;color:var(--wine);font-weight:600}
 .curpick{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:14px;font-size:14px;color:var(--muted)}
 .curpick button{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--paper)}
 .curpick button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--gold)}
@@ -128,13 +109,102 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .still .breath,.still .rig,.still .shadow,.still .fig img,.still .spark{animation:none!important}
 @media (prefers-reduced-motion:reduce){.breath,.rig,.shadow,.fig img,.spark{animation:none!important}}
 .motion{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:14px;color:var(--muted)}
-@media (max-width:900px){
-  .scene{aspect-ratio:auto;display:grid;grid-template-columns:minmax(0,1fr);background-position:12% center}
-  .scene .me{position:relative;left:auto;width:auto;top:auto;bottom:auto;height:min(70vh,520px);margin:34px auto 6px}
-  .say{left:0;width:100%;top:6px}
-  .shelves{position:static;background:rgba(43,29,46,.6);padding:10px;gap:8px}
-}
 @media (prefers-reduced-motion:reduce){.fig img.pop{animation:none}}
+
+/* ---- shared layout of the redesigned wardrobe (positions are % of the attic picture, 1672x941) ---- */
+.calm{position:absolute;inset:0;pointer-events:none;z-index:1}
+.calm.b{display:none}
+.amb{position:absolute;inset:0;pointer-events:none;z-index:2}
+.hots{position:absolute;inset:0;z-index:2}
+.scene .me{z-index:3;pointer-events:none}.scene .me .fig{pointer-events:auto}
+.say{z-index:6}
+.door{position:absolute;z-index:4;display:flex;flex-direction:column}
+.tab{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;border:0;background:none;padding:0;color:var(--ink);isolation:isolate}
+.tab img{display:none}
+.items{position:absolute;z-index:4;left:48.6%;right:17.6%;top:39.4%;bottom:40.6%;display:flex;gap:1.4%;justify-content:center}
+.items.hang{align-items:flex-start}.items.shelf{align-items:flex-end}
+.item{position:relative;flex:0 1 23%;max-width:25%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;border:0;background:none;padding:0;color:inherit}
+.items.hang .item{justify-content:flex-start}
+.item img{width:100%;flex:1;min-height:0;object-fit:contain;transition:transform .15s}
+.item:hover img{transform:translateY(-3px)}
+.item b{font-family:"Andika",sans-serif;direction:ltr;unicode-bidi:isolate;font-size:clamp(11px,1vw,14px);line-height:1.1}
+.hanger{display:none}
+.price{position:absolute;white-space:nowrap}
+.price .cur{width:1.1em;height:1.1em;vertical-align:-.2em}
+.buy{position:absolute;z-index:5;display:none;align-items:center;gap:8px;flex-wrap:wrap}
+.buy.on{display:flex}
+.buy b{font-family:"Andika",sans-serif;direction:ltr;unicode-bidi:isolate}
+.buy .need{font-size:14px;font-weight:600}
+.hot{position:absolute;border:0;padding:0;background:transparent;border-radius:45%;cursor:pointer}
+.hot:hover,.hot:focus-visible{background:radial-gradient(closest-side,rgba(255,226,150,.38),transparent)}
+.flame{position:absolute;width:3.2%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,120,.75),rgba(255,170,60,.25) 55%,transparent);mix-blend-mode:screen;animation:flick 2.3s infinite}
+.flame:nth-child(2n){animation-duration:1.7s;animation-delay:-.6s}
+@keyframes flick{0%,100%{opacity:.75;scale:1}20%{opacity:1;scale:1.12}45%{opacity:.6;scale:.92}70%{opacity:.95;scale:1.05}}
+.glowup{animation:glowup 1.4s ease-out}
+@keyframes glowup{40%{opacity:1;scale:2.2}}
+.purr{position:absolute;font:700 clamp(14px,1.6vw,22px) "Andika",sans-serif;color:#fff;text-shadow:0 2px 0 #2B1D2E;pointer-events:none;animation:purr 1.6s ease-out forwards;direction:ltr}
+@keyframes purr{from{opacity:0;translate:0 0}20%{opacity:1}to{opacity:0;translate:10px -50px}}
+.shine{position:absolute;pointer-events:none;overflow:hidden;border-radius:8px}
+.shine::after{content:"";position:absolute;inset:-20% -60%;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%);animation:shine 1.2s ease-out forwards}
+@keyframes shine{from{translate:-60% 0}to{translate:60% 0}}
+.flybat{position:absolute;width:5%;pointer-events:none;animation:flybat 2.6s ease-in forwards}
+.flybat svg{width:100%;animation:flutter .18s infinite alternate}
+@keyframes flutter{to{transform:scaleY(.45)}}
+@keyframes flybat{to{translate:-55vw 6vw;scale:.6;opacity:.2}}
+.spider{position:absolute;left:96.4%;top:11%;width:1.6%;aspect-ratio:1;pointer-events:none}
+.spider::before{content:"";position:absolute;left:50%;bottom:60%;height:0;border-left:1.5px solid rgba(255,240,210,.8)}
+.spider i{position:absolute;inset:0;border-radius:50%;background:#2B1D2E;box-shadow:0 0 0 2px rgba(255,240,210,.6)}
+.spider.go{animation:drop 2.8s ease-in-out}
+.spider.go::before{animation:thread 2.8s ease-in-out}
+@keyframes drop{45%,60%{translate:0 2200%}}
+@keyframes thread{45%,60%{height:2200%}}
+.still .flame,.still .flybat,.still .spider,.still .purr,.still .shine::after{animation:none!important}
+@media (prefers-reduced-motion:reduce){.flame,.flybat,.spider,.purr,.shine::after,.glowup{animation:none!important}}
+/* 3b = night room and swinging tags from V3, hanging rail and buy spot from V1, parchment buy note in V3's look */
+.calm{background:radial-gradient(ellipse 22% 48% at 29% 56%,rgba(255,220,150,.10),transparent 70%),radial-gradient(ellipse 58% 70% at 50% 56%,transparent 42%,rgba(12,4,24,.72) 100%),linear-gradient(rgba(14,5,26,.22),rgba(14,5,26,.22))}
+.flame{width:4.4%}
+.door{left:87.4%;right:2.8%;top:15%;bottom:12%;gap:2.6%;justify-content:flex-start;align-items:center;padding-top:2%;border-top:2px solid rgba(43,29,46,.9)}
+.tab{flex:0 0 auto;min-height:max(42px,8%);width:86%;padding:2px 6px 0;background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 3px 14px 14px;font:700 clamp(19px,1.9vw,27px)/1 "Amatic SC","Karantina",sans-serif;transform:rotate(var(--r,2deg));transform-origin:50% -12px;box-shadow:0 3px 0 rgba(20,8,20,.4)}
+.tab:nth-child(2n){--r:-2.5deg}
+.tab::before{content:"";position:absolute;top:-12px;left:50%;height:12px;border-left:1.5px solid #2B1D2E}
+.tab::after{content:"";position:absolute;top:4px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#2B1D2E}
+.tab span{margin-top:6px}
+.tab:hover{animation:swing .9s ease-in-out}
+@keyframes swing{30%{transform:rotate(-6deg)}65%{transform:rotate(4deg)}}
+.tab[aria-selected="true"]{background:#8C3550;color:#FBEFD5}
+.tab[aria-selected="true"]::after{background:#FBEFD5}
+.items.hang .hanger{display:block;width:62%;flex:0 0 auto;margin-top:-3%;margin-bottom:-6%;position:relative;z-index:1}
+.item img{filter:drop-shadow(0 4px 2px rgba(20,8,20,.45))}
+.item[aria-pressed="true"] img{filter:drop-shadow(0 0 6px #FFE08A) drop-shadow(0 0 12px #FFE08A)}
+.item.trying img{filter:drop-shadow(0 0 8px #F6A6C0) drop-shadow(0 0 2px #fff)}
+.item b{color:#FBEFD5;font:700 clamp(15px,1.5vw,20px)/1 "Amatic SC",sans-serif;text-shadow:0 0 6px #2B1D2E}
+.price{top:16%;left:-6%;transform:rotate(-10deg);background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 12px 12px 3px;padding:0 7px 0 12px;font:700 15px/20px "Amatic SC","Rubik",sans-serif;display:inline-flex;align-items:center;gap:2px}
+.price::before{content:"";position:absolute;left:4px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:#2B1D2E}
+.item.owned .price{background:#D8E9BF}
+.buy{left:48.8%;right:17.8%;top:70.4%;bottom:18.2%;justify-content:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;padding:2px 14px;background:#F4E7C8;border:2.5px solid #2B1D2E;border-radius:18px;box-shadow:0 6px 0 rgba(10,4,16,.5)}
+.buy .q{font:700 clamp(22px,2.1vw,30px)/1 "Amatic SC",sans-serif}
+.buy b{font-size:clamp(13px,1.2vw,16px)}
+.buy .cost{font-weight:700;font-size:17px;display:inline-flex;align-items:center;gap:3px}
+.buy .btn{min-height:36px;border-radius:12px;border:2.5px solid #2B1D2E;background:transparent;font-weight:600;padding:0 12px}
+.buy .btn.primary{background:#8C3550;color:#fff}
+.buy .need{color:#8C3550;white-space:normal;font-size:13px}
+@media (max-width:1120px){.buy .q{display:none}}
+/* worms: the money. A pile that wriggles in the wallet; a single worm on tags */
+.cur.pile{width:1.9em;height:1.9em;vertical-align:-.55em;overflow:visible}
+.cur .w{transform-box:fill-box;animation:wriggle 2.4s ease-in-out infinite}
+.cur .w1{transform-origin:0% 100%}.cur .w2{transform-origin:100% 100%;animation-delay:-.8s;animation-duration:2.9s}.cur .w3{transform-origin:0% 100%;animation-delay:-1.5s;animation-duration:2.1s}
+@keyframes wriggle{0%,100%{transform:rotate(0) scaleX(1)}30%{transform:rotate(-7deg) scaleX(.93)}60%{transform:rotate(5deg) scaleX(1.04)}}
+.wallet.bump .cur .w{animation:wigglefast .35s ease-in-out 3}
+@keyframes wigglefast{50%{transform:rotate(-12deg) scaleY(1.15)}}
+.still .cur .w{animation:none!important}
+@media (prefers-reduced-motion:reduce){.tab:hover,.cur .w{animation:none!important}}
+.buy>*{flex:none}
+.tab span{white-space:nowrap}
+@media (max-width:1120px){.door{gap:1.7%;top:14%;bottom:6%}.tab{min-height:34px;font-size:18px}}
+.buy{gap:10px;padding:2px 18px}
+.buy .x{position:absolute;top:-12px;left:-12px;width:32px;height:32px;border-radius:50%;border:2.5px solid #2B1D2E;background:#F4E7C8;font-size:15px;font-weight:700;line-height:1;padding:0;box-shadow:0 2px 0 #2B1D2E}
+.buy .x:hover{background:#fff}
+.buy .need{max-width:46%}
 </style>
 </head>
 <body>
@@ -142,19 +212,20 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
   <div class="top">
     <div>
       <h1>ארון הבגדים</h1>
-      <p style="margin:0 0 8px"><a href="versions/wardrobe-room/index.html" style="display:inline-block;padding:6px 16px;border-radius:999px;background:#8C3550;color:#fff;font-weight:600;text-decoration:none">לראות שלוש גרסאות לעיצוב החדש של הארון ←</a></p>
-      <p class="lead">אב טיפוס לבדיקה. לחיצה על בגד מלבישה אותו לניסיון ואומרת את השם שלו באנגלית. בגד שעוד לא שלך אפשר לקנות.</p>
+      <p style="margin:0 0 8px" hidden><a href="versions/wardrobe-room/index.html" style="display:inline-block;padding:6px 16px;border-radius:999px;background:#8C3550;color:#fff;font-weight:600;text-decoration:none">לראות שלוש גרסאות לעיצוב החדש של הארון ←</a></p>
+      <p class="lead">לחיצה על בגד מלבישה אותו לניסיון ואומרת את השם שלו באנגלית. בגד שעוד לא שלך אפשר לקנות בתולעים. בחדר מסתתרות הפתעות: נסי ללחוץ על דברים.</p>
     </div>
     <div class="bar"><span class="wallet" id="wallet"></span><span class="heads" id="me"></span><button class="btn" id="switch"></button></div>
   </div>
   <div class="scene" id="scene">
+    <div class="calm"></div><div class="calm b"></div>
+    <div class="amb" id="amb"></div>
+    <div class="hots" id="hots"></div>
     <div class="me"><div class="fig" id="stage" role="img"></div></div>
     <div class="say" id="say" aria-live="polite"></div>
-    <div class="shelves">
-      <div class="tabs" id="tabs" role="tablist"></div>
-      <div class="buy" id="buy" aria-live="polite"></div>
-      <div class="items" id="items"></div>
-    </div>
+    <nav class="door" id="tabs" role="tablist" aria-label="סוגי בגדים"></nav>
+    <div class="items" id="items"></div>
+    <div class="buy" id="buy" aria-live="polite"></div>
   </div>
   <div class="actions"><button class="btn" id="undress">להוריד הכל</button><button class="btn" id="again">🔊 עוד פעם</button></div>
   <p class="note">לכל דמות יש מלתחה משלה: מה שקנית נשאר אצל הדמות שקנתה. החלפת דמות: פעם אחת בחינם, ואחר כך עולה 5. שמלה מחליפה חולצה וחצאית, ולהפך.</p>
@@ -199,11 +270,60 @@ const CLASH={dress:['top','skirt'],top:['dress'],skirt:['dress']};
 /* the money: earned in practice; which coin it is, the girls choose */
 const CUR={
   ruby:{he:'אבני אודם',svg:'<path d="M6 3h12l4 6-10 13L2 9z" fill="#C2213F"/><path d="M2 9h20M6 3l3 6 3 13M18 3l-3 6-3 13M9 9l3-6 3 6" fill="none" stroke="#7A0F25" stroke-width="1.2"/><path d="M7 5l-2 3" stroke="#FFC7D1" stroke-width="1.6" stroke-linecap="round"/><path d="M6 3h12l4 6-10 13L2 9z" fill="none" stroke="#2B1D2E" stroke-width="1.6" stroke-linejoin="round"/>'},
-  worm:{he:'תולעים',svg:'<path d="M3 17c2-7 5-7 7-1s5 6 7 0c.8-2.4 2.2-3.6 4-3" fill="none" stroke="#2B1D2E" stroke-width="6.4" stroke-linecap="round"/><path d="M3 17c2-7 5-7 7-1s5 6 7 0c.8-2.4 2.2-3.6 4-3" fill="none" stroke="#E98BA6" stroke-width="3.6" stroke-linecap="round"/><path d="M6.5 12.6l.8 1.4M9.6 14.2l1.4-.3M14.3 18.7l.9-1.3" stroke="#B5546F" stroke-width="1"/><circle cx="20.4" cy="12.6" r=".9" fill="#2B1D2E"/>'},
+  worm:{he:'תולעים',pile:true,svg:'<path d="M3 17c2-7 5-7 7-1s5 6 7 0c.8-2.4 2.2-3.6 4-3" fill="none" stroke="#2B1D2E" stroke-width="6.4" stroke-linecap="round"/><path d="M3 17c2-7 5-7 7-1s5 6 7 0c.8-2.4 2.2-3.6 4-3" fill="none" stroke="#E98BA6" stroke-width="3.6" stroke-linecap="round"/><path d="M6.5 12.6l.8 1.4M9.6 14.2l1.4-.3M14.3 18.7l.9-1.3" stroke="#B5546F" stroke-width="1"/><circle cx="20.4" cy="12.6" r=".9" fill="#2B1D2E"/>'},
   eye:{he:'עיניים',svg:'<ellipse cx="12" cy="12" rx="10" ry="8.4" fill="#FFF8E6" stroke="#2B1D2E" stroke-width="1.6"/><path d="M3.6 9.5l3 1.4M4 15l2.6-1.2M20.2 9l-2.7 1.6M19.8 15.4l-2.8-1.2" stroke="#D9485F" stroke-width=".9"/><circle cx="12.6" cy="12" r="4.6" fill="#7B4FA8" stroke="#2B1D2E" stroke-width="1.2"/><circle cx="12.6" cy="12" r="2" fill="#2B1D2E"/><circle cx="14" cy="10.6" r=".9" fill="#fff"/>'},
   frog:{he:'צפרדעים',svg:'<path d="M3 15c0-4 3.2-6.4 9-6.4S21 11 21 15s-4 6-9 6-9-2-9-6z" fill="#7FA83A" stroke="#2B1D2E" stroke-width="1.6"/><circle cx="7.4" cy="8" r="3.4" fill="#7FA83A" stroke="#2B1D2E" stroke-width="1.6"/><circle cx="16.6" cy="8" r="3.4" fill="#7FA83A" stroke="#2B1D2E" stroke-width="1.6"/><circle cx="7.6" cy="8" r="1.7" fill="#FFF8E6"/><circle cx="16.4" cy="8" r="1.7" fill="#FFF8E6"/><circle cx="7.9" cy="8.2" r=".9" fill="#2B1D2E"/><circle cx="16.1" cy="8.2" r=".9" fill="#2B1D2E"/><path d="M8 15.4q4 3 8 0" fill="none" stroke="#2B1D2E" stroke-width="1.3" stroke-linecap="round"/><circle cx="6.4" cy="15" r="1" fill="#E98BA6" opacity=".7"/><circle cx="17.6" cy="15" r="1" fill="#E98BA6" opacity=".7"/>'},
 };
-const coin=k=>`<svg class="cur" viewBox="0 0 24 24" aria-hidden="true">${CUR[k||st.cur].svg}</svg>`;
+const PILE='<g class="w w3"><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="37" cy="21" r="1.2" fill="#2B1D2E"/><circle cx="37.45" cy="20.55" r=".45" fill="#fff"/></g><g class="w w2"><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="27" cy="26.2" r="1.2" fill="#2B1D2E"/><circle cx="27.45" cy="25.75" r=".45" fill="#fff"/></g><g class="w w1"><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="26" cy="32.2" r="1.2" fill="#2B1D2E"/><circle cx="26.45" cy="31.750000000000004" r=".45" fill="#fff"/></g><path d="M2 46c2-8 10-11 22-11s20 3 22 11z" fill="#6A442F" stroke="#2B1D2E" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 41q4-2 8 0M28 40q4-1.5 8 .5" fill="none" stroke="#8E6246" stroke-width="1.2" stroke-linecap="round"/><circle cx="21" cy="43" r="1.1" fill="#4A2E20"/><circle cx="38" cy="43.5" r=".9" fill="#4A2E20"/>', ONEWORM='<g class="w w1"><path d="M3 18c2-7 6-7 8-2s6 5 8 0c1-2.4 2.2-3.6 4-3.4" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M3 18c2-7 6-7 8-2s6 5 8 0c1-2.4 2.2-3.6 4-3.4" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M3 18c2-7 6-7 8-2s6 5 8 0c1-2.4 2.2-3.6 4-3.4" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="22.6" cy="14.4" r="1.2" fill="#2B1D2E"/><circle cx="23.05" cy="13.950000000000001" r=".45" fill="#fff"/></g>';
+const coin=(k,big)=>{ k=k||st.cur; if(k==='worm') return big?`<svg class="cur pile" viewBox="0 4 48 44" aria-hidden="true">${PILE}</svg>`:`<svg class="cur" viewBox="0 4 26 20" aria-hidden="true">${ONEWORM}</svg>`; return `<svg class="cur" viewBox="0 0 24 24" aria-hidden="true">${CUR[k].svg}</svg>`; };
+const HOTS=[
+  {id:'cat',word:'a black cat',he:'החתול',x:7,y:61,w:10.5,h:12,fx:'purr'},
+  {id:'candles',word:'candles',he:'הנרות',x:0.5,y:65,w:6.5,h:12,fx:'glow'},
+  {id:'mirror',word:'a mirror',he:'המראה',x:1,y:30,w:11.5,h:30,fx:'shine'},
+  {id:'chest',word:'a treasure chest',he:'תיבת האוצר',x:0.5,y:84,w:12,h:15,fx:'sparkle'},
+  {id:'lantern',word:'a lantern',he:'הפנס',x:74.6,y:5,w:5,h:17,fx:'glow'},
+  {id:'moon',word:'the moon',he:'הירח',x:47.5,y:0,w:6,h:8,fx:'sparkle'}
+];
+const FLAMES=[[2.4,71,'candles'],[4.4,68.6,'candles'],[16.5,57.6,'cat'],[18.4,62.4,'cat'],[77.2,15.5,'lantern']];
+const AMBIENT_BAT=false, HINT_EVERY=20000;
+const HANGER='<svg class="hanger" viewBox="0 0 60 26" aria-hidden="true"><path d="M30 13V9a4 4 0 1 0-4-4" fill="none" stroke="#2B1D2E" stroke-width="2.4" stroke-linecap="round"/><path d="M30 13 4 23h52z" fill="none" stroke="#7A4A22" stroke-width="3.2" stroke-linejoin="round"/><path d="M30 13 4 23h52z" fill="none" stroke="#2B1D2E" stroke-width="1" stroke-linejoin="round"/></svg>';
+const BUYQ='רוצה את זה?';
+
+/* ---- clickable surprises in the room: each one says its English word ---- */
+const HANG=new Set(['dress','top','skirt','wings']);
+function sparkleAt(x,y,n=6){
+  if(st.still||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const sc=$('scene');
+  for(let i=0;i<n;i++){ const sp=document.createElement('span'); sp.className='spark'; sp.textContent=i%2?'✨':'⭐';
+    sp.style.left=`calc(${x}% + ${Math.random()*40-20}px)`; sp.style.top=`calc(${y}% + ${Math.random()*30-15}px)`; sp.style.zIndex=6;
+    sp.style.setProperty('--dx',(Math.random()*90-45)+'px'); sp.style.setProperty('--dy',(-30-Math.random()*60)+'px'); sp.style.animationDelay=(i*70)+'ms';
+    sc.appendChild(sp); setTimeout(()=>sp.remove(),1600); }
+}
+const FX={
+  purr:h=>{ const p=document.createElement('span'); p.className='purr'; p.textContent='purr...'; p.style.left=(h.x+h.w*.5)+'%'; p.style.top=(h.y)+'%'; $('scene').appendChild(p); setTimeout(()=>p.remove(),1700); },
+  glow:h=>{ document.querySelectorAll(`.flame[data-of="${h.id}"]`).forEach(f=>{ f.classList.remove('glowup'); void f.offsetWidth; f.classList.add('glowup'); }); },
+  shine:h=>{ const d=document.createElement('div'); d.className='shine'; Object.assign(d.style,{left:h.x+'%',top:h.y+'%',width:h.w+'%',height:h.h+'%',zIndex:2}); $('scene').appendChild(d); setTimeout(()=>d.remove(),1300); },
+  sparkle:h=>sparkleAt(h.x+h.w/2,h.y+h.h/3,8),
+  bat:h=>flyBat(h.x+h.w/2,h.y+h.h/2),
+  spider:()=>{ const s=document.querySelector('.spider'); if(!s) return; s.classList.remove('go'); void s.offsetWidth; s.classList.add('go'); },
+  note:h=>{ sparkleAt(h.x+h.w/2,h.y+h.h/3,8); $('say').textContent=h.word+' ✨'; },
+};
+const BAT='<svg viewBox="0 0 64 30" aria-hidden="true"><path d="M32 10c-1.5-3-5-3.5-7-1.5C21 3 13 1 2 3c6 3 9 8 9 14 4-3 9-3 12 1 2-3 5-4 9-4s7 1 9 4c3-4 8-4 12-1 0-6 3-11 9-14-11-2-19 0-23 5.5-2-2-5.5-1.5-7 1.5z" fill="#2B1D2E"/><circle cx="29.5" cy="11" r="1" fill="#F6D27A"/><circle cx="34.5" cy="11" r="1" fill="#F6D27A"/></svg>';
+function flyBat(x,y){
+  if(st.still||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const b=document.createElement('div'); b.className='flybat'; b.innerHTML=BAT; b.style.left=x+'%'; b.style.top=y+'%'; b.style.zIndex=6;
+  $('scene').appendChild(b); setTimeout(()=>b.remove(),2700);
+}
+function buildRoom(){
+  $('hots').innerHTML=HOTS.map(h=>`<button class="hot" data-hot="${h.id}" aria-label="${h.he}" title="${h.he}" style="left:${h.x}%;top:${h.y}%;width:${h.w}%;height:${h.h}%"></button>`).join('');
+  $('amb').innerHTML=FLAMES.map(([x,y,of])=>`<div class="flame" data-of="${of}" style="left:${x}%;top:${y}%"></div>`).join('')+(HOTS.some(h=>h.fx==='spider')?'<div class="spider"><i></i></div>':'');
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-hot]'); if(!t) return;
+  const h=HOTS.find(x=>x.id===t.dataset.hot); $('say').textContent=h.word; speak(h.word); (FX[h.fx]||(()=>{}))(h);
+});
+/* a small twinkle now and then on one surprise, so the girls discover there is something to tap */
+setInterval(()=>{ if(document.hidden||!st.me) return; const h=HOTS[Math.floor(Math.random()*HOTS.length)]; sparkleAt(h.x+h.w/2,h.y+h.h/2,1); if(AMBIENT_BAT&&Math.random()<.35) flyBat(78,10); },HINT_EVERY);
 const SWITCH_PRICE=5, START=40;
 
 /* state: one chosen character; each character keeps her own wardrobe (bought and worn) */
@@ -212,7 +332,7 @@ const fresh=()=>({me:null,switches:0,wallet:START,cur:'ruby',tab:'dress',chars:O
 let st; try{ st=JSON.parse(localStorage.getItem(KEY)) }catch(e){}
 if(!st||!st.chars) st=fresh();
 CHARS.forEach(c=>{ const w=st.chars[c.id]||(st.chars[c.id]={owned:[],worn:[]}); w.owned=w.owned.filter(id=>byId[id]); w.worn=w.worn.filter(id=>w.owned.includes(id)); });
-if(!CUR[st.cur]) st.cur='ruby';
+st.cur='worm';
 let trying=null, last='';
 const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)) }catch(e){} };
 const $=id=>document.getElementById(id);
@@ -276,7 +396,7 @@ function switchLabel(){ return st.switches===0?'להחליף דמות (פעם א
 function draw(fresh){
   if(!st.me){ openChooser(); }
   const c=char(), w=ward();
-  $('wallet').innerHTML=`${coin()} <span>${st.wallet}</span>`;
+  $('wallet').innerHTML=`${coin(null,true)} <span>${st.wallet}</span>`;
   $('wallet').title=CUR[st.cur].he;
   $('me').innerHTML=st.me?`<span class="head" aria-hidden="true"><span class="ring"><img src="img/base_${c.id}.webp" alt=""></span><b>${c.name}</b></span>`:'';
   $('switch').textContent=switchLabel();
@@ -288,21 +408,22 @@ function draw(fresh){
   document.body.classList.toggle('still',!!st.still);
   $('motion').innerHTML=`בדיקת תנועות: <button class="btn" data-move="${MOVES[c.id][0]}">${c.name} ${MOVES[c.id][1]}</button><button class="btn" data-move="hop">קפיצה</button><button class="btn" data-move="joy">שמחה (כמו בקנייה)</button><button class="btn" data-still>${st.still?'להפעיל תנועה':'לכבות תנועה'}</button>`;
   $('stage').setAttribute('aria-label',c.he);
-  $('tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');
+  $('tabs').innerHTML=TABS.map(([k,t,kinds])=>{ const pic=ITEMS.find(i=>kinds.includes(i.kind)); return `<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}"><img src="thumb/${pic.id}.webp" alt=""><span>${t}</span></button>`; }).join('');
   const kinds=(TABS.find(t=>t[0]===st.tab)||TABS[0])[2];
+  $('items').className='items '+(kinds.some(k=>HANG.has(k))?'hang':'shelf');
   $('items').innerHTML=ITEMS.filter(i=>kinds.includes(i.kind)).map(i=>{
     const own=w.owned.includes(i.id);
-    return `<button class="item${own?' owned':''}${i.id===trying?' trying':''}" data-item="${i.id}" aria-pressed="${w.worn.includes(i.id)}"><span class="price">${own?'✓ שלי':coin()+i.price}</span><img src="thumb/${i.id}.webp" alt=""><b>${i.en}</b></button>`;
+    return `<button class="item${own?' owned':''}${i.id===trying?' trying':''}" data-item="${i.id}" aria-pressed="${w.worn.includes(i.id)}">${HANGER}<img src="thumb/${i.id}.webp" alt=""><b>${i.en}</b><span class="price">${own?'✓ שלי':coin()+i.price}</span></button>`;
   }).join('');
   const b=$('buy');
   if(trying){
     const it=byId[trying], need=it.price-st.wallet;
-    b.innerHTML=`<b>${it.en}</b> <span>${coin()} ${it.price}</span>`+(need>0
-      ?`<span class="need">חסרים לך עוד ${need} ${CUR[st.cur].he}. עוד קצת תרגול!</span><button class="btn" data-act="cancel">להוריד</button>`
-      :`<button class="btn primary" data-act="buy">לקנות</button><button class="btn" data-act="cancel">לא עכשיו</button>`);
+    b.innerHTML=`<span class="q">${BUYQ}</span><b>${it.en}</b><span class="cost">${coin(null,true)} ${it.price}</span>`+(need>0
+      ?`<span class="need">חסרים לך עוד ${need} ${CUR[st.cur].he}. עוד קצת תרגול!</span><button class="x" data-act="cancel" aria-label="להוריד" title="להוריד">✕</button>`
+      :`<button class="btn primary" data-act="buy">לקנות</button><button class="x" data-act="cancel" aria-label="לא עכשיו" title="לא עכשיו">✕</button>`);
     b.classList.add('on');
   } else b.classList.remove('on');
-  $('curpick').innerHTML='איזה כסף? (שהבנות יבחרו) '+Object.entries(CUR).map(([k,v])=>`<button data-cur="${k}" aria-pressed="${k===st.cur}">${coin(k)}${v.he}</button>`).join('');
+  $('curpick').innerHTML='';
   save();
 }
 function openChooser(){
@@ -356,6 +477,7 @@ document.addEventListener('click',e=>{
 });
 document.querySelector('.scene .me').addEventListener('click',()=>{ if(st.me) play(MOVES[char().id][0]); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&st.me) closeChooser(); });
+buildRoom();
 draw();
 }
 </script>

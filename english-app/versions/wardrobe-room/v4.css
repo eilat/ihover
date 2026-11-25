@@ -1,0 +1,45 @@
+/* 3b = night room and swinging tags from V3, hanging rail and buy spot from V1, parchment buy note in V3's look */
+.calm{background:radial-gradient(ellipse 22% 48% at 29% 56%,rgba(255,220,150,.10),transparent 70%),radial-gradient(ellipse 58% 70% at 50% 56%,transparent 42%,rgba(12,4,24,.72) 100%),linear-gradient(rgba(14,5,26,.22),rgba(14,5,26,.22))}
+.flame{width:4.4%}
+.door{left:87.4%;right:2.8%;top:15%;bottom:12%;gap:2.6%;justify-content:flex-start;align-items:center;padding-top:2%;border-top:2px solid rgba(43,29,46,.9)}
+.tab{flex:0 0 auto;min-height:max(42px,8%);width:86%;padding:2px 6px 0;background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 3px 14px 14px;font:700 clamp(19px,1.9vw,27px)/1 "Amatic SC","Karantina",sans-serif;transform:rotate(var(--r,2deg));transform-origin:50% -12px;box-shadow:0 3px 0 rgba(20,8,20,.4)}
+.tab:nth-child(2n){--r:-2.5deg}
+.tab::before{content:"";position:absolute;top:-12px;left:50%;height:12px;border-left:1.5px solid #2B1D2E}
+.tab::after{content:"";position:absolute;top:4px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#2B1D2E}
+.tab span{margin-top:6px}
+.tab:hover{animation:swing .9s ease-in-out}
+@keyframes swing{30%{transform:rotate(-6deg)}65%{transform:rotate(4deg)}}
+.tab[aria-selected="true"]{background:#8C3550;color:#FBEFD5}
+.tab[aria-selected="true"]::after{background:#FBEFD5}
+.items.hang .hanger{display:block;width:62%;flex:0 0 auto;margin-top:-3%;margin-bottom:-6%;position:relative;z-index:1}
+.item img{filter:drop-shadow(0 4px 2px rgba(20,8,20,.45))}
+.item[aria-pressed="true"] img{filter:drop-shadow(0 0 6px #FFE08A) drop-shadow(0 0 12px #FFE08A)}
+.item.trying img{filter:drop-shadow(0 0 8px #F6A6C0) drop-shadow(0 0 2px #fff)}
+.item b{color:#FBEFD5;font:700 clamp(15px,1.5vw,20px)/1 "Amatic SC",sans-serif;text-shadow:0 0 6px #2B1D2E}
+.price{top:16%;left:-6%;transform:rotate(-10deg);background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 12px 12px 3px;padding:0 7px 0 12px;font:700 15px/20px "Amatic SC","Rubik",sans-serif;display:inline-flex;align-items:center;gap:2px}
+.price::before{content:"";position:absolute;left:4px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:#2B1D2E}
+.item.owned .price{background:#D8E9BF}
+.buy{left:48.8%;right:17.8%;top:70.4%;bottom:18.2%;justify-content:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;padding:2px 14px;background:#F4E7C8;border:2.5px solid #2B1D2E;border-radius:18px;box-shadow:0 6px 0 rgba(10,4,16,.5)}
+.buy .q{font:700 clamp(22px,2.1vw,30px)/1 "Amatic SC",sans-serif}
+.buy b{font-size:clamp(13px,1.2vw,16px)}
+.buy .cost{font-weight:700;font-size:17px;display:inline-flex;align-items:center;gap:3px}
+.buy .btn{min-height:36px;border-radius:12px;border:2.5px solid #2B1D2E;background:transparent;font-weight:600;padding:0 12px}
+.buy .btn.primary{background:#8C3550;color:#fff}
+.buy .need{color:#8C3550;white-space:normal;font-size:13px}
+@media (max-width:1120px){.buy .q{display:none}}
+/* worms: the money. A pile that wriggles in the wallet; a single worm on tags */
+.cur.pile{width:1.9em;height:1.9em;vertical-align:-.55em;overflow:visible}
+.cur .w{transform-box:fill-box;animation:wriggle 2.4s ease-in-out infinite}
+.cur .w1{transform-origin:0% 100%}.cur .w2{transform-origin:100% 100%;animation-delay:-.8s;animation-duration:2.9s}.cur .w3{transform-origin:0% 100%;animation-delay:-1.5s;animation-duration:2.1s}
+@keyframes wriggle{0%,100%{transform:rotate(0) scaleX(1)}30%{transform:rotate(-7deg) scaleX(.93)}60%{transform:rotate(5deg) scaleX(1.04)}}
+.wallet.bump .cur .w{animation:wigglefast .35s ease-in-out 3}
+@keyframes wigglefast{50%{transform:rotate(-12deg) scaleY(1.15)}}
+.still .cur .w{animation:none!important}
+@media (prefers-reduced-motion:reduce){.tab:hover,.cur .w{animation:none!important}}
+.buy>*{flex:none}
+.tab span{white-space:nowrap}
+@media (max-width:1120px){.door{gap:1.7%;top:14%;bottom:6%}.tab{min-height:34px;font-size:18px}}
+.buy{gap:10px;padding:2px 18px}
+.buy .x{position:absolute;top:-12px;left:-12px;width:32px;height:32px;border-radius:50%;border:2.5px solid #2B1D2E;background:#F4E7C8;font-size:15px;font-weight:700;line-height:1;padding:0;box-shadow:0 2px 0 #2B1D2E}
+.buy .x:hover{background:#fff}
+.buy .need{max-width:46%}
