@@ -24,8 +24,8 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 
 /* the four girls to choose from */
 .heads{display:flex;gap:10px;flex-wrap:wrap}
-.head{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;padding:0}
-.head .ring{width:72px;height:72px;border-radius:50%;border:3px solid var(--line);background:var(--paper);overflow:hidden;position:relative}
+.head{display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0}
+.head .ring{width:60px;height:60px;border-radius:50%;border:3px solid var(--line);background:var(--paper);overflow:hidden;position:relative}
 .head .ring img{position:absolute;width:250%;left:-75%;top:-8%;max-width:none}
 .head b{font-family:"Henny Penny",serif;font-weight:400;font-size:15px;direction:ltr}
 .head[aria-pressed="true"] .ring{border-color:var(--ink);box-shadow:0 0 0 3px var(--gold)}
@@ -58,6 +58,41 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .btn{min-height:44px;padding:4px 16px;border-radius:999px;border:2px solid var(--ink);background:transparent;font-weight:500}
 .note{margin:10px 0 0;font-size:14px;color:var(--muted)}
 
+
+/* wallet, currency and buying */
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.wallet{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:2px 14px 2px 10px;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:600;font-size:20px}
+.wallet.bump{animation:bump .4s}
+@keyframes bump{50%{transform:scale(1.15)}}
+.cur{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.22em}
+.price .cur{width:15px;height:15px;vertical-align:-3px}
+.item.owned .price{background:#CFE3B4}
+.item.trying{border-color:var(--wine);background:#fff;box-shadow:inset 0 0 0 2px var(--wine)}
+.buy{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border-radius:14px;background:rgba(244,231,200,.96);border:2.5px solid var(--ink)}
+.buy.on{display:flex}
+.buy b{font-family:"Andika",sans-serif;direction:ltr}
+.buy .btn{min-height:38px;padding:2px 12px}
+.btn.primary{background:var(--wine);border-color:var(--wine);color:#fff}
+.btn[disabled]{opacity:.45;cursor:default}
+.buy .need{font-size:14px;color:var(--wine);font-weight:600}
+.curpick{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:14px;font-size:14px;color:var(--muted)}
+.curpick button{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:2px 12px;border-radius:999px;border:2px solid var(--line);background:var(--paper)}
+.curpick button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--gold)}
+.curpick .cur{width:26px;height:26px}
+/* choosing a character */
+.chooser{position:fixed;inset:0;z-index:5;background:rgba(43,29,46,.82);display:none;overflow:auto;padding:4vh 3vw}
+.chooser.on{display:block}
+.chooser .card{max-width:1100px;margin:auto;background:var(--paper);border:3px solid var(--ink);border-radius:24px;padding:18px 18px 22px;text-align:center}
+.chooser h2{font-family:"Karantina",system-ui,sans-serif;font-size:clamp(34px,4.5vw,50px);margin:0;line-height:1}
+.chooser p{margin:4px 0 12px;color:var(--muted)}
+.pick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.who{display:flex;flex-direction:column;align-items:center;gap:2px;border:3px solid transparent;border-radius:18px;background:transparent;padding:6px}
+.who:hover{border-color:var(--line)}
+.who[aria-pressed="true"]{border-color:var(--ink);background:#fff}
+.who .fig{height:clamp(220px,40vh,380px)}
+.who b{font-family:"Henny Penny",serif;font-weight:400;font-size:22px;direction:ltr}
+.who small{color:var(--muted);font-size:14px}
+@media (max-width:640px){.pick{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:900px){
   .scene{aspect-ratio:auto;display:grid;grid-template-columns:minmax(0,1fr);background-position:12% center}
   .scene .me{position:relative;left:auto;width:auto;top:auto;bottom:auto;height:min(70vh,520px);margin:34px auto 6px}
@@ -72,21 +107,30 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
   <div class="top">
     <div>
       <h1>ארון הבגדים</h1>
-      <p class="lead">אב טיפוס לבדיקה עם הציורים האמיתיים. בחרי דמות, ולחצי על בגד בארון כדי להלביש אותו. הבגד אומר את השם שלו באנגלית.</p>
+      <p class="lead">אב טיפוס לבדיקה. לחיצה על בגד מלבישה אותו לניסיון ואומרת את השם שלו באנגלית. בגד שעוד לא שלך אפשר לקנות.</p>
     </div>
-    <div class="heads" id="heads"></div>
+    <div class="bar"><span class="wallet" id="wallet"></span><span class="heads" id="me"></span><button class="btn" id="switch"></button></div>
   </div>
   <div class="scene" id="scene">
     <div class="me"><div class="fig" id="stage" role="img"></div></div>
     <div class="say" id="say" aria-live="polite"></div>
     <div class="shelves">
       <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="buy" id="buy" aria-live="polite"></div>
       <div class="items" id="items"></div>
     </div>
   </div>
-  <div class="actions"><button class="btn" id="undress">להוריד הכל</button><button class="btn" id="preset">התלבושת המקורית</button><button class="btn" id="again">🔊 עוד פעם</button></div>
-  <p class="note">לחיצה נוספת על בגד מורידה אותו. שמלה מחליפה חולצה וחצאית, וחולצה או חצאית מחליפות שמלה. המספר בעיגול הצהוב הוא המחיר בכוכבים, עדיין רק לתצוגה.</p>
+  <div class="actions"><button class="btn" id="undress">להוריד הכל</button><button class="btn" id="again">🔊 עוד פעם</button></div>
+  <p class="note">לכל דמות יש מלתחה משלה: מה שקנית נשאר אצל הדמות שקנתה. החלפת דמות: פעם אחת בחינם, ואחר כך עולה 5. שמלה מחליפה חולצה וחצאית, ולהפך.</p>
+  <div class="curpick" id="curpick"></div>
+  <div class="actions"><button class="btn" id="add">לבדיקה: להוסיף 20</button><button class="btn" id="reset">לבדיקה: להתחיל מחדש</button></div>
 </div></section>
+<div class="chooser" id="chooser" role="dialog" aria-modal="true" aria-labelledby="chooseTitle"><div class="card">
+  <h2 id="chooseTitle">מי את בעליית הגג?</h2>
+  <p id="chooseNote"></p>
+  <div class="pick" id="pick"></div>
+  <div class="actions" style="justify-content:center"><button class="btn" id="chooseClose" hidden>להישאר עם הדמות שלי</button></div>
+</div></div>
 <script>
 {
 /* layer order, back to front (from the art README): wings, base, tights, shoes, dress/skirt, top, apron/belt, hair, hat, glasses+earrings, held */
@@ -115,14 +159,34 @@ const CHARS=[
 const SINGLE=new Set(['dress','top','skirt','tights','shoes','wings','hat','hair','glasses','earrings','apron','belt']);
 const CLASH={dress:['top','skirt'],top:['dress'],skirt:['dress']};
 
-const KEY='wardrobe-proto-v2';
+/* the money: earned in practice; which coin it is, the girls choose */
+const CUR={
+  ruby:{he:'אבני אודם',svg:'<path d="M6 3h12l4 6-10 13L2 9z" fill="#C2213F"/><path d="M2 9h20M6 3l3 6 3 13M18 3l-3 6-3 13M9 9l3-6 3 6" fill="none" stroke="#7A0F25" stroke-width="1.2"/><path d="M7 5l-2 3" stroke="#FFC7D1" stroke-width="1.6" stroke-linecap="round"/><path d="M6 3h12l4 6-10 13L2 9z" fill="none" stroke="#2B1D2E" stroke-width="1.6" stroke-linejoin="round"/>'},
+  worm:{he:'תולעים',svg:'<path d="M3 17c2-7 5-7 7-1s5 6 7 0c.8-2.4 2.2-3.6 4-3" fill="none" stroke="#2B1D2E" stroke-width="6.4" stroke-linecap="round"/><path d="M3 17c2-7 5-7 7-1s5 6 7 0c.8-2.4 2.2-3.6 4-3" fill="none" stroke="#E98BA6" stroke-width="3.6" stroke-linecap="round"/><path d="M6.5 12.6l.8 1.4M9.6 14.2l1.4-.3M14.3 18.7l.9-1.3" stroke="#B5546F" stroke-width="1"/><circle cx="20.4" cy="12.6" r=".9" fill="#2B1D2E"/>'},
+  eye:{he:'עיניים',svg:'<ellipse cx="12" cy="12" rx="10" ry="8.4" fill="#FFF8E6" stroke="#2B1D2E" stroke-width="1.6"/><path d="M3.6 9.5l3 1.4M4 15l2.6-1.2M20.2 9l-2.7 1.6M19.8 15.4l-2.8-1.2" stroke="#D9485F" stroke-width=".9"/><circle cx="12.6" cy="12" r="4.6" fill="#7B4FA8" stroke="#2B1D2E" stroke-width="1.2"/><circle cx="12.6" cy="12" r="2" fill="#2B1D2E"/><circle cx="14" cy="10.6" r=".9" fill="#fff"/>'},
+  frog:{he:'צפרדעים',svg:'<path d="M3 15c0-4 3.2-6.4 9-6.4S21 11 21 15s-4 6-9 6-9-2-9-6z" fill="#7FA83A" stroke="#2B1D2E" stroke-width="1.6"/><circle cx="7.4" cy="8" r="3.4" fill="#7FA83A" stroke="#2B1D2E" stroke-width="1.6"/><circle cx="16.6" cy="8" r="3.4" fill="#7FA83A" stroke="#2B1D2E" stroke-width="1.6"/><circle cx="7.6" cy="8" r="1.7" fill="#FFF8E6"/><circle cx="16.4" cy="8" r="1.7" fill="#FFF8E6"/><circle cx="7.9" cy="8.2" r=".9" fill="#2B1D2E"/><circle cx="16.1" cy="8.2" r=".9" fill="#2B1D2E"/><path d="M8 15.4q4 3 8 0" fill="none" stroke="#2B1D2E" stroke-width="1.3" stroke-linecap="round"/><circle cx="6.4" cy="15" r="1" fill="#E98BA6" opacity=".7"/><circle cx="17.6" cy="15" r="1" fill="#E98BA6" opacity=".7"/>'},
+};
+const coin=k=>`<svg class="cur" viewBox="0 0 24 24" aria-hidden="true">${CUR[k||st.cur].svg}</svg>`;
+const SWITCH_PRICE=5, START=40;
+
+/* state: one chosen character; each character keeps her own wardrobe (bought and worn) */
+const KEY='wardrobe-proto-v3';
+const fresh=()=>({me:null,switches:0,wallet:START,cur:'ruby',tab:'dress',chars:Object.fromEntries(CHARS.map(c=>[c.id,{owned:[],worn:[]}]))});
 let st; try{ st=JSON.parse(localStorage.getItem(KEY)) }catch(e){}
-if(!st||!st.worn) st={c:'raven',tab:'dress',worn:{}};
-CHARS.forEach(c=>{ if(!Array.isArray(st.worn[c.id])) st.worn[c.id]=[...c.outfit]; st.worn[c.id]=st.worn[c.id].filter(id=>byId[id]); });
+if(!st||!st.chars) st=fresh();
+CHARS.forEach(c=>{ const w=st.chars[c.id]||(st.chars[c.id]={owned:[],worn:[]}); w.owned=w.owned.filter(id=>byId[id]); w.worn=w.worn.filter(id=>w.owned.includes(id)); });
+if(!CUR[st.cur]) st.cur='ruby';
+let trying=null, last='';
 const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)) }catch(e){} };
 const $=id=>document.getElementById(id);
-const char=()=>CHARS.find(c=>c.id===st.c)||CHARS[0];
+const char=()=>CHARS.find(c=>c.id===st.me)||CHARS[0];
+const ward=()=>st.chars[char().id];
 
+/* put an item on a list of worn items, taking off whatever it replaces */
+function wear(list,id){
+  const it=byId[id], out=new Set([...(SINGLE.has(it.kind)?[it.kind]:[]),...(CLASH[it.kind]||[])]);
+  return list.filter(x=>!out.has(byId[x].kind)).concat(id);
+}
 function layers(c,worn,fresh){
   const list=[{id:'base_'+c.id,z:Z.base}].concat(worn.map(id=>byId[id]).filter(Boolean).map(i=>({id:i.id,z:Z[i.kind],kind:i.kind})));
   list.sort((a,b)=>a.z-b.z);
@@ -140,35 +204,84 @@ function pickVoice(){
   return vs.sort((a,b)=>score(b)-score(a))[0];
 }
 try{ voice=pickVoice(); speechSynthesis.onvoiceschanged=()=>{ voice=pickVoice(); }; }catch(e){}
-let last='';
 function speak(t){ last=t; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; if(voice) u.voice=voice; u.rate=.9; speechSynthesis.speak(u); }catch(e){} }
 
+function switchLabel(){ return st.switches===0?'להחליף דמות (פעם אחת בחינם)':`להחליף דמות (${SWITCH_PRICE} ${CUR[st.cur].he})`; }
 function draw(fresh){
-  const c=char(), w=st.worn[c.id];
-  $('heads').innerHTML=CHARS.map(x=>`<button class="head" data-c="${x.id}" aria-pressed="${x.id===c.id}" aria-label="${x.he}"><span class="ring"><img src="img/base_${x.id}.webp" alt=""></span><b>${x.name}</b></button>`).join('');
-  $('stage').innerHTML=layers(c,w,fresh);
+  if(!st.me){ openChooser(); }
+  const c=char(), w=ward();
+  $('wallet').innerHTML=`${coin()} <span>${st.wallet}</span>`;
+  $('wallet').title=CUR[st.cur].he;
+  $('me').innerHTML=st.me?`<span class="head" aria-hidden="true"><span class="ring"><img src="img/base_${c.id}.webp" alt=""></span><b>${c.name}</b></span>`:'';
+  $('switch').textContent=switchLabel();
+  const shown=trying?wear(w.worn,trying):w.worn;
+  $('stage').innerHTML=layers(c,shown,fresh);
   $('stage').setAttribute('aria-label',c.he);
   $('tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');
   const kinds=(TABS.find(t=>t[0]===st.tab)||TABS[0])[2];
-  $('items').innerHTML=ITEMS.filter(i=>kinds.includes(i.kind)).map(i=>`<button class="item" data-item="${i.id}" aria-pressed="${w.includes(i.id)}"><span class="price" title="מחיר בכוכבים">⭐${i.price}</span><img src="thumb/${i.id}.webp" alt=""><b>${i.en}</b></button>`).join('');
+  $('items').innerHTML=ITEMS.filter(i=>kinds.includes(i.kind)).map(i=>{
+    const own=w.owned.includes(i.id);
+    return `<button class="item${own?' owned':''}${i.id===trying?' trying':''}" data-item="${i.id}" aria-pressed="${w.worn.includes(i.id)}"><span class="price">${own?'✓ שלי':coin()+i.price}</span><img src="thumb/${i.id}.webp" alt=""><b>${i.en}</b></button>`;
+  }).join('');
+  const b=$('buy');
+  if(trying){
+    const it=byId[trying], need=it.price-st.wallet;
+    b.innerHTML=`<b>${it.en}</b> <span>${coin()} ${it.price}</span>`+(need>0
+      ?`<span class="need">חסרים לך עוד ${need} ${CUR[st.cur].he}. עוד קצת תרגול!</span><button class="btn" data-act="cancel">להוריד</button>`
+      :`<button class="btn primary" data-act="buy">לקנות</button><button class="btn" data-act="cancel">לא עכשיו</button>`);
+    b.classList.add('on');
+  } else b.classList.remove('on');
+  $('curpick').innerHTML='איזה כסף? (שהבנות יבחרו) '+Object.entries(CUR).map(([k,v])=>`<button data-cur="${k}" aria-pressed="${k===st.cur}">${coin(k)}${v.he}</button>`).join('');
   save();
 }
+function openChooser(){
+  const first=!st.me;
+  $('chooseNote').textContent=first?'בוחרים דמות אחת. אפשר להחליף אחר כך: פעם אחת בחינם.'
+    :(st.switches===0?'ההחלפה הזאת בחינם. כל דמות שומרת את הבגדים שלה.':`החלפה עולה ${SWITCH_PRICE} ${CUR[st.cur].he}. כל דמות שומרת את הבגדים שלה.`);
+  $('pick').innerHTML=CHARS.map(c=>`<button class="who" data-pick="${c.id}" aria-pressed="${c.id===st.me}"><span class="fig">${layers(c,st.chars[c.id].worn)}</span><b>${c.name}</b><small>${c.he}</small></button>`).join('');
+  $('chooseClose').hidden=first;
+  $('chooser').classList.add('on');
+}
+const closeChooser=()=>$('chooser').classList.remove('on');
+function pay(n){ st.wallet-=n; const el=$('wallet'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+
 document.addEventListener('click',e=>{
   const t=e.target.closest('button'); if(!t) return;
-  const w=st.worn[st.c];
-  if(t.dataset.c){ st.c=t.dataset.c; $('say').textContent=''; draw(); return; }
-  if(t.dataset.tab){ st.tab=t.dataset.tab; draw(); return; }
-  if(t.dataset.item){
-    const it=byId[t.dataset.item], i=w.indexOf(it.id);
-    if(i>=0){ w.splice(i,1); $('say').textContent=''; draw(); return; }
-    const out=new Set([...(SINGLE.has(it.kind)?[it.kind]:[]),...(CLASH[it.kind]||[])]);
-    for(const x of [...w]) if(out.has(byId[x].kind)) w.splice(w.indexOf(x),1);
-    w.push(it.id); $('say').textContent=it.en; speak(it.en); draw(it.id); return;
+  const w=ward();
+  if(t.dataset.pick){
+    const id=t.dataset.pick;
+    if(!st.me){ st.me=id; closeChooser(); trying=null; draw(); return; }
+    if(id===st.me){ closeChooser(); return; }
+    const cost=st.switches===0?0:SWITCH_PRICE;
+    if(cost>st.wallet){ $('chooseNote').textContent=`בשביל להחליף צריך ${SWITCH_PRICE} ${CUR[st.cur].he}, ויש לך ${st.wallet}.`; return; }
+    if(cost) pay(cost);
+    st.switches++; st.me=id; trying=null; $('say').textContent=''; closeChooser(); draw(); return;
   }
-  if(t.id==='undress'){ st.worn[st.c]=[]; $('say').textContent=''; draw(); }
-  if(t.id==='preset'){ st.worn[st.c]=[...char().outfit]; $('say').textContent=''; draw(); }
+  if(t.id==='chooseClose'){ closeChooser(); return; }
+  if(t.id==='switch'){ openChooser(); return; }
+  if(t.dataset.tab){ st.tab=t.dataset.tab; draw(); return; }
+  if(t.dataset.cur){ st.cur=t.dataset.cur; draw(); return; }
+  if(t.dataset.act==='cancel'){ trying=null; $('say').textContent=''; draw(); return; }
+  if(t.dataset.act==='buy'&&trying){
+    const it=byId[trying]; if(it.price>st.wallet) return;
+    pay(it.price); w.owned.push(it.id); w.worn=wear(w.worn,it.id); trying=null; draw(); return;
+  }
+  if(t.dataset.item){
+    const id=t.dataset.item, it=byId[id];
+    if(w.owned.includes(id)){
+      trying=null;
+      if(w.worn.includes(id)){ w.worn=w.worn.filter(x=>x!==id); $('say').textContent=''; draw(); return; }
+      w.worn=wear(w.worn,id); $('say').textContent=it.en; speak(it.en); draw(id); return;
+    }
+    if(trying===id){ trying=null; $('say').textContent=''; draw(); return; }
+    trying=id; $('say').textContent=it.en; speak(it.en); draw(id); return;
+  }
+  if(t.id==='undress'){ w.worn=[]; trying=null; $('say').textContent=''; draw(); }
   if(t.id==='again'&&last) speak(last);
+  if(t.id==='add'){ pay(-20); draw(); }
+  if(t.id==='reset'){ st=fresh(); trying=null; $('say').textContent=''; closeChooser(); draw(); }
 });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&st.me) closeChooser(); });
 draw();
 }
 </script>

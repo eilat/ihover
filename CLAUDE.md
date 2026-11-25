@@ -6,6 +6,7 @@ This repo started as the ihover CSS library. On this branch the active work is *
 - Talk to the user in Hebrew, feminine forms.
 - `english-app/index.html` is the source of the published artifact (https://claude.ai/artifact/QVDALBUYc1XKPFpsZZ2Uyq). Republish to that URL after changes; the girls' data lives in the artifact's database, not in the repo.
 - Design work goes through the `/design` skill (`.claude/skills/design/`).
+- The ideas doc lives in a Claude Docs artifact (https://claude.ai/artifact/G5AyETBqcDgKtwFS2CjZtD), not in git. Keep ideas and open questions there.
 
 ## Expert agents (`.claude/agents/`)
 
