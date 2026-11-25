@@ -136,10 +136,10 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 /* layer order, back to front (from the art README): wings, base, tights, shoes, dress/skirt, top, apron/belt, hair, hat, glasses+earrings, held */
 const Z={wings:1,base:2,tights:3,shoes:4,dress:5,skirt:5,top:6,apron:7,belt:7,hair:8,hat:9,glasses:10,earrings:10,accessory:11};
 const ITEMS=[
-  ['dress_raven','a raven dress','dress',30],['dress_pumpkin','a pumpkin dress','dress',30],['dress_moth','a moth dress','dress',35],['dress_moon','a moon dress','dress',35],
+  ['dress_ragged-raven','a ragged dress','dress',30],['dress_fairy-leaf','a fairy dress','dress',30],['dress_mushroom-apron','a mushroom dress','dress',35],['dress_moon-cape','a cape dress','dress',35],
   ['top_victorian-blouse','a blouse','top',15],['skirt_cobweb','a cobweb skirt','skirt',15],
-  ['tights_purple-stripes','purple striped tights','tights',8],['tights_orange-stripes','orange striped tights','tights',8],['tights_green-stripes','green striped tights','tights',8],['tights_black-stripes','black striped tights','tights',8],
-  ['shoes_buckle-boots','buckle boots','shoes',15],['shoes_lace-up-boots','lace-up boots','shoes',15],['shoes_pumpkin-boots','pumpkin boots','shoes',20],['shoes_moon-boots','moon boots','shoes',20],
+  ['tights_raven','purple striped tights','tights',8],['tights_pumpkin','orange striped tights','tights',8],['tights_moth','burgundy striped tights','tights',8],['tights_luna','yellow striped tights','tights',8],
+  ['shoes_raven','buckle boots','shoes',15],['shoes_pumpkin','curly elf shoes','shoes',20],['shoes_moth','mushroom boots','shoes',20],['shoes_luna','moon boots','shoes',20],
   ['wings_bat','bat wings','wings',25],['wings_moth','moth wings','wings',25],['wings_cobweb','cobweb wings','wings',25],['wings_dragonfly','dragonfly wings','wings',25],
   ['hat_mushroom','a mushroom hat','hat',15],['hat_witch','a witch hat','hat',15],['hat_moon','a moon headpiece','hat',20],['hat_star-crown','a star crown','hat',20],
   ['hair_braids','braided hair','hair',12],['glasses_round','round glasses','glasses',10],['earrings_moon','moon earrings','earrings',10],
@@ -150,10 +150,10 @@ const byId=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 const TABS=[['dress','שמלות',['dress']],['top','חולצה וחצאית',['top','skirt']],['tights','גרביונים',['tights']],['shoes','נעליים',['shoes']],['wings','כנפיים',['wings']],['hat','כובעים',['hat']],['face','שיער ותכשיטים',['hair','glasses','earrings']],['extra','סינר וחגורה',['apron','belt']],['hold','חברים ביד',['accessory']]];
 /* the faces sit at slightly different heights, so glasses and earrings move per character (percent of the figure height) */
 const CHARS=[
-  {id:'raven',name:'Raven',he:'ילדת העורב',outfit:['wings_bat','tights_purple-stripes','shoes_buckle-boots','dress_raven','hat_mushroom'],shift:{glasses:-4.8,earrings:-2}},
-  {id:'luna',name:'Luna',he:'ילדת הירח',outfit:['tights_black-stripes','shoes_moon-boots','dress_moon','hat_moon','earrings_moon'],shift:{glasses:-5.8,earrings:-2}},
-  {id:'moth',name:'Moth',he:'ילדת העש',outfit:['wings_moth','tights_purple-stripes','shoes_lace-up-boots','dress_moth','hat_star-crown'],shift:{glasses:-2.2,earrings:-1}},
-  {id:'pumpkin',name:'Pumpkin',he:'ילדת הדלעת',outfit:['tights_orange-stripes','shoes_pumpkin-boots','dress_pumpkin','hat_witch','accessory_crow'],shift:{glasses:-5,earrings:-2}},
+  {id:'raven',name:'Raven',he:'ילדת העורב',outfit:['tights_raven','shoes_raven','dress_ragged-raven'],shift:{glasses:-4.8,earrings:-2}},
+  {id:'luna',name:'Luna',he:'ילדת הירח',outfit:['tights_luna','shoes_luna','dress_moon-cape'],shift:{glasses:-5.8,earrings:-2}},
+  {id:'moth',name:'Moth',he:'ילדת העש',outfit:['tights_moth','shoes_moth','dress_mushroom-apron'],shift:{glasses:-2.2,earrings:-1}},
+  {id:'pumpkin',name:'Pumpkin',he:'ילדת הדלעת',outfit:['tights_pumpkin','shoes_pumpkin','dress_fairy-leaf'],shift:{glasses:-5,earrings:-2}},
 ];
 /* one of each kind, except things held; a dress and a top or skirt can't be worn together */
 const SINGLE=new Set(['dress','top','skirt','tights','shoes','wings','hat','hair','glasses','earrings','apron','belt']);
@@ -170,8 +170,8 @@ const coin=k=>`<svg class="cur" viewBox="0 0 24 24" aria-hidden="true">${CUR[k||
 const SWITCH_PRICE=5, START=40;
 
 /* state: one chosen character; each character keeps her own wardrobe (bought and worn) */
-const KEY='wardrobe-proto-v3';
-const fresh=()=>({me:null,switches:0,wallet:START,cur:'ruby',tab:'dress',chars:Object.fromEntries(CHARS.map(c=>[c.id,{owned:[],worn:[]}]))});
+const KEY='wardrobe-proto-v4';
+const fresh=()=>({me:null,switches:0,wallet:START,cur:'ruby',tab:'dress',chars:Object.fromEntries(CHARS.map(c=>[c.id,{owned:[],worn:[],given:false}]))});
 let st; try{ st=JSON.parse(localStorage.getItem(KEY)) }catch(e){}
 if(!st||!st.chars) st=fresh();
 CHARS.forEach(c=>{ const w=st.chars[c.id]||(st.chars[c.id]={owned:[],worn:[]}); w.owned=w.owned.filter(id=>byId[id]); w.worn=w.worn.filter(id=>w.owned.includes(id)); });
@@ -181,6 +181,8 @@ const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)) }catch(e){} }
 const $=id=>document.getElementById(id);
 const char=()=>CHARS.find(c=>c.id===st.me)||CHARS[0];
 const ward=()=>st.chars[char().id];
+/* a character arrives wearing her own original outfit, a gift the first time she is chosen */
+function gift(id){ const w=st.chars[id], o=CHARS.find(c=>c.id===id).outfit; if(w.given) return; w.owned=[...new Set([...w.owned,...o])]; w.worn=[...o]; w.given=true; }
 
 /* put an item on a list of worn items, taking off whatever it replaces */
 function wear(list,id){
@@ -236,9 +238,9 @@ function draw(fresh){
 }
 function openChooser(){
   const first=!st.me;
-  $('chooseNote').textContent=first?'בוחרים דמות אחת. אפשר להחליף אחר כך: פעם אחת בחינם.'
+  $('chooseNote').textContent=first?'בוחרים דמות אחת, והיא מגיעה עם הבגדים שלה. אפשר להחליף אחר כך: פעם אחת בחינם.'
     :(st.switches===0?'ההחלפה הזאת בחינם. כל דמות שומרת את הבגדים שלה.':`החלפה עולה ${SWITCH_PRICE} ${CUR[st.cur].he}. כל דמות שומרת את הבגדים שלה.`);
-  $('pick').innerHTML=CHARS.map(c=>`<button class="who" data-pick="${c.id}" aria-pressed="${c.id===st.me}"><span class="fig">${layers(c,st.chars[c.id].worn)}</span><b>${c.name}</b><small>${c.he}</small></button>`).join('');
+  $('pick').innerHTML=CHARS.map(c=>`<button class="who" data-pick="${c.id}" aria-pressed="${c.id===st.me}"><span class="fig">${layers(c,st.chars[c.id].given?st.chars[c.id].worn:c.outfit)}</span><b>${c.name}</b><small>${c.he}</small></button>`).join('');
   $('chooseClose').hidden=first;
   $('chooser').classList.add('on');
 }
@@ -250,12 +252,12 @@ document.addEventListener('click',e=>{
   const w=ward();
   if(t.dataset.pick){
     const id=t.dataset.pick;
-    if(!st.me){ st.me=id; closeChooser(); trying=null; draw(); return; }
+    if(!st.me){ st.me=id; gift(id); closeChooser(); trying=null; draw(); return; }
     if(id===st.me){ closeChooser(); return; }
     const cost=st.switches===0?0:SWITCH_PRICE;
     if(cost>st.wallet){ $('chooseNote').textContent=`בשביל להחליף צריך ${SWITCH_PRICE} ${CUR[st.cur].he}, ויש לך ${st.wallet}.`; return; }
     if(cost) pay(cost);
-    st.switches++; st.me=id; trying=null; $('say').textContent=''; closeChooser(); draw(); return;
+    st.switches++; st.me=id; gift(id); trying=null; $('say').textContent=''; closeChooser(); draw(); return;
   }
   if(t.id==='chooseClose'){ closeChooser(); return; }
   if(t.id==='switch'){ openChooser(); return; }
