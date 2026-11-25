@@ -97,7 +97,7 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 /* motion: breathing always, a personality move now and then and on tap, a hop of joy on buying.
    Only whole-body moves and wings for now; faces and head tilts need a separate head from the artist. */
 .rig,.breath{position:absolute;inset:0}
-.breath{transform-origin:50% 87%;animation:breath 3.8s ease-in-out infinite}
+.breath{transform-origin:50% 87%;animation:breath 6s ease-in-out infinite}
 @keyframes breath{50%{transform:scale(1.012,1.02)}}
 .shadow{position:absolute;left:27%;right:27%;bottom:11.4%;height:2.6%;border-radius:50%;background:rgba(20,10,25,.38);filter:blur(3px)}
 .fig.luna .rig{animation:hover 4.6s ease-in-out infinite}
@@ -142,6 +142,7 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
   <div class="top">
     <div>
       <h1>ארון הבגדים</h1>
+      <p style="margin:0 0 8px"><a href="versions/wardrobe-room/index.html" style="display:inline-block;padding:6px 16px;border-radius:999px;background:#8C3550;color:#fff;font-weight:600;text-decoration:none">לראות שלוש גרסאות לעיצוב החדש של הארון ←</a></p>
       <p class="lead">אב טיפוס לבדיקה. לחיצה על בגד מלבישה אותו לניסיון ואומרת את השם שלו באנגלית. בגד שעוד לא שלך אפשר לקנות.</p>
     </div>
     <div class="bar"><span class="wallet" id="wallet"></span><span class="heads" id="me"></span><button class="btn" id="switch"></button></div>
