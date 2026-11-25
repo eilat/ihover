@@ -6,198 +6,168 @@
 <title>ארון הבגדים</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@700&family=Rubik:wght@400;500;600&family=Andika:wght@400;700&family=Henny+Penny&display=swap">
 <style>
-/* VOICE occasion: a children's dress-up toy, playful and a little spooky like the drawings it comes from
-   IDEA an old storybook page: parchment, inked outlines, a wardrobe drawer of cut-out clothes
-   PICTURE the four characters standing in a row, then one big character you dress
-   COLOUR parchment ground, ink outline, wine and violet for the clothes, gold for stars
-   TYPE Karantina for Hebrew titles, Henny Penny for the English word, Andika for readable English, Rubik for text
-   LAYOUT laptop: lineup across the top, wardrobe below as character beside drawer; phone: stacked */
+/* VOICE a children's dress-up toy, playful and a little spooky like the drawings it comes from
+   PICTURE the attic: the character stands on the rug, the clothes wait on the wardrobe shelves
+   COLOUR parchment ground, ink outline, wine and violet, gold for stars
+   TYPE Karantina for Hebrew titles, Henny Penny for names, Andika for the English words, Rubik for text
+   ART every layer is a transparent 1000x2000 PNG (here 500x1000 webp) drawn for the same body, stacked in a fixed order */
 :root{color-scheme:light;--bg:#E9D6AE;--paper:#F4E7C8;--ink:#2B1D2E;--muted:#6B5648;--wine:#8C3550;--violet:#4B3150;--gold:#E6B53A;--line:#C9AE7F}
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Rubik",system-ui,sans-serif;overflow-x:clip}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--wine);outline-offset:3px}
-.band{padding-block:clamp(20px,3vw,40px);padding-inline:max(4vw,16px)}
-.wrap{max-width:1180px;margin-inline:auto}
-h1,h2{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;margin:0}
-h1{font-size:clamp(44px,6vw,64px)}
-h2{font-size:clamp(34px,4vw,44px)}
-.lead{margin:6px 0 0;color:var(--muted);max-width:60ch}
-.lineup{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
-.who{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:transparent;padding:0}
-.who svg{width:100%;max-width:230px;height:auto;filter:drop-shadow(0 6px 0 rgba(43,29,46,.12))}
-.who b{font-family:"Henny Penny",serif;font-weight:400;font-size:clamp(17px,2vw,22px);direction:ltr}
-.who span{font-size:14px;color:var(--muted)}
-.who:hover svg{transform:translateY(-4px)}
-.who svg{transition:transform .2s}
-.dresser{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(16px,3vw,32px);align-items:start;margin-top:14px}
-.stage{background:var(--paper);border:2.5px solid var(--ink);border-radius:22px;padding:12px;position:sticky;top:12px;display:flex;flex-direction:column;align-items:center}
-.stage svg{width:100%;max-width:340px;height:auto}
-.heads{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.head{width:58px;height:58px;border-radius:50%;border:2.5px solid var(--line);background:var(--bg);padding:0;overflow:hidden}
-.head[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 3px var(--gold)}
-.head svg{width:100%;height:100%}
-.say{margin-top:6px;min-height:40px;font-family:"Andika",sans-serif;font-size:20px;direction:ltr;text-align:center}
-.drawer{background:var(--paper);border:2.5px solid var(--ink);border-radius:22px;padding:14px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.tab{min-height:44px;padding:4px 14px;border-radius:999px;border:2px solid var(--line);background:var(--bg);font-weight:500}
-.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
-.item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;border-radius:16px;border:2.5px solid var(--line);background:#FBF3DF;text-align:center}
+.band{padding-block:clamp(16px,2.5vw,32px);padding-inline:max(3vw,14px)}
+.wrap{max-width:1280px;margin-inline:auto}
+h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;margin:0;font-size:clamp(40px,5vw,58px)}
+.top{display:flex;gap:10px 24px;align-items:end;justify-content:space-between;flex-wrap:wrap}
+.lead{margin:4px 0 0;color:var(--muted);max-width:62ch}
+
+/* the four girls to choose from */
+.heads{display:flex;gap:10px;flex-wrap:wrap}
+.head{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;padding:0}
+.head .ring{width:72px;height:72px;border-radius:50%;border:3px solid var(--line);background:var(--paper);overflow:hidden;position:relative}
+.head .ring img{position:absolute;width:250%;left:-75%;top:-8%;max-width:none}
+.head b{font-family:"Henny Penny",serif;font-weight:400;font-size:15px;direction:ltr}
+.head[aria-pressed="true"] .ring{border-color:var(--ink);box-shadow:0 0 0 3px var(--gold)}
+
+/* a figure is a stack of same-size layers */
+.fig{position:relative;aspect-ratio:1/2;height:100%}
+.fig img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none}
+.fig img.pop{animation:pop .35s ease-out}
+@keyframes pop{from{opacity:0;translate:0 -3%}}
+
+.scene{position:relative;aspect-ratio:1672/941;margin-top:14px;border:3px solid var(--ink);border-radius:22px;overflow:hidden;background:#6A3D63 url("attic.webp") center/cover no-repeat}
+.scene .me{position:absolute;left:14%;width:30%;top:3%;bottom:3%;display:flex;justify-content:center}
+.scene .me .fig{filter:drop-shadow(0 10px 6px rgba(20,10,25,.35))}
+.say{position:absolute;left:1%;width:44%;top:2%;margin:0;min-height:1.4em;font-family:"Andika",sans-serif;font-weight:700;direction:ltr;text-align:center;color:#fff;text-shadow:0 2px 0 #2B1D2E,0 0 10px #2B1D2E;font-size:clamp(18px,2.4vw,30px);pointer-events:none}
+
+/* the wardrobe: tabs on the top shelf, items on the shelves below */
+.shelves{position:absolute;left:47.6%;right:16.6%;top:26%;bottom:17.5%;display:flex;flex-direction:column;gap:1%;padding:.6%}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{min-height:34px;padding:2px 10px;border-radius:999px;border:2px solid var(--ink);background:rgba(244,231,200,.92);font-weight:500;font-size:clamp(12px,1.05vw,15px)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.items{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(84px,9vw,124px),1fr));align-content:start;gap:6px;padding:2px}
+.item{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:2px;padding:6px 4px 4px;border-radius:14px;border:2.5px solid var(--line);background:rgba(251,243,223,.95);text-align:center}
 .item:hover{border-color:var(--wine)}
 .item[aria-pressed="true"]{border-color:var(--ink);background:#fff;box-shadow:inset 0 0 0 2px var(--gold)}
-.item svg{width:100%;height:96px}
-.item b{font-family:"Andika",sans-serif;font-size:15px;direction:ltr;line-height:1.2}
-.item small{font-size:13px;color:var(--muted)}
-.note{margin:12px 0 0;font-size:14px;color:var(--muted)}
+.item img{height:clamp(46px,5.6vw,84px);width:100%;object-fit:contain}
+.item b{font-family:"Andika",sans-serif;font-size:clamp(11px,1.05vw,14px);direction:ltr;line-height:1.15}
+.price{position:absolute;top:3px;inset-inline-start:3px;font-size:11px;font-weight:600;background:var(--gold);border-radius:999px;padding:0 6px;line-height:18px}
+
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .btn{min-height:44px;padding:4px 16px;border-radius:999px;border:2px solid var(--ink);background:transparent;font-weight:500}
-.btn.primary{background:var(--wine);border-color:var(--wine);color:#fff}
-.toolbar{display:flex;gap:12px 20px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0}
-.toolbar .tabs{margin:0}
-/* the attic picture is the room; the character stands on the round rug, the clothes sit inside the open wardrobe */
-.scene{position:relative;aspect-ratio:1672/941;border:3px solid var(--ink);border-radius:22px;overflow:hidden;background:#6A3D63 url("attic.webp") center/cover no-repeat}
-.scene .me{position:absolute;left:16%;width:27%;bottom:3%;height:92%;display:flex;align-items:flex-end;justify-content:center}
-.scene .me svg{height:100%;width:auto;filter:drop-shadow(0 8px 0 rgba(20,10,25,.35))}
-.scene .say{position:absolute;left:16%;width:27%;top:2%;margin:0;color:#fff;text-shadow:0 2px 0 #2B1D2E,0 0 8px #2B1D2E;font-size:clamp(16px,2.2vw,26px)}
-.shelves{position:absolute;left:47.8%;right:17%;top:27%;bottom:18%;overflow:auto;padding:1.2%}
-.shelves .items{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.shelves .item{background:rgba(251,243,223,.93);padding:4px;border-radius:12px}
-.shelves .item svg{height:clamp(44px,6vw,80px)}
-.shelves .item b{font-size:clamp(11px,1.2vw,14px)}
-.shelves .item small{display:none}
-@media (max-width:900px){.scene{aspect-ratio:auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);background-position:30% center}.scene .me{position:relative;left:auto;width:auto;bottom:auto;height:360px;margin:12px auto 0}.scene .say{position:static;width:auto;margin:4px 0}.shelves{position:static;background:rgba(43,29,46,.55);padding:10px}.shelves .items{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}.shelves .item small{display:block}}
-@media (max-width:560px){.lineup{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (prefers-reduced-motion:reduce){.who svg{transition:none}}
+.note{margin:10px 0 0;font-size:14px;color:var(--muted)}
+
+@media (max-width:900px){
+  .scene{aspect-ratio:auto;display:grid;grid-template-columns:minmax(0,1fr);background-position:12% center}
+  .scene .me{position:relative;left:auto;width:auto;top:auto;bottom:auto;height:min(70vh,520px);margin:34px auto 6px}
+  .say{left:0;width:100%;top:6px}
+  .shelves{position:static;background:rgba(43,29,46,.6);padding:10px;gap:8px}
+}
+@media (prefers-reduced-motion:reduce){.fig img.pop{animation:none}}
 </style>
 </head>
 <body>
 <section class="band"><div class="wrap">
-  <h1>ארון הבגדים</h1>
-  <p class="lead">אב טיפוס לבדיקה: ארבע הדמויות עומדות על אותו גוף, וכל בגד הוא שכבה נפרדת. לכן כל בגד מתאים לכל דמות. לחצי על דמות כדי להלביש אותה.</p>
-  <div class="lineup" id="lineup"></div>
-</div></section>
-<section class="band" style="padding-top:0"><div class="wrap">
-  <h2>להלביש</h2>
-  <div class="toolbar"><div class="heads" id="heads"></div><div class="tabs" id="tabs" role="tablist"></div></div>
-  <div class="scene" id="scene">
-    <div class="me" id="stage"></div>
-    <div class="say" id="say" aria-live="polite"></div>
-    <div class="shelves"><div class="items" id="items"></div></div>
+  <div class="top">
+    <div>
+      <h1>ארון הבגדים</h1>
+      <p class="lead">אב טיפוס לבדיקה עם הציורים האמיתיים. בחרי דמות, ולחצי על בגד בארון כדי להלביש אותו. הבגד אומר את השם שלו באנגלית.</p>
+    </div>
+    <div class="heads" id="heads"></div>
   </div>
-  <div class="actions"><button class="btn" id="undress">להוריד הכל</button><button class="btn" id="preset">התלבושת המקורית</button></div>
-  <p class="note">לחיצה על בגד בארון מלבישה אותו ומשמיעה את השם שלו באנגלית. לחיצה נוספת מורידה אותו.</p>
+  <div class="scene" id="scene">
+    <div class="me"><div class="fig" id="stage" role="img"></div></div>
+    <div class="say" id="say" aria-live="polite"></div>
+    <div class="shelves">
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="items" id="items"></div>
+    </div>
+  </div>
+  <div class="actions"><button class="btn" id="undress">להוריד הכל</button><button class="btn" id="preset">התלבושת המקורית</button><button class="btn" id="again">🔊 עוד פעם</button></div>
+  <p class="note">לחיצה נוספת על בגד מורידה אותו. שמלה מחליפה חולצה וחצאית, וחולצה או חצאית מחליפות שמלה. המספר בעיגול הצהוב הוא המחיר בכוכבים, עדיין רק לתצוגה.</p>
 </div></section>
 <script>
 {
-/* one body for everyone (viewBox 0 0 240 480): head centre 120,112; shoulders y 198; hem around y 310; feet at y 432-462.
-   Every item is drawn for this body, so any item fits any character. */
-const INK='#2B1D2E', SK='stroke="'+INK+'" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"';
-const limb=(d,fill,w=8)=>`<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w+5}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${fill}" stroke-width="${w}" stroke-linecap="round"/>`;
-const hand=(x,y,s,fill)=>`<path d="M${x-7*s} ${y-6} q${-4*s} 9 ${-2*s} 18 M${x-3*s} ${y-4} q${-2*s} 12 0 20 M${x+1*s} ${y-4} q${1*s} 12 ${3*s} 19 M${x+5*s} ${y-6} q${4*s} 8 ${6*s} 15" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round"/><path d="M${x-7*s} ${y-6} q${-4*s} 9 ${-2*s} 18 M${x-3*s} ${y-4} q${-2*s} 12 0 20 M${x+1*s} ${y-4} q${1*s} 12 ${3*s} 19 M${x+5*s} ${y-6} q${4*s} 8 ${6*s} 15" fill="none" stroke="${fill}" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="${x}" cy="${y-8}" rx="9" ry="7" fill="${fill}" ${SK}/>`;
-
-function body(c){
-  const s=c.skin;
-  return limb('M108 318 L107 438',s,9)+limb('M132 318 L133 438',s,9)
-   +limb('M99 206 Q84 262 70 318',s,8)+hand(68,328,-1,s)
-   +limb('M141 206 Q156 262 170 318',s,8)+hand(172,328,1,s)
-   +`<rect x="113" y="160" width="14" height="44" rx="5" fill="${s}" ${SK}/>`
-   +`<path d="M97 198 Q120 188 143 198 L150 300 Q120 308 90 300 Z" fill="#E7DCC8" ${SK}/>`;
-}
-function face(c){
-  const s=c.skin, eyes = c.eyes==='sleepy'
-    ? `<circle cx="99" cy="104" r="16" fill="#FFF8E6" ${SK}/><circle cx="101" cy="108" r="6" fill="${INK}"/><path d="M83 102 Q99 82 115 102 Z" fill="${c.lid}" ${SK}/><circle cx="141" cy="105" r="13" fill="#FFF8E6" ${SK}/><circle cx="140" cy="108" r="5" fill="${INK}"/><path d="M128 104 Q141 88 154 104 Z" fill="${c.lid}" ${SK}/>`
-    : c.eyes==='wink'
-    ? `<circle cx="98" cy="104" r="18" fill="#FFF8E6" ${SK}/><circle cx="99" cy="105" r="7" fill="${INK}"/><path d="M128 106 Q141 96 154 106" fill="none" ${SK}/>`
-    : `<circle cx="99" cy="104" r="15" fill="#FFF8E6" ${SK}/><circle cx="101" cy="106" r="6" fill="${INK}"/><circle cx="141" cy="104" r="15" fill="#FFF8E6" ${SK}/><circle cx="139" cy="106" r="6" fill="${INK}"/>`;
-  const mouth = c.mouth==='grin'
-    ? `<path d="M96 140 Q120 166 146 138 Q120 150 96 140 Z" fill="#5A2333" ${SK}/><rect x="110" y="141" width="8" height="9" fill="#FFF8E6" ${SK}/><rect x="120" y="141" width="8" height="9" fill="#FFF8E6" ${SK}/>`
-    : `<path d="M104 142 Q120 154 136 142" fill="none" ${SK}/><rect x="113" y="143" width="6" height="7" fill="#FFF8E6" ${SK}/><rect x="121" y="143" width="6" height="7" fill="#FFF8E6" ${SK}/>`;
-  return `<path d="M73 104 L52 86 L64 124 Z" fill="${s}" ${SK}/><path d="M167 104 L188 86 L176 124 Z" fill="${s}" ${SK}/>`
-   +`<ellipse cx="120" cy="112" rx="50" ry="56" fill="${s}" ${SK}/>`
-   +`<circle cx="88" cy="130" r="7" fill="#E9A0A0" opacity=".55"/><circle cx="152" cy="130" r="7" fill="#E9A0A0" opacity=".55"/>`
-   +eyes+`<path d="M120 112 Q116 126 124 128" fill="none" ${SK}/>`+mouth;
-}
-/* hair belongs to the character: a part behind the head and a part over the forehead */
-const HAIR={
-  spiky:{back:c=>`<path d="M58 140 L40 120 L60 112 L34 84 L66 82 L52 50 L84 62 L86 30 L108 54 L122 22 L134 54 L158 30 L156 62 L190 50 L176 82 L206 84 L180 112 L200 120 L182 140 L196 176 L166 160 L158 196 L140 168 L120 200 L100 168 L82 196 L74 160 L44 176 Z" fill="${c.hair}" ${SK}/>`,
-    front:c=>`<path d="M72 92 L80 64 L92 84 L100 58 L110 82 L122 56 L130 82 L142 58 L148 84 L160 64 L168 92 Q120 70 72 92 Z" fill="${c.hair}" ${SK}/>`},
-  curls:{back:c=>[[62,74],[46,96],[178,74],[194,96],[56,120],[184,120]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="17" fill="${c.hair}" ${SK}/><path d="M${x-6} ${y} a6 6 0 1 1 6 6" fill="none" ${SK}/>`).join(''),
-    front:c=>`<path d="M72 96 Q76 56 120 54 Q164 56 168 96 Q150 74 132 82 Q120 64 108 82 Q90 74 72 96 Z" fill="${c.hair}" ${SK}/>`+[[96,58],[144,58],[120,46]].map(([x,y])=>`<path d="M${x} ${y} q-8 -14 4 -18 q10 2 4 12" fill="none" stroke="${c.hair}" stroke-width="6" stroke-linecap="round"/>`).join('')},
-  braids:{back:c=>[78,162].map(x=>[0,1,2,3,4].map(k=>`<ellipse cx="${x+(x<120?-6:6)}" cy="${136+k*20}" rx="12" ry="12" fill="${c.hair}" ${SK}/>`).join('')+`<path d="M${x+(x<120?-6:6)-14} 236 l14 -8 l14 8 l-14 8 z" fill="#8C3550" ${SK}/>`).join(''),
-    front:c=>`<path d="M70 104 Q70 56 120 54 Q170 56 170 104 Q160 80 146 86 Q140 70 128 82 Q120 66 112 82 Q100 70 94 86 Q80 80 70 104 Z" fill="${c.hair}" ${SK}/>`},
-  waves:{back:c=>`<path d="M66 100 Q58 40 120 40 Q182 40 174 100 Q196 130 178 160 Q196 190 172 222 Q150 212 156 180 L84 180 Q90 212 68 222 Q44 190 62 160 Q44 130 66 100 Z" fill="${c.hair}" ${SK}/>`,
-    front:c=>`<path d="M70 104 Q68 54 120 52 Q172 54 170 104 Q156 74 122 70 Q96 70 70 104 Z" fill="${c.hair}" ${SK}/><path d="M86 70 Q100 62 112 70 M128 66 Q146 60 158 74" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".5"/>`},
-};
-/* the wardrobe: every item is a layer for the same body */
-const dots=(pts,r,col)=>pts.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"/>`).join('');
-const star=(x,y,r,col)=>{let d='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;d+=(i?'L':'M')+(x+rr*Math.cos(a)).toFixed(1)+' '+(y+rr*Math.sin(a)).toFixed(1);}return `<path d="${d}Z" fill="${col}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;};
-const legs=(a,b)=>[108,132].map(x=>[0,1,2,3,4,5,6].map(k=>`<rect x="${x-6}" y="${322+k*14}" width="12" height="7" fill="${k%2?b:a}"/>`).join('')+`<rect x="${x-6}" y="322" width="12" height="104" fill="none" ${SK}/>`).join('');
+/* layer order, back to front (from the art README): wings, base, tights, shoes, dress/skirt, top, apron/belt, hair, hat, glasses+earrings, held */
+const Z={wings:1,base:2,tights:3,shoes:4,dress:5,skirt:5,top:6,apron:7,belt:7,hair:8,hat:9,glasses:10,earrings:10,accessory:11};
 const ITEMS=[
-  {id:'ragged',cat:'dress',en:'a ragged dress',he:'שמלה קרועה',layer:5,draw:()=>`<path d="M94 200 Q120 188 146 200 L162 214 L152 232 L150 260 L166 330 L152 316 L146 336 L134 318 L124 340 L114 318 L102 338 L96 316 L84 332 L74 330 L90 260 L88 232 L78 214 Z" fill="#4B3150" ${SK}/><path d="M112 246 h22 v22 h-22 z" fill="#8E5BA6" ${SK}/><path d="M114 250 l4 4 M126 250 l4 4 M114 262 l4 -4" stroke="${INK}" stroke-width="1.4"/><path d="M104 200 L120 222 L136 200 Q120 206 104 200 Z" fill="#E7DCC8" ${SK}/><path d="M118 226 a6 6 0 1 0 8 6 a5 5 0 1 1 -8 -6" fill="#E6B53A" ${SK}/>`},
-  {id:'leaf',cat:'dress',en:'a leaf dress',he:'שמלת עלים',layer:5,draw:()=>`<path d="M96 200 Q120 190 144 200 L148 262 L92 262 Z" fill="#7B3F6E" ${SK}/><rect x="92" y="252" width="56" height="10" fill="#4B3150" ${SK}/><rect x="114" y="250" width="12" height="14" rx="2" fill="#E6B53A" ${SK}/>`+[[84,'#E3742F'],[98,'#8DAA3A'],[112,'#E3742F'],[126,'#7B3F6E'],[140,'#E3742F'],[154,'#8DAA3A']].map(([x,c])=>`<path d="M${x-12} 262 L${x+12} 262 L${x} 318 Z" fill="${c}" ${SK}/>`).join('')+`<ellipse cx="92" cy="204" rx="13" ry="10" fill="#F4E7C8" ${SK}/><ellipse cx="148" cy="204" rx="13" ry="10" fill="#F4E7C8" ${SK}/>`},
-  {id:'mushdress',cat:'dress',en:'a mushroom dress',he:'שמלת פטריות',layer:5,draw:()=>`<path d="M94 200 Q120 190 146 200 L160 330 Q120 342 80 330 Z" fill="#8C3550" ${SK}/>`+dots([[104,220],[136,224],[120,250],[98,276],[142,280],[110,306],[134,312]],5,'#F4E7C8')+`<ellipse cx="90" cy="206" rx="14" ry="12" fill="#8C3550" ${SK}/><ellipse cx="150" cy="206" rx="14" ry="12" fill="#8C3550" ${SK}/><path d="M80 326 Q120 344 160 326 L162 336 Q120 352 78 336 Z" fill="#B48ACB" ${SK}/>`},
-  {id:'stardress',cat:'dress',en:'a star dress',he:'שמלת כוכבים',layer:5,draw:()=>`<path d="M84 300 Q120 320 156 300 L162 322 Q140 314 130 326 Q120 314 110 326 Q100 314 78 322 Z" fill="#F4E7C8" ${SK}/><path d="M94 200 Q120 190 146 200 L158 300 Q120 316 82 300 Z" fill="#3F3472" ${SK}/>`+[[104,226],[138,240],[110,272],[146,282],[96,292],[126,300]].map(([x,y])=>star(x,y,7,'#E6B53A')).join('')+`<path d="M108 198 l12 12 l12 -12 l-12 6 z" fill="#E6B53A" ${SK}/>`},
-  {id:'apron',cat:'extra',en:'an apron',he:'סינר',layer:6,draw:()=>`<path d="M100 224 L140 224 L150 312 Q120 322 90 312 Z" fill="#F4E7C8" ${SK}/><path d="M90 312 Q120 322 150 312" fill="none" stroke="${INK}" stroke-width="1.4" stroke-dasharray="3 3"/><path d="M108 270 h24 v22 h-24 z" fill="#EFD9B0" ${SK}/><path d="M112 276 q8 -10 16 0 z" fill="#8C3550" ${SK}/><rect x="118" y="276" width="4" height="8" fill="#F4E7C8" ${SK}/>`},
-  {id:'stripes',cat:'legs',en:'striped tights',he:'גרביונים מפוספסים',layer:2,draw:()=>legs('#5B3A73','#F4E7C8')},
-  {id:'greenstripes',cat:'legs',en:'green tights',he:'גרביונים ירוקים',layer:2,draw:()=>legs('#5F7F2C','#E6D3A0')},
-  {id:'buckle',cat:'shoes',en:'big boots',he:'מגפיים גדולים',layer:3,draw:()=>[107,133].map(x=>`<path d="M${x-13} 410 L${x+13} 410 L${x+14} 446 L${x+20} 450 L${x+20} 464 L${x-18} 464 L${x-14} 446 Z" fill="#3B2A45" ${SK}/><rect x="${x-14}" y="460" width="34" height="8" rx="2" fill="#2B1D2E"/><rect x="${x-8}" y="418" width="14" height="10" fill="none" stroke="#E6B53A" stroke-width="2.4"/><rect x="${x-8}" y="434" width="14" height="10" fill="none" stroke="#E6B53A" stroke-width="2.4"/>`).join('')},
-  {id:'curly',cat:'shoes',en:'curly shoes',he:'נעלי פיה',layer:3,draw:()=>[[107,-1],[133,1]].map(([x,d])=>`<path d="M${x-11} 416 L${x+11} 416 L${x+12} 450 Q${x+28*d+2} 452 ${x+30*d} 436 Q${x+40*d} 430 ${x+38*d} 446 Q${x+32*d} 466 ${x} 464 L${x-12} 464 Z" fill="#C0582A" ${SK}/><path d="M${x-11} 416 l6 -8 l6 8 l6 -8 l6 8" fill="#E3742F" ${SK}/><rect x="${x-6}" y="440" width="12" height="8" fill="none" stroke="#E6B53A" stroke-width="2.2"/>`).join('')},
-  {id:'moonboots',cat:'shoes',en:'moon boots',he:'מגפי ירח',layer:3,draw:()=>[107,133].map(x=>`<path d="M${x-12} 408 L${x+12} 408 L${x+12} 450 L${x+22} 456 L${x+20} 466 L${x-14} 466 L${x-13} 450 Z" fill="#4A3B86" ${SK}/><path d="M${x+4} 424 a8 8 0 1 0 2 12 a6 6 0 1 1 -2 -12" fill="#E6B53A" ${SK}/>${star(x-4,452,4,'#E6B53A')}`).join('')},
-  {id:'mushhat',cat:'head',en:'a mushroom hat',he:'כובע פטרייה',layer:9,draw:()=>`<path d="M42 92 Q50 64 92 58 L118 -6 Q136 -16 150 2 Q158 18 140 18 Q140 6 132 8 L146 58 Q190 64 198 92 Q120 76 42 92 Z" fill="#8C3550" ${SK}/>`+dots([[74,78],[120,64],[164,78],[126,30],[134,46]],7,'#F4E7C8')+`<path d="M44 90 Q120 108 196 90 L190 100 Q120 116 50 100 Z" fill="#EFD9B0" ${SK}/><path d="M60 70 l0 -10 M58 60 q2 -10 10 -2 z" fill="#F4E7C8" ${SK}/><path d="M178 72 l0 -12 M174 60 q4 -12 12 -2 z" fill="#F4E7C8" ${SK}/>`},
-  {id:'mooncrown',cat:'head',en:'a moon crown',he:'כתר ירח',layer:9,draw:()=>`<ellipse cx="120" cy="54" rx="72" ry="16" fill="none" stroke="${INK}" stroke-width="3"/>`+[[48,54],[78,40],[162,40],[192,54],[96,68],[150,68]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="6" fill="#E6B53A" ${SK}/>`).join('')+`<path d="M124 -2 a30 30 0 1 0 22 46 a24 24 0 1 1 -22 -46" fill="#F2D06B" ${SK}/>`},
-  {id:'staratop',cat:'head',en:'a star on a stick',he:'כוכב על מקל',layer:9,draw:()=>`<path d="M132 58 Q150 30 138 16 Q128 8 140 -2" fill="none" stroke="${INK}" stroke-width="3"/>${star(146,-4,14,'#F2D06B')}`},
-  {id:'glasses',cat:'face',en:'round glasses',he:'משקפיים עגולים',layer:8,draw:()=>`<circle cx="99" cy="104" r="21" fill="#fff" fill-opacity=".18" stroke="#6B2C4A" stroke-width="5"/><circle cx="141" cy="104" r="21" fill="#fff" fill-opacity=".18" stroke="#6B2C4A" stroke-width="5"/><path d="M120 102 q0 -6 0 0" stroke="#6B2C4A" stroke-width="5"/><path d="M78 100 L66 96 M162 100 L174 96" stroke="#6B2C4A" stroke-width="4"/>`},
-  {id:'earrings',cat:'face',en:'moon earrings',he:'עגילי ירח',layer:8,draw:()=>[64,176].map(x=>`<path d="M${x} 124 l0 8" stroke="${INK}" stroke-width="2"/><path d="M${x+2} 132 a9 9 0 1 0 4 14 a7 7 0 1 1 -4 -14" fill="#E6B53A" ${SK}/>`).join('')},
-  {id:'wings',cat:'back',en:'fairy wings',he:'כנפי פיה',layer:0,draw:()=>[[-1],[1]].map(([d])=>`<path d="M120 230 Q${120+d*100} 130 ${120+d*96} 222 Q${120+d*104} 300 120 262 Z" fill="#D9C8EC" fill-opacity=".8" ${SK}/><path d="M${120+d*58} 206 a10 10 0 1 1 ${d*8} 10" fill="none" stroke="#8E6BB5" stroke-width="2"/>`).join('')},
-  {id:'crow',cat:'hold',en:'a crow',he:'עורב',layer:10,draw:()=>`<path d="M96 40 Q104 14 132 18 Q148 20 156 32 L176 30 L158 40 Q150 58 120 58 L104 66 L108 54 Q92 52 96 40 Z" fill="#2E2238" ${SK}/><circle cx="140" cy="28" r="6" fill="#FFF8E6" ${SK}/><circle cx="141" cy="29" r="2.6" fill="${INK}"/><path d="M118 58 l-2 10 M128 58 l2 10" stroke="${INK}" stroke-width="2.4"/>`},
-  {id:'wand',cat:'hold',en:'a star wand',he:'שרביט כוכב',layer:10,draw:()=>`<path d="M174 330 L204 262" stroke="#7B4A2A" stroke-width="5" stroke-linecap="round"/>${star(206,256,13,'#F2D06B')}`},
-];
-const CATS=[['dress','שמלות'],['legs','גרביונים'],['shoes','נעליים'],['head','על הראש'],['face','משקפיים ועגילים'],['back','כנפיים'],['extra','סינר'],['hold','ביד ועל הראש']];
-const VIEW={dress:'62 180 116 170',legs:'84 300 72 140',shoes:'70 400 100 72',head:'30 -24 180 140',face:'56 72 128 84',back:'10 120 220 190',extra:'80 214 80 112',hold:'80 0 140 340'};
+  ['dress_raven','a raven dress','dress',30],['dress_pumpkin','a pumpkin dress','dress',30],['dress_moth','a moth dress','dress',35],['dress_moon','a moon dress','dress',35],
+  ['top_victorian-blouse','a blouse','top',15],['skirt_cobweb','a cobweb skirt','skirt',15],
+  ['tights_purple-stripes','purple striped tights','tights',8],['tights_orange-stripes','orange striped tights','tights',8],['tights_green-stripes','green striped tights','tights',8],['tights_black-stripes','black striped tights','tights',8],
+  ['shoes_buckle-boots','buckle boots','shoes',15],['shoes_lace-up-boots','lace-up boots','shoes',15],['shoes_pumpkin-boots','pumpkin boots','shoes',20],['shoes_moon-boots','moon boots','shoes',20],
+  ['wings_bat','bat wings','wings',25],['wings_moth','moth wings','wings',25],['wings_cobweb','cobweb wings','wings',25],['wings_dragonfly','dragonfly wings','wings',25],
+  ['hat_mushroom','a mushroom hat','hat',15],['hat_witch','a witch hat','hat',15],['hat_moon','a moon headpiece','hat',20],['hat_star-crown','a star crown','hat',20],
+  ['hair_braids','braided hair','hair',12],['glasses_round','round glasses','glasses',10],['earrings_moon','moon earrings','earrings',10],
+  ['apron_pumpkin','a pumpkin apron','apron',12],['belt_star-bow','a bow belt','belt',10],
+  ['accessory_crow','a crow','accessory',12],['accessory_star-wand','a magic wand','accessory',15],['accessory_mushrooms','mushrooms','accessory',8],
+].map(([id,en,kind,price])=>({id,en,kind,price}));
+const byId=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const TABS=[['dress','שמלות',['dress']],['top','חולצה וחצאית',['top','skirt']],['tights','גרביונים',['tights']],['shoes','נעליים',['shoes']],['wings','כנפיים',['wings']],['hat','כובעים',['hat']],['face','שיער ותכשיטים',['hair','glasses','earrings']],['extra','סינר וחגורה',['apron','belt']],['hold','חברים ביד',['accessory']]];
+/* the faces sit at slightly different heights, so glasses and earrings move per character (percent of the figure height) */
 const CHARS=[
-  {id:'raven',name:'Raven',he:'הילדה עם העורב',skin:'#F1E2CA',lid:'#8C7AA0',hair:'#2E2238',hairStyle:'spiky',eyes:'sleepy',mouth:'smile',outfit:['ragged','stripes','buckle','crow']},
-  {id:'pixie',name:'Pixie',he:'הפיה',skin:'#F6DCC4',lid:'#E9A0A0',hair:'#E3622B',hairStyle:'curls',eyes:'wink',mouth:'grin',outfit:['leaf','stripes','curly','wings','staratop']},
-  {id:'mossy',name:'Mossy',he:'מכשפת הפטריות',skin:'#F1E2CA',lid:'#C9A9D6',hair:'#B9A3D6',hairStyle:'braids',eyes:'sleepy',mouth:'smile',outfit:['mushdress','apron','stripes','buckle','glasses','mushhat']},
-  {id:'luna',name:'Luna',he:'ילדת הירח',skin:'#F3E4CE',lid:'#9DB3D9',hair:'#6F93C9',hairStyle:'waves',eyes:'sleepy',mouth:'smile',outfit:['stardress','moonboots','mooncrown','earrings']},
+  {id:'raven',name:'Raven',he:'ילדת העורב',outfit:['wings_bat','tights_purple-stripes','shoes_buckle-boots','dress_raven','hat_mushroom'],shift:{glasses:-4.8,earrings:-2}},
+  {id:'luna',name:'Luna',he:'ילדת הירח',outfit:['tights_black-stripes','shoes_moon-boots','dress_moon','hat_moon','earrings_moon'],shift:{glasses:-5.8,earrings:-2}},
+  {id:'moth',name:'Moth',he:'ילדת העש',outfit:['wings_moth','tights_purple-stripes','shoes_lace-up-boots','dress_moth','hat_star-crown'],shift:{glasses:-2.2,earrings:-1}},
+  {id:'pumpkin',name:'Pumpkin',he:'ילדת הדלעת',outfit:['tights_orange-stripes','shoes_pumpkin-boots','dress_pumpkin','hat_witch','accessory_crow'],shift:{glasses:-5,earrings:-2}},
 ];
-const item=id=>ITEMS.find(i=>i.id===id);
-/* layers back to front: wings, back hair, legs and stockings, shoes, body, dress, extras, head, glasses, hat, things held */
-function figure(c, worn){
-  const on=worn.map(item).filter(Boolean);
-  const at=n=>on.filter(i=>i.layer===n).map(i=>i.draw()).join('');
-  return `<svg viewBox="0 -30 240 510" role="img" aria-label="${c.he}">`+at(0)+HAIR[c.hairStyle].back(c)+body(c)+at(2)+at(3)+at(5)+at(6)+face(c)+HAIR[c.hairStyle].front(c)+at(8)+at(9)+at(10)+'</svg>';
-}
-function headOnly(c){ return `<svg viewBox="40 10 160 190">`+HAIR[c.hairStyle].back(c)+face(c)+HAIR[c.hairStyle].front(c)+'</svg>'; }
-function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=.85; speechSynthesis.speak(u); }catch(e){} }
+/* one of each kind, except things held; a dress and a top or skirt can't be worn together */
+const SINGLE=new Set(['dress','top','skirt','tights','shoes','wings','hat','hair','glasses','earrings','apron','belt']);
+const CLASH={dress:['top','skirt'],top:['dress'],skirt:['dress']};
 
-const st={c:'mossy',worn:{},tab:'dress'};
-CHARS.forEach(c=>st.worn[c.id]=[...c.outfit]);
+const KEY='wardrobe-proto-v2';
+let st; try{ st=JSON.parse(localStorage.getItem(KEY)) }catch(e){}
+if(!st||!st.worn) st={c:'raven',tab:'dress',worn:{}};
+CHARS.forEach(c=>{ if(!Array.isArray(st.worn[c.id])) st.worn[c.id]=[...c.outfit]; st.worn[c.id]=st.worn[c.id].filter(id=>byId[id]); });
+const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)) }catch(e){} };
 const $=id=>document.getElementById(id);
-$('lineup').innerHTML=CHARS.map(c=>`<button class="who" data-c="${c.id}">${figure(c,c.outfit)}<b>${c.name}</b><span>${c.he}</span></button>`).join('');
-function draw(){
-  const c=CHARS.find(x=>x.id===st.c), w=st.worn[c.id];
-  $('heads').innerHTML=CHARS.map(x=>`<button class="head" data-c="${x.id}" aria-pressed="${x.id===c.id}" aria-label="${x.he}">${headOnly(x)}</button>`).join('');
-  $('stage').innerHTML=figure(c,w);
-  $('tabs').innerHTML=CATS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');
-  $('items').innerHTML=ITEMS.filter(i=>i.cat===st.tab).map(i=>`<button class="item" data-item="${i.id}" aria-pressed="${w.includes(i.id)}"><svg viewBox="${VIEW[i.cat]}">${i.draw()}</svg><b>${i.en}</b><small>${i.he}</small></button>`).join('');
+const char=()=>CHARS.find(c=>c.id===st.c)||CHARS[0];
+
+function layers(c,worn,fresh){
+  const list=[{id:'base_'+c.id,z:Z.base}].concat(worn.map(id=>byId[id]).filter(Boolean).map(i=>({id:i.id,z:Z[i.kind],kind:i.kind})));
+  list.sort((a,b)=>a.z-b.z);
+  return list.map(l=>{
+    const dy=l.kind&&c.shift[l.kind]; const style=dy?` style="transform:translateY(${dy}%)"`:'';
+    return `<img src="img/${l.id}.webp" alt=""${style}${l.id===fresh?' class="pop"':''}>`;
+  }).join('');
+}
+
+/* speech: prefer the nicer voices a Mac has, as in the main app */
+let voice=null;
+function pickVoice(){
+  const vs=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)); if(!vs.length) return null;
+  const score=v=>(/premium/i.test(v.name)?50:0)+(/enhanced|natural|neural/i.test(v.name)?40:0)+(/google us english/i.test(v.name)?35:0)+(/samantha|ava|allison|susan|karen|serena|daniel/i.test(v.name)?20:0)+(/en[-_]US/i.test(v.lang)?5:0)-(/albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|hysterical|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy|grandma|grandpa|rocko|shelley|flo|eddy|reed|sandy/i.test(v.name)?100:0);
+  return vs.sort((a,b)=>score(b)-score(a))[0];
+}
+try{ voice=pickVoice(); speechSynthesis.onvoiceschanged=()=>{ voice=pickVoice(); }; }catch(e){}
+let last='';
+function speak(t){ last=t; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; if(voice) u.voice=voice; u.rate=.9; speechSynthesis.speak(u); }catch(e){} }
+
+function draw(fresh){
+  const c=char(), w=st.worn[c.id];
+  $('heads').innerHTML=CHARS.map(x=>`<button class="head" data-c="${x.id}" aria-pressed="${x.id===c.id}" aria-label="${x.he}"><span class="ring"><img src="img/base_${x.id}.webp" alt=""></span><b>${x.name}</b></button>`).join('');
+  $('stage').innerHTML=layers(c,w,fresh);
+  $('stage').setAttribute('aria-label',c.he);
+  $('tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');
+  const kinds=(TABS.find(t=>t[0]===st.tab)||TABS[0])[2];
+  $('items').innerHTML=ITEMS.filter(i=>kinds.includes(i.kind)).map(i=>`<button class="item" data-item="${i.id}" aria-pressed="${w.includes(i.id)}"><span class="price" title="מחיר בכוכבים">⭐${i.price}</span><img src="thumb/${i.id}.webp" alt=""><b>${i.en}</b></button>`).join('');
+  save();
 }
 document.addEventListener('click',e=>{
   const t=e.target.closest('button'); if(!t) return;
   const w=st.worn[st.c];
-  if(t.dataset.c){ st.c=t.dataset.c; draw(); if(t.classList.contains('who')) $('stage').scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(t.dataset.c){ st.c=t.dataset.c; $('say').textContent=''; draw(); return; }
   if(t.dataset.tab){ st.tab=t.dataset.tab; draw(); return; }
   if(t.dataset.item){
-    const it=item(t.dataset.item), i=w.indexOf(it.id);
-    if(i>=0) w.splice(i,1);
-    else { // one dress and one pair of shoes at a time
-      if(['dress','shoes','legs','head'].includes(it.cat)) for(const x of [...w]) if(item(x).cat===it.cat) w.splice(w.indexOf(x),1);
-      w.push(it.id); speak(it.en); $('say').textContent=it.en;
-    }
-    draw(); return;
+    const it=byId[t.dataset.item], i=w.indexOf(it.id);
+    if(i>=0){ w.splice(i,1); $('say').textContent=''; draw(); return; }
+    const out=new Set([...(SINGLE.has(it.kind)?[it.kind]:[]),...(CLASH[it.kind]||[])]);
+    for(const x of [...w]) if(out.has(byId[x].kind)) w.splice(w.indexOf(x),1);
+    w.push(it.id); $('say').textContent=it.en; speak(it.en); draw(it.id); return;
   }
   if(t.id==='undress'){ st.worn[st.c]=[]; $('say').textContent=''; draw(); }
-  if(t.id==='preset'){ st.worn[st.c]=[...CHARS.find(x=>x.id===st.c).outfit]; draw(); }
+  if(t.id==='preset'){ st.worn[st.c]=[...char().outfit]; $('say').textContent=''; draw(); }
+  if(t.id==='again'&&last) speak(last);
 });
 draw();
 }
