@@ -321,6 +321,10 @@ td input.gen{border-style:dashed}
 .quiz-list div{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:6px 10px}
 .quiz-list .en{flex:1;text-align:left}
 .grammar-card{padding:18px;border-radius:16px;background:var(--hint-bg);display:flex;flex-direction:column;gap:8px;width:100%;max-width:620px}
+.voices{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow:auto}
+.voice{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:10px;background:var(--soft)}
+.voice .en{flex:1;font-size:15px;text-align:left}
+.voice.on{outline:2px solid var(--accent)}
 .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
 .ltile{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:14px;border:2px solid var(--line);background:var(--surface);min-height:96px}
 .ltile:hover{border-color:var(--accent)}
@@ -404,9 +408,12 @@ const speechLog = {state:'', voice:'', error:''};
 function enVoices(){ try{ return speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang)); }catch(e){ return []; } }
 function pickVoice(){
   if(!('speechSynthesis' in window)) return;
-  // voices on the computer itself first: online voices (such as Google's) often stay silent inside an embedded page
-  const score = v => (v.localService?20:0) + (/premium|enhanced/i.test(v.name)?10:0) + (/en[-_]US/i.test(v.lang)?3:0) + (/samantha|ava|allison|karen|daniel|zira|aria|jenny/i.test(v.name)?4:0);
-  enVoice = enVoices().filter(v=>!badVoices.has(v.name)).sort((a,b)=>score(b)-score(a))[0] || null;
+  // the voice the parent chose on this computer wins; otherwise the most natural-sounding one
+  // (Premium / Enhanced / Natural voices first, then well-known good ones); a voice that stays silent is skipped
+  let chosen = null; try{ chosen = localStorage.getItem('english-notebook-v1:voice'); }catch(e){}
+  const ok = enVoices().filter(v=>!badVoices.has(v.name));
+  const score = v => (/premium|enhanced|natural|neural/i.test(v.name)?30:0) + (/google us english/i.test(v.name)?14:0) + (/ava|samantha|allison|zoe|jenny|aria|serena/i.test(v.name)?8:0) + (/en[-_]US/i.test(v.lang)?3:0) + (v.localService?2:0) - (/compact|fred|albert|zarvox|trinoids|whisper|bad news|bells|boing|bubbles|cellos|jester|organ|superstar|wobble|novelty/i.test(v.name)?40:0);
+  enVoice = ok.find(v=>v.name===chosen) || ok.sort((a,b)=>score(b)-score(a))[0] || null;
 }
 if('speechSynthesis' in window){ pickVoice(); speechSynthesis.addEventListener?.('voiceschanged', pickVoice); }
 let speechWarned = false;
@@ -426,7 +433,7 @@ function speak(text, slow, retry){
     try{
       const u = new SpeechSynthesisUtterance(text);
       u.lang = enVoice?.lang || 'en-US'; if(enVoice) u.voice = enVoice;
-      u.rate = slow ? .55 : .85;
+      u.rate = slow ? .6 : .95;
       let started = false;
       u.onstart = () => { started = true; speechLog.state='ok'; speechLog.voice = enVoice?.name || 'ברירת המחדל'; speechLog.error=''; if(S.view==='parent') render(); };
       u.onerror = e => { if(e.error==='interrupted' || e.error==='canceled') return; started = true; fallback(e.error||'error'); };
@@ -1349,6 +1356,9 @@ function speechCard(){
     <div>${has ? `קולות באנגלית במכשיר: <b>${vs.length}</b>${enVoice?`. הקול שנבחר: <span class="en">${esc(enVoice.name)}</span>${enVoice.localService?'':' (קול מהרשת)'}`:''}` : 'הדפדפן הזה לא תומך בהקראה.'}</div>
     <div>מצב: ${st}</div>
     ${has?`<div class="row"><button class="btn" data-say="Hello! This is a test of the reading voice.">להשמיע משפט ניסיון</button></div>`:''}
+    ${vs.length>1 ? `<div class="lbl">לבחור קול: להשמיע כמה ולבחור את הכי טבעי. הבחירה נשמרת במחשב הזה.</div>
+      <div class="voices">${[...vs].sort((a,b)=>(/premium|enhanced|natural/i.test(b.name)-/premium|enhanced|natural/i.test(a.name))).slice(0,14).map(v=>`<div class="voice ${enVoice?.name===v.name?'on':''}"><span class="en">${esc(v.name)}</span><button class="btn small" data-voicetest="${esc(v.name)}">${I.speak}</button><button class="btn small ${enVoice?.name===v.name?'primary':''}" data-voice="${esc(v.name)}">${enVoice?.name===v.name?'נבחר':'לבחור'}</button></div>`).join('')}</div>`:''}
+    <div class="mine">במק אפשר להוריד קולות טבעיים בחינם: הגדרות המערכת ← נגישות ← תוכן מדובר ← קול המערכת ← ניהול קולות ← אנגלית, ולבחור קול שכתוב לידו Premium או Enhanced (למשל Ava או Zoe). אחרי ההורדה צריך לסגור ולפתוח את הדפדפן.</div>
     ${has && !vs.length ? `<div class="mine">אין במכשיר קול באנגלית. במק: הגדרות המערכת ← נגישות ← תוכן מדובר ← קול המערכת ← ניהול קולות, ולהוריד קול באנגלית (למשל Samantha).</div>`:''}
   </div>`;
 }
@@ -1597,6 +1607,8 @@ document.addEventListener('click', async e => {
   const t = e.target.closest('button,[data-act]'); if(!t) return;
   if(t.classList.contains('scrim') && e.target!==t) return;
   const d = t.dataset;
+  if(d.voicetest){ const v = enVoices().find(x=>x.name===d.voicetest); try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance('Hello! I can read the words for you. A kite, a cube, a mushroom hat.'); if(v){u.voice=v;u.lang=v.lang;} u.rate=.95; speechSynthesis.speak(u);}catch(_){} return; }
+  if(d.voice){ try{ localStorage.setItem(LS+':voice', d.voice); }catch(_){} badVoices.delete(d.voice); pickVoice(); toast('הקול נשמר במחשב הזה'); render(); return; }
   if(d.say!==undefined){ speak(d.say); return; }
   if(d.sayslow!==undefined){ speak(d.sayslow, true); return; }
   if(d.gl){ showGloss(t); return; }
