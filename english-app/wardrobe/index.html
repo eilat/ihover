@@ -227,6 +227,15 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .tab::before{top:-14px;height:12px}
 .tab[aria-selected="true"]{background:#8C3550;color:#FBEFD5}
 .tab[aria-selected="true"]::after{background:radial-gradient(circle at 35% 35%,#FFE9A6,#B9861E 70%)}
+
+/* chosen frame (option C, 26.11): light wood outside, a thin gold line, darker wood inside; for tags, the word plaque and the buy note */
+.say,.tab,.buy{border:6px solid;border-image:linear-gradient(135deg,#B07A45,#7A4B2A 50%,#4E2F1B) 6;outline:2px solid #2B1D2E;border-radius:0;box-shadow:inset 0 0 0 2px #E6B53A,inset 0 0 0 6px #4A2C1A,inset 0 0 0 7px #2B1D2E,0 5px 0 rgba(10,4,16,.5)}
+.tab{padding:3px 4px;min-height:38px;font-size:clamp(15px,1.55vw,22px)}
+.door{top:13%;bottom:3%;gap:1.3%}
+@media (max-width:1120px){.tab{min-height:30px;font-size:15px;border-width:5px}.door{gap:1%}}
+.say{padding:7px 24px}
+.buy{background:#F1E2C2;padding:6px 22px}
+.buy .x{top:-16px;left:-16px}
 </style>
 </head>
 <body>
