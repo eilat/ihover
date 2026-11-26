@@ -236,6 +236,15 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .say{padding:7px 24px}
 .buy{background:#F1E2C2;padding:6px 22px}
 .buy .x{top:-16px;left:-16px}
+
+/* 26.11 b: thinner frame so the words breathe; English labels */
+.say,.tab,.buy{border-width:4px;border-image-width:4px;box-shadow:inset 0 0 0 1.5px #E6B53A,inset 0 0 0 3.5px #4A2C1A,inset 0 0 0 4.5px #2B1D2E,0 4px 0 rgba(10,4,16,.5)}
+.tab span,.buy .q,.buy .need{direction:ltr;unicode-bidi:isolate}
+.tab{font-family:"Amatic SC",sans-serif;font-size:clamp(17px,1.7vw,24px);padding:2px 6px}
+.say{padding:5px 20px}
+@media (max-width:1120px){.tab{font-size:17px;border-width:4px}}
+.buy{direction:ltr}
+.buy .x{left:auto;right:-16px}
 </style>
 </head>
 <body>
@@ -286,7 +295,7 @@ const ITEMS=[
   ['accessory_crow','a crow','accessory',12],['accessory_star-wand','a magic wand','accessory',15],['accessory_mushrooms','mushrooms','accessory',8],
 ].map(([id,en,kind,price])=>({id,en,kind,price}));
 const byId=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
-const TABS=[['dress','שמלות',['dress']],['top','חולצה וחצאית',['top','skirt']],['tights','גרביונים',['tights']],['shoes','נעליים',['shoes']],['wings','כנפיים',['wings']],['hat','כובעים',['hat']],['face','שיער ותכשיטים',['hair','glasses','earrings']],['extra','סינר וחגורה',['apron','belt']],['hold','חברים ביד',['accessory']]];
+const TABS=[['dress','Dresses',['dress'],'שמלות'],['top','Tops & skirts',['top','skirt'],'חולצה וחצאית'],['tights','Tights',['tights'],'גרביונים'],['shoes','Shoes',['shoes'],'נעליים'],['wings','Wings',['wings'],'כנפיים'],['hat','Hats',['hat'],'כובעים'],['face','Hair & jewels',['hair','glasses','earrings'],'שיער ותכשיטים'],['extra','Aprons & belts',['apron','belt'],'סינר וחגורה'],['hold','In my hand',['accessory'],'ביד']];
 /* the faces sit at slightly different heights, so glasses and earrings move per character (percent of the figure height) */
 const CHARS=[
   {id:'raven',name:'Raven',he:'ילדת העורב',outfit:['tights_raven','shoes_raven','dress_ragged-raven'],shift:{glasses:-4.8,earrings:-2}},
@@ -318,7 +327,7 @@ const HOTS=[
 const FLAMES=[[2.4,71,'candles'],[4.4,68.6,'candles'],[16.5,57.6,'cat'],[18.4,62.4,'cat'],[77.2,15.5,'lantern']];
 const AMBIENT_BAT=false, HINT_EVERY=20000;
 const HANGER='<svg class="hanger" viewBox="0 0 60 26" aria-hidden="true"><path d="M30 13V9a4 4 0 1 0-4-4" fill="none" stroke="#2B1D2E" stroke-width="2.4" stroke-linecap="round"/><path d="M30 13 4 23h52z" fill="none" stroke="#7A4A22" stroke-width="3.2" stroke-linejoin="round"/><path d="M30 13 4 23h52z" fill="none" stroke="#2B1D2E" stroke-width="1" stroke-linejoin="round"/></svg>';
-const BUYQ='רוצה את זה?';
+const BUYQ='Do you want it?';
 
 /* ---- clickable surprises in the room: each one says its English word ---- */
 const HANG=new Set(['dress','top','skirt','wings']);
@@ -473,19 +482,19 @@ function draw(fresh){
   document.body.classList.toggle('still',!!st.still);
   $('motion').innerHTML=`בדיקת תנועות: <button class="btn" data-move="${MOVES[c.id][0]}">${c.name} ${MOVES[c.id][1]}</button><button class="btn" data-move="hop">קפיצה</button><button class="btn" data-move="joy">שמחה (כמו בקנייה)</button><button class="btn" data-still>${st.still?'להפעיל תנועה':'לכבות תנועה'}</button>`;
   $('stage').setAttribute('aria-label',c.he);
-  $('tabs').innerHTML=TABS.map(([k,t,kinds])=>{ const pic=ITEMS.find(i=>kinds.includes(i.kind)); return `<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}"><img src="thumb/${pic.id}.webp" alt=""><span>${t}</span></button>`; }).join('');
+  $('tabs').innerHTML=TABS.map(([k,t,kinds,he])=>{ const pic=ITEMS.find(i=>kinds.includes(i.kind)); return `<button class="tab" role="tab" data-tab="${k}" title="${he}" aria-selected="${k===st.tab}"><img src="thumb/${pic.id}.webp" alt=""><span>${t}</span></button>`; }).join('');
   const kinds=(TABS.find(t=>t[0]===st.tab)||TABS[0])[2];
   $('items').className='items '+(kinds.some(k=>HANG.has(k))?'hang':'shelf');
   $('items').innerHTML=ITEMS.filter(i=>kinds.includes(i.kind)).map(i=>{
     const own=w.owned.includes(i.id);
-    return `<button class="item${own?' owned':''}${i.id===trying?' trying':''}" data-item="${i.id}" aria-pressed="${w.worn.includes(i.id)}">${HANGER}<img src="thumb/${i.id}.webp" alt=""><b>${i.en}</b><span class="price">${own?'✓ שלי':coin()+i.price}</span></button>`;
+    return `<button class="item${own?' owned':''}${i.id===trying?' trying':''}" data-item="${i.id}" aria-pressed="${w.worn.includes(i.id)}">${HANGER}<img src="thumb/${i.id}.webp" alt=""><b>${i.en}</b><span class="price">${own?'✓ mine':coin()+i.price}</span></button>`;
   }).join('');
   const b=$('buy');
   if(trying){
     const it=byId[trying], need=it.price-st.wallet;
     b.innerHTML=`<span class="q">${BUYQ}</span><b>${it.en}</b><span class="cost">${coin(null,true)} ${it.price}</span>`+(need>0
-      ?`<span class="need">חסרים לך עוד ${need} ${CUR[st.cur].he}. עוד קצת תרגול!</span><button class="x" data-act="cancel" aria-label="להוריד" title="להוריד">✕</button>`
-      :`<button class="btn primary" data-act="buy">לקנות</button><button class="x" data-act="cancel" aria-label="לא עכשיו" title="לא עכשיו">✕</button>`);
+      ?`<span class="need">You need ${need} more worms. Keep practising!</span><button class="x" data-act="cancel" aria-label="להוריד" title="להוריד">✕</button>`
+      :`<button class="btn primary" data-act="buy">Buy</button><button class="x" data-act="cancel" aria-label="לא עכשיו" title="לא עכשיו">✕</button>`);
     b.classList.add('on');
   } else b.classList.remove('on');
   $('curpick').innerHTML='';
@@ -518,7 +527,7 @@ document.addEventListener('click',e=>{
   if('still' in t.dataset){ st.still=!st.still; draw(); return; }
   if(t.id==='chooseClose'){ closeChooser(); return; }
   if(t.id==='switch'){ openChooser(); return; }
-  if(t.dataset.tab){ st.tab=t.dataset.tab; draw(); return; }
+  if(t.dataset.tab){ st.tab=t.dataset.tab; const tb=TABS.find(x=>x[0]===st.tab); $('say').textContent=tb[1]; speak(tb[1].replace('&','and')); draw(); return; }
   if(t.dataset.cur){ st.cur=t.dataset.cur; draw(); return; }
   if(t.dataset.act==='cancel'){ trying=null; $('say').textContent=''; draw(); return; }
   if(t.dataset.act==='buy'&&trying){
