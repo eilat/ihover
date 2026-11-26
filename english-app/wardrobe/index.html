@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ארון הבגדים</title>
+<title>The Attic Wardrobe</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Karantina:wght@700&family=Rubik:wght@400;500;600&family=Andika:wght@400;700&family=Henny+Penny&display=swap">
 <style>
 /* VOICE a children's dress-up toy, playful and a little spooky like the drawings it comes from
@@ -245,15 +245,41 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 @media (max-width:1120px){.tab{font-size:17px;border-width:4px}}
 .buy{direction:ltr}
 .buy .x{left:auto;right:-16px}
+
+.snd{border:0;background:transparent;font-size:1em;padding:0 4px;cursor:pointer;vertical-align:baseline}
+.snd:hover{transform:scale(1.15)}
+.embed .band{padding:8px 10px}
+.embed .top h1,.embed .test,.embed .motion,.embed .wallet{display:none!important}
+.embed .top{align-items:center}
+.embed .scene{margin-top:8px}
+
+/* 26.11: all four have separate heads; extra head tilts; real wing halves flap from their roots; Moth nudges her glasses */
+.headgrp.t-tiltback{animation:tiltback 1.6s ease-in-out}
+@keyframes tiltback{20%,75%{transform:rotate(4deg) translateY(-.3%)}}
+.headgrp.t-yawn{animation:yawnh 1.9s ease-in-out}
+@keyframes yawnh{25%,70%{transform:rotate(-3deg) translateY(-.6%)}}
+.headgrp.t-nod{animation:nodh 1.6s ease-in-out}
+@keyframes nodh{30%,60%{transform:rotate(2deg) translateY(.5%)}}
+.headgrp.t-sniff{animation:sniff 1.2s ease-in-out}
+@keyframes sniff{20%{transform:translateY(-.3%)}40%{transform:none}60%{transform:translateY(-.3%)}}
+.fig img.wingL{animation:flapL 2.8s ease-in-out infinite}
+.fig img.wingR{animation:flapR 2.8s ease-in-out infinite}
+@keyframes flapL{50%{transform:rotate(7deg) scaleX(.9)}}
+@keyframes flapR{50%{transform:rotate(-7deg) scaleX(.9)}}
+.fig .rig.m-joy img.wingL,.fig .rig.m-joy img.wingR{animation-duration:.35s}
+.fig img.k-glasses.adjust{animation:adjust .9s ease-in-out}
+@keyframes adjust{25%,55%{translate:0 -.9%}}
+.still .fig img.wingL,.still .fig img.wingR{animation:none}
+@media (prefers-reduced-motion:reduce){.fig img.wingL,.fig img.wingR,.headgrp{animation:none!important}}
 </style>
 </head>
 <body>
 <section class="band"><div class="wrap">
   <div class="top">
     <div>
-      <h1>ארון הבגדים</h1>
-      <p style="margin:0 0 8px"><a href="versions/frames/index.html" style="display:inline-block;padding:6px 16px;border-radius:999px;background:#8C3550;color:#fff;font-weight:600;text-decoration:none">שש אפשרויות למסגרת העץ ←</a></p>
-      <p class="lead">לחיצה על בגד מלבישה אותו לניסיון ואומרת את השם שלו באנגלית. בגד שעוד לא שלך אפשר לקנות בתולעים. בחדר מסתתרות הפתעות: נסי ללחוץ על דברים.</p>
+      <h1>The Attic Wardrobe</h1>
+
+      <p class="lead"><button class="snd" data-say="Tap a piece of clothing to try it on. Buy it with worms. Tap things in the room for surprises!" aria-label="Listen">🔊</button> Tap a piece of clothing to try it on. Buy it with worms. Tap things in the room for surprises!</p>
     </div>
     <div class="bar"><span class="wallet" id="wallet"></span><span class="heads" id="me"></span><button class="btn" id="switch"></button></div>
   </div>
@@ -263,21 +289,21 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
     <div class="hots" id="hots"></div>
     <div class="me"><div class="fig" id="stage" role="img"></div></div>
     <div class="say" id="say" aria-live="polite"></div>
-    <nav class="door" id="tabs" role="tablist" aria-label="סוגי בגדים"></nav>
+    <nav class="door" id="tabs" role="tablist" aria-label="Kinds of clothes"></nav>
     <div class="items" id="items"></div>
     <div class="buy" id="buy" aria-live="polite"></div>
   </div>
-  <div class="actions"><button class="btn" id="undress">להוריד הכל</button><button class="btn" id="again">🔊 עוד פעם</button></div>
-  <p class="note">לכל דמות יש מלתחה משלה: מה שקנית נשאר אצל הדמות שקנתה. החלפת דמות: פעם אחת בחינם, ואחר כך עולה 5. שמלה מחליפה חולצה וחצאית, ולהפך.</p>
+  <div class="actions"><button class="btn" id="undress">Take it all off</button><button class="btn" id="again">🔊 Say it again</button></div>
+  <p class="note test">Each character keeps the clothes you buy for her. The first switch is free; after that it costs 5 worms.</p>
   <div class="curpick" id="curpick"></div>
   <div class="motion" id="motion"></div>
-  <div class="actions"><button class="btn" id="add">לבדיקה: להוסיף 20</button><button class="btn" id="reset">לבדיקה: להתחיל מחדש</button></div>
+  <div class="actions test"><button class="btn" id="add">Test: add 20 worms</button><button class="btn" id="reset">Test: start over</button></div>
 </div></section>
 <div class="chooser" id="chooser" role="dialog" aria-modal="true" aria-labelledby="chooseTitle"><div class="card">
-  <h2 id="chooseTitle">מי את בעליית הגג?</h2>
+  <h2 id="chooseTitle"><button class="snd" data-say="Who are you in the attic?" aria-label="Listen">🔊</button> Who are you in the attic?</h2>
   <p id="chooseNote"></p>
   <div class="pick" id="pick"></div>
-  <div class="actions" style="justify-content:center"><button class="btn" id="chooseClose" hidden>להישאר עם הדמות שלי</button></div>
+  <div class="actions" style="justify-content:center"><button class="btn" id="chooseClose" hidden>Keep my character</button></div>
 </div></div>
 <script>
 {
@@ -298,10 +324,10 @@ const byId=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 const TABS=[['dress','Dresses',['dress'],'שמלות'],['top','Tops & skirts',['top','skirt'],'חולצה וחצאית'],['tights','Tights',['tights'],'גרביונים'],['shoes','Shoes',['shoes'],'נעליים'],['wings','Wings',['wings'],'כנפיים'],['hat','Hats',['hat'],'כובעים'],['face','Hair & jewels',['hair','glasses','earrings'],'שיער ותכשיטים'],['extra','Aprons & belts',['apron','belt'],'סינר וחגורה'],['hold','In my hand',['accessory'],'ביד']];
 /* the faces sit at slightly different heights, so glasses and earrings move per character (percent of the figure height) */
 const CHARS=[
-  {id:'raven',name:'Raven',he:'ילדת העורב',outfit:['tights_raven','shoes_raven','dress_ragged-raven'],shift:{glasses:-4.8,earrings:-2}},
-  {id:'luna',name:'Luna',he:'ילדת הירח',outfit:['tights_luna','shoes_luna','dress_moon-cape'],shift:{glasses:-5.8,earrings:-2}},
-  {id:'moth',name:'Moth',he:'ילדת העש',outfit:['tights_moth','shoes_moth','dress_mushroom-apron'],shift:{glasses:-2.2,earrings:-1}},
-  {id:'pumpkin',name:'Pumpkin',he:'ילדת הדלעת',outfit:['tights_pumpkin','shoes_pumpkin','dress_fairy-leaf'],shift:{glasses:-5,earrings:-2}},
+  {id:'raven',name:'Raven',he:'The raven girl',outfit:['tights_raven','shoes_raven','dress_ragged-raven'],shift:{glasses:-4.8,earrings:-2}},
+  {id:'luna',name:'Luna',he:'The moon girl',outfit:['tights_luna','shoes_luna','dress_moon-cape'],shift:{glasses:-5.8,earrings:-2}},
+  {id:'moth',name:'Moth',he:'The moth girl',outfit:['tights_moth','shoes_moth','dress_mushroom-apron'],shift:{glasses:-2.2,earrings:-1}},
+  {id:'pumpkin',name:'Pumpkin',he:'The pumpkin girl',outfit:['tights_pumpkin','shoes_pumpkin','dress_fairy-leaf'],shift:{glasses:-5,earrings:-2}},
 ];
 /* one of each kind, except things held; a dress and a top or skirt can't be worn together */
 const SINGLE=new Set(['dress','top','skirt','tights','shoes','wings','hat','hair','glasses','earrings','apron','belt']);
@@ -317,12 +343,12 @@ const CUR={
 const PILE='<g class="w w3"><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="37" cy="21" r="1.2" fill="#2B1D2E"/><circle cx="37.45" cy="20.55" r=".45" fill="#fff"/></g><g class="w w2"><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="27" cy="26.2" r="1.2" fill="#2B1D2E"/><circle cx="27.45" cy="25.75" r=".45" fill="#fff"/></g><g class="w w1"><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="26" cy="32.2" r="1.2" fill="#2B1D2E"/><circle cx="26.45" cy="31.750000000000004" r=".45" fill="#fff"/></g><path d="M2 46c2-8 10-11 22-11s20 3 22 11z" fill="#6A442F" stroke="#2B1D2E" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 41q4-2 8 0M28 40q4-1.5 8 .5" fill="none" stroke="#8E6246" stroke-width="1.2" stroke-linecap="round"/><circle cx="21" cy="43" r="1.1" fill="#4A2E20"/><circle cx="38" cy="43.5" r=".9" fill="#4A2E20"/>', ONEWORM='<g class="w w1"><path d="M3 18c2-7 6-7 8-2s6 5 8 0c1-2.4 2.2-3.6 4-3.4" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M3 18c2-7 6-7 8-2s6 5 8 0c1-2.4 2.2-3.6 4-3.4" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><path d="M3 18c2-7 6-7 8-2s6 5 8 0c1-2.4 2.2-3.6 4-3.4" fill="none" stroke="#B8506F" stroke-width="4.4" stroke-dasharray=".7 3.3" opacity=".7"/><circle cx="22.6" cy="14.4" r="1.2" fill="#2B1D2E"/><circle cx="23.05" cy="13.950000000000001" r=".45" fill="#fff"/></g>';
 const coin=(k,big)=>{ k=k||st.cur; if(k==='worm') return big?`<svg class="cur pile" viewBox="0 4 48 44" aria-hidden="true">${PILE}</svg>`:`<svg class="cur" viewBox="0 4 26 20" aria-hidden="true">${ONEWORM}</svg>`; return `<svg class="cur" viewBox="0 0 24 24" aria-hidden="true">${CUR[k].svg}</svg>`; };
 const HOTS=[
-  {id:'cat',word:'a black cat',he:'החתול',x:7,y:61,w:10.5,h:12,fx:'purr'},
-  {id:'candles',word:'candles',he:'הנרות',x:0.5,y:65,w:6.5,h:12,fx:'glow'},
-  {id:'mirror',word:'a mirror',he:'המראה',x:1,y:30,w:11.5,h:30,fx:'mirror'},
-  {id:'chest',word:'a treasure chest',he:'תיבת האוצר',x:0.5,y:84,w:12,h:15,fx:'sparkle'},
-  {id:'lantern',word:'a lantern',he:'הפנס',x:74.6,y:5,w:5,h:17,fx:'glow'},
-  {id:'moon',word:'the moon',he:'הירח',x:47.5,y:0,w:6,h:8,fx:'sparkle'}
+  {id:'cat',word:'a black cat',he:'the cat',x:7,y:61,w:10.5,h:12,fx:'purr'},
+  {id:'candles',word:'candles',he:'the candles',x:0.5,y:65,w:6.5,h:12,fx:'glow'},
+  {id:'mirror',word:'a mirror',he:'the mirror',x:1,y:30,w:11.5,h:30,fx:'mirror'},
+  {id:'chest',word:'a treasure chest',he:'the treasure chest',x:0.5,y:84,w:12,h:15,fx:'sparkle'},
+  {id:'lantern',word:'a lantern',he:'the lantern',x:74.6,y:5,w:5,h:17,fx:'glow'},
+  {id:'moon',word:'the moon',he:'the moon',x:47.5,y:0,w:6,h:8,fx:'sparkle'}
 ];
 const FLAMES=[[2.4,71,'candles'],[4.4,68.6,'candles'],[16.5,57.6,'cat'],[18.4,62.4,'cat'],[77.2,15.5,'lantern']];
 const AMBIENT_BAT=false, HINT_EVERY=20000;
@@ -381,7 +407,7 @@ if(!st||!st.chars) st=fresh();
 CHARS.forEach(c=>{ const w=st.chars[c.id]||(st.chars[c.id]={owned:[],worn:[]}); w.owned=w.owned.filter(id=>byId[id]); w.worn=w.worn.filter(id=>w.owned.includes(id)); });
 st.cur='worm';
 let trying=null, last='';
-const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)) }catch(e){} };
+const save=()=>{ if(typeof EMBED!=='undefined'&&EMBED){ const {wallet,...rest}=st; parent.postMessage({type:'wr-save',state:rest},'*'); return; } try{ localStorage.setItem(KEY,JSON.stringify(st)) }catch(e){} };
 const $=id=>document.getElementById(id);
 const char=()=>CHARS.find(c=>c.id===st.me)||CHARS[0];
 const ward=()=>st.chars[char().id];
@@ -394,17 +420,25 @@ function wear(list,id){
   return list.filter(x=>!out.has(byId[x].kind)).concat(id);
 }
 /* characters with a separate head (art kit from the illustrator): body below, head + what sits on it turn together at the neck */
-const RIG={pumpkin:{pivot:'50% 33.45%',frames:['neutral','tongue_1','tongue_2','tongue_3','laugh_1','laugh_2','blink_1','blink_2']}};
+/* the illustrator's kits: pivot (x 500, y px of 2000), frames, the expressions each girl does, and a back-hair layer */
+const RIG={
+  pumpkin:{pivot:'50% 33.45%',back:false,frames:['neutral','tongue_1','tongue_2','tongue_3','laugh_1','laugh_2','blink_1','blink_2'],acts:[['tongue','cheeky'],['laugh','giggle']]},
+  raven:{pivot:'50% 34.3%',back:true,frames:['neutral','eyeroll_1','eyeroll_2','eyeroll_3','yawn_1','yawn_2','brow_1','blink_1','blink_2'],acts:[['eyeroll','tiltback'],['yawn','yawn'],['brow','cheeky']]},
+  luna:{pivot:'50% 33.9%',back:true,frames:['neutral','wink_1','wink_2','sly_1','sly_2','blink_1','blink_2'],acts:[['wink','cheeky'],['sly','tiltback']]},
+  moth:{pivot:'50% 33.7%',back:true,frames:['neutral','slowblink_1','slowblink_2','slowblink_3','nose_1','nose_2','blink_1','blink_2'],acts:[['slowblink','nod'],['nose','sniff']]},
+};
+/* wing roots (y px of 2000), the wings flap around them */
+const WINGROOT={wings_bat:46.7,wings_moth:46.25,wings_cobweb:50.35,wings_dragonfly:43.5};
 Object.entries(RIG).forEach(([id,r])=>r.frames.forEach(f=>{ const i=new Image(); i.src=`img/head_${id}_${f}.webp`; }));
 const ONHEAD=new Set(['hair','hat','glasses','earrings']);
 function layers(c,worn,fresh){
   const rig=RIG[c.id];
-  const list=[{id:(rig?'body_':'base_')+c.id,z:Z.base,kind:'base'}].concat(worn.map(id=>byId[id]).filter(Boolean).map(i=>({id:i.id,z:Z[i.kind],kind:i.kind})));
+  const list=[{id:(rig?'body_':'base_')+c.id,z:Z.base,kind:'base'}].concat(rig&&rig.back?[{id:'hair-back_'+c.id,z:1.5,kind:'hairback'}]:[]).concat(worn.map(id=>byId[id]).filter(Boolean).map(i=>({id:i.id,z:Z[i.kind],kind:i.kind})));
   list.sort((a,b)=>a.z-b.z);
   const one=l=>{
     const dy=c.shift[l.kind]; const style=dy?` style="transform:translateY(${dy}%)"`:'';
     const cls=`k-${l.kind}${l.id===fresh?' pop':''}`;
-    if(l.kind==='wings') return ['L','R'].map(sd=>`<img src="img/${l.id}_${sd}.webp" alt="" class="${cls} wing${sd}">`).join('');
+    if(l.kind==='wings') return ['L','R'].map(sd=>`<img src="img/${l.id}_${sd}.webp" alt="" class="${cls} wing${sd}" style="transform-origin:50% ${WINGROOT[l.id]||46}%">`).join('');
     return `<img src="img/${l.id}.webp" alt=""${style} class="${cls}">`;
   };
   let imgs;
@@ -415,10 +449,18 @@ function layers(c,worn,fresh){
   return `<div class="shadow"></div><div class="rig"><div class="breath">${imgs}</div></div>`;
 }
 /* each girl's own move; the face moves (eye roll, wink, tongue) wait for the artist's expression frames */
-const MOVES={raven:['sway','מתנדנדת בעצלות'],pumpkin:['stomp','לשון וצחוק פרוע'],moth:['bob','מהנהנת ומסדרת משקפיים'],luna:['float','מרחפת']};
+const MOVES={raven:['sway','rolls her eyes'],pumpkin:['stomp','sticks out her tongue'],moth:['bob','wrinkles her nose'],luna:['float','winks']};
 let lastMove=Date.now(), nextGap=8000;
 /* expression frames: neutral → peak → back; a blink now and then */
-const SEQ={tongue:[['tongue_1',70],['tongue_2',70],['tongue_3',1100],['tongue_2',70],['tongue_1',70],['neutral',0]],
+const SEQ={
+  eyeroll:[['eyeroll_1',110],['eyeroll_2',160],['eyeroll_3',260],['eyeroll_2',140],['neutral',0]],
+  yawn:[['yawn_1',180],['yawn_2',1200],['yawn_1',160],['neutral',0]],
+  brow:[['brow_1',1400],['neutral',0]],
+  wink:[['wink_1',70],['wink_2',520],['wink_1',70],['neutral',0]],
+  sly:[['sly_1',120],['sly_2',1400],['sly_1',120],['neutral',0]],
+  slowblink:[['slowblink_1',160],['slowblink_2',180],['slowblink_3',520],['slowblink_2',160],['slowblink_1',160],['neutral',0]],
+  nose:[['nose_1',90],['nose_2',900],['nose_1',90],['neutral',0]],
+  tongue:[['tongue_1',70],['tongue_2',70],['tongue_3',1100],['tongue_2',70],['tongue_1',70],['neutral',0]],
   laugh:[['laugh_1',90],['laugh_2',150],['laugh_1',110],['laugh_2',150],['laugh_1',110],['laugh_2',220],['laugh_1',90],['neutral',0]],
   blink:[['blink_1',55],['blink_2',90],['blink_1',55],['neutral',0]]};
 let faceBusy=false, faceTimer=null;
@@ -439,8 +481,9 @@ function play(name){
   r.className='rig'; void r.offsetWidth; r.classList.add('m-'+name);
   r.onanimationend=e=>{ if(e.target===r) r.classList.remove('m-'+name); };
   lastMove=Date.now(); nextGap=7000+Math.random()*6000;
-  if(name==='joy'){ sparkle(); face('laugh','giggle'); }
-  if(name==='stomp'&&RIG[char().id]){ if(cheekyTurn++%2) face('laugh','giggle'); else face('tongue','cheeky'); }
+  const rg=RIG[char().id];
+  if(name==='joy'){ sparkle(); if(rg) face(...rg.acts[rg.acts.length-1]); }
+  else if(rg && name===MOVES[char().id][0]){ const a=rg.acts[cheekyTurn++%rg.acts.length]; face(a[0],a[1]); if(char().id==='moth'&&a[0]==='nose'){ const g=$('stage').querySelector('.k-glasses'); if(g){ g.classList.remove('adjust'); void g.offsetWidth; g.classList.add('adjust'); } } }
 }
 function sparkle(){
   const f=$('stage');
@@ -466,7 +509,7 @@ function pickVoice(){
 try{ voice=pickVoice(); speechSynthesis.onvoiceschanged=()=>{ voice=pickVoice(); }; }catch(e){}
 function speak(t){ last=t; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; if(voice) u.voice=voice; u.rate=.9; speechSynthesis.speak(u); }catch(e){} }
 
-function switchLabel(){ return st.switches===0?'להחליף דמות (פעם אחת בחינם)':`להחליף דמות (${SWITCH_PRICE} ${CUR[st.cur].he})`; }
+function switchLabel(){ return st.switches===0?'Switch character (free once)':`Switch character (${SWITCH_PRICE} worms)`; }
 function draw(fresh){
   if(!st.me){ openChooser(); }
   const c=char(), w=ward();
@@ -480,7 +523,7 @@ function draw(fresh){
   if($('stage').dataset.key!==key){ $('stage').innerHTML=html; $('stage').dataset.key=key; }
   $('stage').className='fig '+c.id;
   document.body.classList.toggle('still',!!st.still);
-  $('motion').innerHTML=`בדיקת תנועות: <button class="btn" data-move="${MOVES[c.id][0]}">${c.name} ${MOVES[c.id][1]}</button><button class="btn" data-move="hop">קפיצה</button><button class="btn" data-move="joy">שמחה (כמו בקנייה)</button><button class="btn" data-still>${st.still?'להפעיל תנועה':'לכבות תנועה'}</button>`;
+  $('motion').innerHTML=`Test the moves: <button class="btn" data-move="${MOVES[c.id][0]}">${c.name} ${MOVES[c.id][1]}</button><button class="btn" data-move="hop">Hop</button><button class="btn" data-move="joy">Joy (like buying)</button><button class="btn" data-still>${st.still?'Motion on':'Motion off'}</button>`;
   $('stage').setAttribute('aria-label',c.he);
   $('tabs').innerHTML=TABS.map(([k,t,kinds,he])=>{ const pic=ITEMS.find(i=>kinds.includes(i.kind)); return `<button class="tab" role="tab" data-tab="${k}" title="${he}" aria-selected="${k===st.tab}"><img src="thumb/${pic.id}.webp" alt=""><span>${t}</span></button>`; }).join('');
   const kinds=(TABS.find(t=>t[0]===st.tab)||TABS[0])[2];
@@ -493,8 +536,8 @@ function draw(fresh){
   if(trying){
     const it=byId[trying], need=it.price-st.wallet;
     b.innerHTML=`<span class="q">${BUYQ}</span><b>${it.en}</b><span class="cost">${coin(null,true)} ${it.price}</span>`+(need>0
-      ?`<span class="need">You need ${need} more worms. Keep practising!</span><button class="x" data-act="cancel" aria-label="להוריד" title="להוריד">✕</button>`
-      :`<button class="btn primary" data-act="buy">Buy</button><button class="x" data-act="cancel" aria-label="לא עכשיו" title="לא עכשיו">✕</button>`);
+      ?`<span class="need">You need ${need} more worms. Keep practising!</span><button class="x" data-act="cancel" aria-label="Take it off" title="Take it off">✕</button>`
+      :`<button class="btn primary" data-act="buy">Buy</button><button class="x" data-act="cancel" aria-label="Not now" title="Not now">✕</button>`);
     b.classList.add('on');
   } else b.classList.remove('on');
   $('curpick').innerHTML='';
@@ -502,14 +545,15 @@ function draw(fresh){
 }
 function openChooser(){
   const first=!st.me;
-  $('chooseNote').textContent=first?'בוחרים דמות אחת, והיא מגיעה עם הבגדים שלה. אפשר להחליף אחר כך: פעם אחת בחינם.'
-    :(st.switches===0?'ההחלפה הזאת בחינם. כל דמות שומרת את הבגדים שלה.':`החלפה עולה ${SWITCH_PRICE} ${CUR[st.cur].he}. כל דמות שומרת את הבגדים שלה.`);
+  const note=first?'Choose one character. She comes with her own clothes. You can switch later: the first time is free.'
+    :(st.switches===0?'This switch is free. Every character keeps her own clothes.':`A switch costs ${SWITCH_PRICE} worms. Every character keeps her own clothes.`);
+  $('chooseNote').innerHTML=`<button class="snd" data-say="${note}" aria-label="Listen">🔊</button> ${note}`;
   $('pick').innerHTML=CHARS.map(c=>`<button class="who" data-pick="${c.id}" aria-pressed="${c.id===st.me}"><span class="fig ${c.id}">${layers(c,st.chars[c.id].given?st.chars[c.id].worn:c.outfit)}</span><b>${c.name}</b><small>${c.he}</small></button>`).join('');
   $('chooseClose').hidden=first;
   $('chooser').classList.add('on');
 }
 const closeChooser=()=>$('chooser').classList.remove('on');
-function pay(n){ st.wallet-=n; const el=$('wallet'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+function pay(n){ st.wallet-=n; if(EMBED) parent.postMessage({type:'wr-spend',n},'*'); const el=$('wallet'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
 
 document.addEventListener('click',e=>{
   const t=e.target.closest('button'); if(!t) return;
@@ -519,10 +563,11 @@ document.addEventListener('click',e=>{
     if(!st.me){ st.me=id; gift(id); closeChooser(); trying=null; draw(); play('joy'); return; }
     if(id===st.me){ closeChooser(); return; }
     const cost=st.switches===0?0:SWITCH_PRICE;
-    if(cost>st.wallet){ $('chooseNote').textContent=`בשביל להחליף צריך ${SWITCH_PRICE} ${CUR[st.cur].he}, ויש לך ${st.wallet}.`; return; }
+    if(cost>st.wallet){ { const n=`To switch you need ${SWITCH_PRICE} worms. You have ${st.wallet}.`; $('chooseNote').innerHTML=`<button class="snd" data-say="${n}" aria-label="Listen">🔊</button> ${n}`; speak(n); } return; }
     if(cost) pay(cost);
     st.switches++; st.me=id; gift(id); trying=null; $('say').textContent=''; closeChooser(); draw(); play('hop'); return;
   }
+  if(t.dataset.say){ speak(t.dataset.say); return; }
   if(t.dataset.move){ play(t.dataset.move); return; }
   if('still' in t.dataset){ st.still=!st.still; draw(); return; }
   if(t.id==='chooseClose'){ closeChooser(); return; }
@@ -552,7 +597,22 @@ document.addEventListener('click',e=>{
 document.querySelector('.scene .me').addEventListener('click',()=>{ if(st.me) play(MOVES[char().id][0]); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&st.me) closeChooser(); });
 buildRoom();
-draw();
+/* ---- inside מחברת אנגלית: the app owns the worms and keeps the wardrobe in its database ---- */
+const EMBED=new URLSearchParams(location.search).has('embed');
+if(EMBED){
+  document.documentElement.classList.add('embed');
+  window.addEventListener('message',e=>{
+    const d=e.data; if(!d||d.type!=='wr-state') return;
+    const keepStill=st.still;
+    st=Object.assign(fresh(),d.state||{}); st.wallet=d.wallet; st.cur='worm'; if(keepStill!==undefined&&st.still===undefined) st.still=keepStill;
+    CHARS.forEach(c=>{ const w=st.chars[c.id]||(st.chars[c.id]={owned:[],worn:[]}); w.owned=w.owned.filter(id=>byId[id]); w.worn=w.worn.filter(id=>w.owned.includes(id)); });
+    $('stage').dataset.key=''; closeChooser(); draw();
+  });
+  let got=false, tries=0; window.addEventListener('message',e=>{ if(e.data&&e.data.type==='wr-state') got=true; });
+  (function ask(){ if(got||tries++>40) return; parent.postMessage({type:'wr-ready'},'*'); setTimeout(ask,250); })();
+  new ResizeObserver(()=>parent.postMessage({type:'wr-size',h:document.documentElement.scrollHeight},'*')).observe(document.body);
+}
+if(!EMBED) draw();
 }
 </script>
 </body>

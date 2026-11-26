@@ -1,7 +1,8 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+</style>
 <title>מחברת אנגלית</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Andika:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Andika:wght@400;700&family=Karantina:wght@700&display=swap">
 <style>
 /* מחברת: דף לבן על שולחן אפור-כחול. מילים באנגלית נכתבות על ארבע שורות כמו במחברת אנגלית. צבע אחד לכל ילדה. */
 :root{
@@ -275,6 +276,30 @@ td input.flag{border-color:var(--margin);background:var(--hint-bg)}
 .modal input{min-height:52px;text-align:center;font-size:24px;border:2px solid var(--line);border-radius:12px;background:var(--surface);direction:ltr}
 .empty{display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:20px;border-radius:16px;border:2px dashed var(--line)}
 @media (max-width:520px){.opts{grid-template-columns:1fr}.lesson-row .prev{display:none}.sheet.paper{padding-inline-start:20px;background-image:none}}
+/* 26.11: the top bar takes the wardrobe's look (night wood, parchment in a gold-lined wooden frame, worms) */
+.sh-bar{background:linear-gradient(180deg,#3B2338,#2B1D2E);border-bottom:0;box-shadow:0 4px 0 #6B4226,0 6px 0 #2B1D2E,0 10px 18px rgba(20,8,24,.35);color:#F4E7C8}
+.sh-title{color:#F4E7C8;font-family:"Karantina",var(--f-body);font-weight:700;font-size:34px;letter-spacing:.3px}
+.sh-logo{background:#F1E2C2;color:#2B1D2E;border-radius:0;border:3px solid;border-image:linear-gradient(135deg,#B07A45,#7A4B2A 50%,#4E2F1B) 3;box-shadow:inset 0 0 0 1px #E6B53A}
+.sh-back,.sh-bank{background:#F1E2C2;color:#2B1D2E;border-radius:0;border:4px solid;border-image:linear-gradient(135deg,#B07A45,#7A4B2A 50%,#4E2F1B) 4;outline:2px solid #2B1D2E;box-shadow:inset 0 0 0 1.5px #E6B53A,inset 0 0 0 3.5px #4A2C1A,0 3px 0 rgba(10,4,16,.5)}
+.sh-back{min-height:46px}
+.sh-back:hover{background:#fff}
+.sh-bank{font-size:22px;padding:4px 14px}
+.sh-worms{width:38px;height:34px;overflow:visible}
+.sh-worms .w{transform-box:fill-box;transform-origin:0 100%;animation:sh-wrig 2.4s ease-in-out infinite}
+.sh-worms .w2{transform-origin:100% 100%;animation-duration:2.9s;animation-delay:-.8s}.sh-worms .w3{animation-duration:2.1s;animation-delay:-1.5s}
+@keyframes sh-wrig{0%,100%{transform:none}30%{transform:rotate(-7deg) scaleX(.93)}60%{transform:rotate(5deg) scaleX(1.04)}}
+.sh-pet{box-shadow:0 0 0 3px #E6B53A,0 0 0 5px #4E2F1B}
+.sh-gear{color:#E9D6AE}.sh-gear:hover,.sh-gear[aria-expanded="true"]{color:#FFE08A}
+.sh-menu{color:var(--ink)}
+@media (prefers-reduced-motion: reduce){.sh-worms .w{animation:none}}
+/* the wardrobe view */
+.wrap.wide{max-width:1320px}
+.wr-frame{display:block;width:100%;height:min(80vh,820px);border:0;border-radius:18px;background:#2B1D2E}
+.wr-card{background:linear-gradient(120deg,#3B2338,#5A2E4A);color:#F4E7C8;border:3px solid #E6B53A!important}
+.wr-card b{font-family:"Karantina",var(--f-body);font-size:28px;font-weight:700;direction:ltr}
+.wr-card small{color:#E9D6AE}
+.wr-pile{display:flex;align-items:center;gap:6px;font-size:22px}
+.wr-pile .sh-worms{width:44px;height:40px}
 </style>
 
 </head><body>
@@ -482,6 +507,8 @@ const S = {
 const kid = () => S.family?.kids?.find(k=>k.id===S.kidId) || null;
 const kidLessons = id => S.lessons.filter(l => (l.kids||[]).includes(id));
 const prog = id => S.progress[id] || {words:{}, stars:0, streak:0, lastDay:''};
+/* the money is worms: every star earned in practice is a worm; the wardrobe spends them */
+const worms = id => Math.max(0, (prog(id).stars||0) - (prog(id).spent||0));
 const lessonById = id => S.lessons.find(x=>x.id===id);
 
 /* every practicable item of some lessons: vocabulary words and phonics words */
@@ -562,7 +589,8 @@ function go(view, extra){ clearTimeout(S.timer); Object.assign(S, extra||{}, {vi
 function render(){
   const k = kid();
   document.documentElement.className = 'c-' + (k?.color || 'grape');
-  const v = ({letters:vLetters, mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
+  const v = ({wardrobe:vWardrobe, letters:vLetters, mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
+  app.classList.toggle('wide', S.view==='wardrobe');
   app.innerHTML = (v ? v() : '');
   renderBar();
   after[S.view]?.();
@@ -580,6 +608,7 @@ const FACES = {
 const faceOf = k => FACES[k?.face] ? k.face : (['face1','face2'][(S.family?.kids||[]).findIndex(x=>x.id===k?.id)] || 'star');
 const faceHtml = (k, cls='sh-av') => `<span class="${cls} c-${k.color}">${FACES[faceOf(k)]}</span>`;
 const STAR_IC = '<svg class="sh-coin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5-4.9-4.5 6.6-.8z" fill="#F2C230" stroke="#C99A12" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+const WORM_IC = '<svg class="sh-coin sh-worms" viewBox="0 4 48 44" aria-hidden="true"><g class="w w3"><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="37" cy="21" r="1.2" fill="#2B1D2E"/></g><g class="w w2"><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="27" cy="26.2" r="1.2" fill="#2B1D2E"/></g><g class="w w1"><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="26" cy="32.2" r="1.2" fill="#2B1D2E"/></g><path d="M2 46c2-8 10-11 22-11s20 3 22 11z" fill="#6A442F" stroke="#2B1D2E" stroke-width="1.7" stroke-linejoin="round"/></svg>';
 const GEAR_IC = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/><circle cx="12" cy="12" r="6.6"/></svg>';
 const LOCK_IC = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 function topBar(opts={}){ S.barOpts = opts; queueMicrotask(renderBar); return ''; }
@@ -588,6 +617,7 @@ function barTitle(){
   if(v==='kid' && k) return `מה לומדים היום, ${esc(k.name)}?`;
   if(v==='lesson' && l) return mixed(l.title||'שיעור');
   if(v==='letters') return 'האותיות שלי';
+  if(v==='wardrobe') return 'The Attic Wardrobe';
   if(v==='story') return 'סיפור עם המילים שלי';
   if(v==='play' && S.session) return S.session.mode==='letters' ? 'אימון אותיות' : S.session.quiz ? 'תרגול דקדוק' : S.session.mode==='daily' ? 'התרגול של היום' : (l ? mixed(l.title||'') : 'תרגול');
   if(v==='finish') return 'סיימת!';
@@ -598,12 +628,12 @@ function renderBar(){
   const bar = document.getElementById('bar'); if(!bar) return;
   const k = kid(), v = S.view, o = S.barOpts || {};
   if(!k || v==='home' || v==='loading'){ bar.innerHTML = `<span class="sh-logo" aria-hidden="true">Aa</span><h1 class="sh-title">${barTitle()}</h1>`; return; }
-  const stars = prog(k.id).stars || 0;
+  const stars = worms(k.id);
   const back = v==='kid' ? '' : v==='play'
     ? `<button class="sh-back" data-act="quit">${I.back}<span>לצאת</span></button>`
     : `<button class="sh-back" data-go="${o.backTo||'kid'}">${I.back}<span>חזרה</span></button>`;
   const gear = v==='kid' ? `<div class="sh-me"><button class="sh-gear" data-act="menu" aria-expanded="${!!S.menu}" aria-haspopup="true" aria-label="הגדרות">${GEAR_IC}</button>${S.menu?menuHtml(k):''}</div>` : '';
-  bar.innerHTML = `${back}<span class="sh-bank ${S.bump?'bump':''}" aria-label="כוכבים: ${stars}">${STAR_IC}<span dir="ltr">${stars}</span></span>
+  bar.innerHTML = `${back}<span class="sh-bank ${S.bump?'bump':''}" aria-label="תולעים: ${stars}">${WORM_IC}<span dir="ltr">${stars}</span></span>
     ${faceHtml(k, 'sh-pet'+(S.bump?' happy':''))}<h1 class="sh-title">${barTitle()}</h1>${gear}`;
 }
 function menuHtml(k){
@@ -672,8 +702,9 @@ function vKid(){
       </div>
       ${due.length ? `<button class="btn primary" data-act="daily">להתחיל</button>` : ''}
     </div>
+    <button class="lesson-row wr-card" data-go="wardrobe"><span class="t"><b>The Attic Wardrobe</b><small>ארון הבגדים: קונים בגדים בתולעים שהרווחת</small></span><span class="wr-pile">${WORM_IC}<b dir="ltr">${worms(k.id)}</b></span></button>
     <button class="lesson-row" data-go="letters" style="border-color:var(--accent)"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span><span class="prev en" style="font-size:22px">Aa Bb Cc</span></button>
-    <div class="meta">${known?`<span>מילים שאת כבר מכירה טוב: <strong>${known}</strong></span>`:''}${p.stars?`<span>כוכבים: <strong>${p.stars}</strong></span>`:''}${(p.streak||0)>1?`<span>${p.streak} ימים ברצף</span>`:''}</div>
+    <div class="meta">${known?`<span>מילים שאת כבר מכירה טוב: <strong>${known}</strong></span>`:''}${p.stars?`<span>תולעים: <strong>${worms(k.id)}</strong></span>`:''}${(p.streak||0)>1?`<span>${p.streak} ימים ברצף</span>`:''}</div>
     <h2>השיעורים שלי</h2>
     <div class="lessons">${ls.map(l=>{
       const n = (l.words||[]).length, ph = (l.phonics||[]).reduce((s,g)=>s+(g.words||[]).length,0);
@@ -682,7 +713,7 @@ function vKid(){
       return `<button class="lesson-row" data-lesson="${l.id}">
       <span class="t"><b>${mixed(l.title||'שיעור')}</b><small>${what}${l.date?` · <span class="date-tag">${heDate(l.date)}</span>`:''}</small></span>
       <span class="prev">${esc(prev)}</span></button>`;}).join('')}</div>`
-    : `<button class="lesson-row" data-go="letters"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span></button><div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
+    : `<button class="lesson-row wr-card" data-go="wardrobe"><span class="t"><b>The Attic Wardrobe</b><small>ארון הבגדים: קונים בגדים בתולעים שהרווחת</small></span><span class="wr-pile">${WORM_IC}<b dir="ltr">${worms(k.id)}</b></span></button><button class="lesson-row" data-go="letters"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span></button><div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
   </div>`;
 }
 
@@ -894,6 +925,33 @@ function startLetters(){
   startSession('letters', {items, back:'letters'});
 }
 const bigLetter = c => `<div class="ruled word-big" style="font-size:clamp(56px,11vw,88px)">${c.toUpperCase()} ${c}</div>`;
+/* ---------- the wardrobe: its own page (wardrobe/index.html) in a frame; this app keeps her worms and her wardrobe ---------- */
+function vWardrobe(){
+  const k = kid(); if(!k) return vHome();
+  return `${topBar()}<iframe class="wr-frame" id="wr" src="wardrobe/index.html?embed" title="The Attic Wardrobe"></iframe>`;
+}
+function wrSend(){
+  const k = kid(), f = document.getElementById('wr'); if(!k || !f?.contentWindow) return;
+  f.contentWindow.postMessage({type:'wr-state', wallet: worms(k.id), state: prog(k.id).wardrobe || null}, '*');
+}
+let wrSaveT = null;
+window.addEventListener('message', async e => {
+  const f = document.getElementById('wr'), d = e.data;
+  if(!f || e.source !== f.contentWindow || !d || S.view!=='wardrobe') return;
+  const k = kid(); if(!k) return;
+  if(d.type==='wr-ready') wrSend();
+  if(d.type==='wr-size') f.style.height = Math.ceil(d.h) + 'px';
+  if(d.type==='wr-spend'){
+    const p = structuredClone(prog(k.id)); p.spent = (p.spent||0) + (+d.n||0);
+    S.bump = true; setTimeout(()=>{ S.bump=false; renderBar(); }, 1200);
+    await Store.saveProgress(k.id, p); renderBar();
+  }
+  if(d.type==='wr-save'){
+    clearTimeout(wrSaveT);
+    wrSaveT = setTimeout(()=>{ const p = structuredClone(prog(k.id)); p.wardrobe = d.state; Store.saveProgress(k.id, p); }, 400);
+  }
+});
+
 function vLetters(){
   const k = kid(); if(!k) return vHome();
   const {p, seen, known, due, next} = letterStats(k.id);
