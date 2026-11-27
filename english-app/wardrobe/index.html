@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Attic Wardrobe</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Karantina:wght@700&family=Rubik:wght@400;500;600&family=Andika:wght@400;700&family=Henny+Penny&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@700&family=Rubik:wght@400;500;600&family=Andika:wght@400;700&display=swap">
 <style>
 /* VOICE a children's dress-up toy, playful and a little spooky like the drawings it comes from
    PICTURE the attic: the character stands on the rug, the clothes wait on the wardrobe shelves
    COLOUR parchment ground, ink outline, wine and violet, gold for stars
-   TYPE Karantina for Hebrew titles, Henny Penny for names, Andika for the English words, Rubik for text
+   TYPE Andika for everything in English (readable for early readers), Karantina for Hebrew titles, Rubik for Hebrew text
    ART every layer is a transparent 1000x2000 PNG (here 500x1000 webp) drawn for the same body, stacked in a fixed order */
 :root{color-scheme:light;--bg:#E9D6AE;--paper:#F4E7C8;--ink:#2B1D2E;--muted:#6B5648;--wine:#8C3550;--violet:#4B3150;--gold:#E6B53A;--line:#C9AE7F}
 *{box-sizing:border-box;min-width:0}
@@ -27,7 +27,7 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .head{display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0}
 .head .ring{width:60px;height:60px;border-radius:50%;border:3px solid var(--line);background:var(--paper);overflow:hidden;position:relative}
 .head .ring img{position:absolute;width:250%;left:-75%;top:-8%;max-width:none}
-.head b{font-family:"Henny Penny",serif;font-weight:400;font-size:15px;direction:ltr}
+.head b{font-family:"Andika",sans-serif;font-weight:400;font-size:15px;direction:ltr}
 .head[aria-pressed="true"] .ring{border-color:var(--ink);box-shadow:0 0 0 3px var(--gold)}
 
 /* a figure is a stack of same-size layers */
@@ -71,7 +71,7 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .who:hover{border-color:var(--line)}
 .who[aria-pressed="true"]{border-color:var(--ink);background:#fff}
 .who .fig{height:clamp(220px,40vh,380px)}
-.who b{font-family:"Henny Penny",serif;font-weight:400;font-size:22px;direction:ltr}
+.who b{font-family:"Andika",sans-serif;font-weight:400;font-size:22px;direction:ltr}
 .who small{color:var(--muted);font-size:14px}
 @media (max-width:640px){.pick{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
@@ -164,7 +164,7 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .calm{background:radial-gradient(ellipse 22% 48% at 29% 56%,rgba(255,220,150,.10),transparent 70%),radial-gradient(ellipse 58% 70% at 50% 56%,transparent 42%,rgba(12,4,24,.72) 100%),linear-gradient(rgba(14,5,26,.22),rgba(14,5,26,.22))}
 .flame{width:4.4%}
 .door{left:87.4%;right:2.8%;top:15%;bottom:12%;gap:2.6%;justify-content:flex-start;align-items:center;padding-top:2%;border-top:2px solid rgba(43,29,46,.9)}
-.tab{flex:0 0 auto;min-height:max(42px,8%);width:86%;padding:2px 6px 0;background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 3px 14px 14px;font:700 clamp(19px,1.9vw,27px)/1 "Amatic SC","Karantina",sans-serif;transform:rotate(var(--r,2deg));transform-origin:50% -12px;box-shadow:0 3px 0 rgba(20,8,20,.4)}
+.tab{flex:0 0 auto;min-height:max(42px,8%);width:86%;padding:2px 6px 0;background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 3px 14px 14px;font:700 clamp(19px,1.9vw,27px)/1 "Andika",sans-serif;transform:rotate(var(--r,2deg));transform-origin:50% -12px;box-shadow:0 3px 0 rgba(20,8,20,.4)}
 .tab:nth-child(2n){--r:-2.5deg}
 .tab::before{content:"";position:absolute;top:-12px;left:50%;height:12px;border-left:1.5px solid #2B1D2E}
 .tab::after{content:"";position:absolute;top:4px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#2B1D2E}
@@ -177,12 +177,12 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 .item img{filter:drop-shadow(0 4px 2px rgba(20,8,20,.45))}
 .item[aria-pressed="true"] img{filter:drop-shadow(0 0 6px #FFE08A) drop-shadow(0 0 12px #FFE08A)}
 .item.trying img{filter:drop-shadow(0 0 8px #F6A6C0) drop-shadow(0 0 2px #fff)}
-.item b{color:#FBEFD5;font:700 clamp(15px,1.5vw,20px)/1 "Amatic SC",sans-serif;text-shadow:0 0 6px #2B1D2E}
-.price{top:16%;left:-6%;transform:rotate(-10deg);background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 12px 12px 3px;padding:0 7px 0 12px;font:700 15px/20px "Amatic SC","Rubik",sans-serif;display:inline-flex;align-items:center;gap:2px}
+.item b{color:#FBEFD5;font:700 clamp(15px,1.5vw,20px)/1 "Andika",sans-serif;text-shadow:0 0 6px #2B1D2E}
+.price{top:16%;left:-6%;transform:rotate(-10deg);background:#F4E7C8;border:2px solid #2B1D2E;border-radius:3px 12px 12px 3px;padding:0 7px 0 12px;font:700 15px/20px "Andika",sans-serif;display:inline-flex;align-items:center;gap:2px}
 .price::before{content:"";position:absolute;left:4px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:#2B1D2E}
 .item.owned .price{background:#D8E9BF}
 .buy{left:48.8%;right:17.8%;top:70.4%;bottom:18.2%;justify-content:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;padding:2px 14px;background:#F4E7C8;border:2.5px solid #2B1D2E;border-radius:18px;box-shadow:0 6px 0 rgba(10,4,16,.5)}
-.buy .q{font:700 clamp(22px,2.1vw,30px)/1 "Amatic SC",sans-serif}
+.buy .q{font:700 clamp(22px,2.1vw,30px)/1 "Andika",sans-serif}
 .buy b{font-size:clamp(13px,1.2vw,16px)}
 .buy .cost{font-weight:700;font-size:17px;display:inline-flex;align-items:center;gap:3px}
 .buy .btn{min-height:36px;border-radius:12px;border:2.5px solid #2B1D2E;background:transparent;font-weight:600;padding:0 12px}
@@ -240,7 +240,7 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 /* 26.11 b: thinner frame so the words breathe; English labels */
 .say,.tab,.buy{border-width:4px;border-image-width:4px;box-shadow:inset 0 0 0 1.5px #E6B53A,inset 0 0 0 3.5px #4A2C1A,inset 0 0 0 4.5px #2B1D2E,0 4px 0 rgba(10,4,16,.5)}
 .tab span,.buy .q,.buy .need{direction:ltr;unicode-bidi:isolate}
-.tab{font-family:"Amatic SC",sans-serif;font-size:clamp(17px,1.7vw,24px);padding:2px 6px}
+.tab{font-family:"Andika",sans-serif;font-size:clamp(17px,1.7vw,24px);padding:2px 6px}
 .say{padding:5px 20px}
 @media (max-width:1120px){.tab{font-size:17px;border-width:4px}}
 .buy{direction:ltr}
@@ -290,9 +290,25 @@ html.embed,html.embed body{height:100%;overflow:hidden;background:#1B1020}
 @keyframes hintp{50%{transform:scale(1.06)}}
 .say .round{font-size:.7em;opacity:.65;margin-inline-end:8px}
 .endcard{position:absolute;z-index:7;left:50%;top:50%;translate:-10% -50%;min-width:28%;padding:18px 26px;text-align:center;background:#F1E2C2;border:6px solid;border-image:linear-gradient(135deg,#B07A45,#7A4B2A 50%,#4E2F1B) 6;outline:2px solid #2B1D2E;box-shadow:inset 0 0 0 2px #E6B53A,0 8px 0 rgba(10,4,16,.5);direction:ltr}
-.endcard h2{font:700 clamp(30px,3.4vw,46px)/1 "Amatic SC","Karantina",sans-serif;margin:0}
+.endcard h2{font:700 clamp(30px,3.4vw,46px)/1 "Andika",sans-serif;margin:0}
 .endcard p{margin:6px 0;font-family:"Andika",sans-serif;font-size:clamp(16px,1.6vw,22px)}
 .endcard .won{font-weight:700;font-size:clamp(22px,2.2vw,30px);display:flex;align-items:center;justify-content:center;gap:6px}
+
+/* 27.11: Andika everywhere (readable for early readers), sized for it */
+.tab{font-size:clamp(12px,1.15vw,16px)!important;font-weight:700;line-height:1.05}
+.item b{font-size:clamp(11px,1vw,14px)!important}
+.price{font-size:12px!important}
+.buy .q{font-size:clamp(15px,1.4vw,20px)!important}
+.endcard h2{font-size:clamp(26px,2.8vw,38px)!important}
+/* the listen button sits on the word plaque under the character */
+.say .snd{pointer-events:auto;font-size:.9em;margin-inline-end:6px;padding:0 4px;cursor:pointer}
+.say{pointer-events:none}
+/* the character chooser closes with its X or a click outside */
+.chooser .card{position:relative}
+.chooser .x{position:absolute;top:10px;right:12px;width:44px;height:44px;border-radius:50%;border:2.5px solid #2B1D2E;background:#F1E2C2;font-size:20px;font-weight:700;line-height:1;cursor:pointer}
+.chooser .x:hover{background:#fff}
+.chooser h2{font-family:"Andika",sans-serif!important;font-weight:700;font-size:clamp(28px,3.4vw,42px)!important}
+.game .say{max-width:48%;font-size:clamp(14px,1.55vw,22px);white-space:normal;line-height:1.2}
 </style>
 </head>
 <body>
@@ -321,7 +337,7 @@ html.embed,html.embed body{height:100%;overflow:hidden;background:#1B1020}
   <div class="motion" id="motion"></div>
   <div class="actions test"><button class="btn" id="add">Test: add 20 worms</button><button class="btn" id="reset">Test: start over</button></div>
 </div></section>
-<div class="chooser" id="chooser" role="dialog" aria-modal="true" aria-labelledby="chooseTitle"><div class="card">
+<div class="chooser" id="chooser" role="dialog" aria-modal="true" aria-labelledby="chooseTitle"><div class="card"><button class="x" id="chooseX" aria-label="Close" title="Close">✕</button>
   <h2 id="chooseTitle"><button class="snd" data-say="Who are you in the attic?" aria-label="Listen">🔊</button> Who are you in the attic?</h2>
   <p id="chooseNote"></p>
   <div class="pick" id="pick"></div>
@@ -571,7 +587,7 @@ function openChooser(){
     :(st.switches===0?'This switch is free. Every character keeps her own clothes.':`A switch costs ${SWITCH_PRICE} worms. Every character keeps her own clothes.`);
   $('chooseNote').innerHTML=`<button class="snd" data-say="${note}" aria-label="Listen">🔊</button> ${note}`;
   $('pick').innerHTML=CHARS.map(c=>`<button class="who" data-pick="${c.id}" aria-pressed="${c.id===st.me}"><span class="fig ${c.id}">${layers(c,st.chars[c.id].given?st.chars[c.id].worn:c.outfit)}</span><b>${c.name}</b><small>${c.he}</small></button>`).join('');
-  $('chooseClose').hidden=first;
+  $('chooseClose').hidden=first; $('chooseX').hidden=first;
   $('chooser').classList.add('on');
 }
 const closeChooser=()=>$('chooser').classList.remove('on');
@@ -592,7 +608,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.say){ speak(t.dataset.say); return; }
   if(t.dataset.move){ play(t.dataset.move); return; }
   if('still' in t.dataset){ st.still=!st.still; draw(); return; }
-  if(t.id==='chooseClose'){ closeChooser(); return; }
+  if(t.id==='chooseClose'||t.id==='chooseX'){ closeChooser(); return; }
   if(t.id==='switch'){ openChooser(); return; }
   if(t.dataset.tab){ st.tab=t.dataset.tab; const tb=TABS.find(x=>x[0]===st.tab); $('say').textContent=tb[1]; speak(tb[1].replace('&','and')); draw(); return; }
   if(t.dataset.cur){ st.cur=t.dataset.cur; draw(); return; }
@@ -617,6 +633,7 @@ document.addEventListener('click',e=>{
   if(t.id==='reset'){ st=fresh(); trying=null; $('say').textContent=''; closeChooser(); draw(); }
 });
 document.querySelector('.scene .me').addEventListener('click',()=>{ if(st.me) play(MOVES[char().id][0]); });
+$('chooser').addEventListener('click',e=>{ if(e.target.id==='chooser'&&st.me) closeChooser(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&st.me) closeChooser(); });
 buildRoom();
 
@@ -645,7 +662,7 @@ function gameRound(){
   const choices=[it,...others].sort(()=>Math.random()-.5);
   $('items').className='items shelf choices';
   $('items').innerHTML=choices.map(x=>`<button class="item" data-pick-item="${x.id}"><img src="thumb/${x.id}.webp" alt="${x.en}"></button>`).join('');
-  $('say').innerHTML=`<span class="round">${G.i+1}/${ROUNDS}</span> ${thePhrase(it)}`;
+  $('say').innerHTML=`<button class="snd" data-game-say aria-label="Listen again">🔊</button><span class="round">${G.i+1}/${ROUNDS}</span> ${thePhrase(it)}`;
   $('stage').innerHTML=layers(G.c,G.worn); $('stage').className='fig '+G.c.id; $('stage').dataset.key='';
   setTimeout(sayPrompt,250);
 }
@@ -659,6 +676,7 @@ function gameEnd(){
 const WORM_PILE=()=>coin('worm',true);
 document.addEventListener('click',e=>{
   if(!GAME||!G) return;
+  if(e.target.closest('[data-game-say]')){ sayPrompt(); return; }
   const ag=e.target.closest('[data-again-game]'); if(ag){ document.querySelector('.endcard')?.remove(); startGame(); return; }
   const b=e.target.closest('[data-pick-item]'); if(!b) return;
   const it=G.asks[G.i], id=b.dataset.pickItem;
