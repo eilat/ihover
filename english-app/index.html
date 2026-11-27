@@ -300,6 +300,13 @@ td input.flag{border-color:var(--margin);background:var(--hint-bg)}
 .wr-card small{color:#E9D6AE}
 .wr-pile{display:flex;align-items:center;gap:6px;font-size:22px}
 .wr-pile .sh-worms{width:44px;height:40px}
+
+.sh-petbtn{border:0;background:transparent;padding:0;border-radius:50%;cursor:pointer;flex:none}
+.sh-petbtn:hover .sh-pet{box-shadow:0 0 0 3px #FFE08A,0 0 0 5px #4E2F1B,0 0 14px #FFE08A}
+.sh-char{position:relative;overflow:hidden;background:#F1E2C2!important}
+.sh-char img{position:absolute;width:170%;left:-35%;top:-14%;max-width:none}
+.pin{font:700 32px/1.2 var(--f-en);letter-spacing:12px;text-align:center;width:180px;padding:8px;border:2px solid var(--line);border-radius:12px;direction:ltr}
+.linkbtn{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:15px;margin-top:6px;cursor:pointer}
 </style>
 
 </head><body>
@@ -504,9 +511,11 @@ const S = {
   sample:null, canImages:false, mode:'local', timer:null,
   mcp:null, imports:{}, mail:null
 };
-const kid = () => S.family?.kids?.find(k=>k.id===S.kidId) || null;
-const kidLessons = id => S.lessons.filter(l => (l.kids||[]).includes(id));
-const prog = id => S.progress[id] || {words:{}, stars:0, streak:0, lastDay:''};
+/* a practice profile for the parent: not in the family list, sees every lesson, starts with worms to spend */
+const TESTER = {id:'tester', name:'אמא', enName:'Mom', color:'blue', test:true};
+const kid = () => S.family?.kids?.find(k=>k.id===S.kidId) || (S.kidId==='tester' ? TESTER : null);
+const kidLessons = id => id==='tester' ? S.lessons : S.lessons.filter(l => (l.kids||[]).includes(id));
+const prog = id => S.progress[id] || {words:{}, stars: id==='tester'?100:0, streak:0, lastDay:''};
 /* the money is worms: every star earned in practice is a worm; the wardrobe spends them */
 const worms = id => Math.max(0, (prog(id).stars||0) - (prog(id).spent||0));
 const lessonById = id => S.lessons.find(x=>x.id===id);
@@ -606,7 +615,9 @@ const FACES = {
 };
 // which drawn face each girl gets: stored on her record (config/family), else by her place in the list
 const faceOf = k => FACES[k?.face] ? k.face : (['face1','face2'][(S.family?.kids||[]).findIndex(x=>x.id===k?.id)] || 'star');
-const faceHtml = (k, cls='sh-av') => `<span class="${cls} c-${k.color}">${FACES[faceOf(k)]}</span>`;
+const charOf = k => { const m = S.progress?.[k?.id]?.wardrobe?.me; return ['raven','luna','moth','pumpkin'].includes(m) ? m : null; };
+const faceHtml = (k, cls='sh-av') => { const c = charOf(k);
+  return c ? `<span class="${cls} c-${k.color} sh-char"><img src="wardrobe/img/head_${c}_neutral.webp" alt=""></span>` : `<span class="${cls} c-${k.color}">${FACES[faceOf(k)]}</span>`; };
 const STAR_IC = '<svg class="sh-coin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5-4.9-4.5 6.6-.8z" fill="#F2C230" stroke="#C99A12" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 const WORM_IC = '<svg class="sh-coin sh-worms" viewBox="0 4 48 44" aria-hidden="true"><g class="w w3"><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="37" cy="21" r="1.2" fill="#2B1D2E"/></g><g class="w w2"><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="27" cy="26.2" r="1.2" fill="#2B1D2E"/></g><g class="w w1"><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="26" cy="32.2" r="1.2" fill="#2B1D2E"/></g><path d="M2 46c2-8 10-11 22-11s20 3 22 11z" fill="#6A442F" stroke="#2B1D2E" stroke-width="1.7" stroke-linejoin="round"/></svg>';
 const GEAR_IC = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/><circle cx="12" cy="12" r="6.6"/></svg>';
@@ -614,7 +625,7 @@ const LOCK_IC = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="
 function topBar(opts={}){ S.barOpts = opts; queueMicrotask(renderBar); return ''; }
 function barTitle(){
   const k = kid(), v = S.view, l = lessonById(S.lessonId);
-  if(v==='kid' && k) return `מה לומדים היום, ${esc(k.name)}?`;
+  if(v==='kid' && k) return `<span class="en">What shall we learn today, ${esc(k.enName||k.name)}?</span>`;
   if(v==='lesson' && l) return mixed(l.title||'שיעור');
   if(v==='letters') return 'האותיות שלי';
   if(v==='wardrobe') return 'The Attic Wardrobe';
@@ -634,12 +645,13 @@ function renderBar(){
     : `<button class="sh-back" data-go="${o.backTo||'kid'}">${I.back}<span>חזרה</span></button>`;
   const gear = v==='kid' ? `<div class="sh-me"><button class="sh-gear" data-act="menu" aria-expanded="${!!S.menu}" aria-haspopup="true" aria-label="הגדרות">${GEAR_IC}</button>${S.menu?menuHtml(k):''}</div>` : '';
   bar.innerHTML = `${back}<span class="sh-bank ${S.bump?'bump':''}" aria-label="תולעים: ${stars}">${WORM_IC}<span dir="ltr">${stars}</span></span>
-    ${faceHtml(k, 'sh-pet'+(S.bump?' happy':''))}<h1 class="sh-title">${barTitle()}</h1>${gear}`;
+    ${v==='play' ? faceHtml(k, 'sh-pet'+(S.bump?' happy':'')) : `<button class="sh-petbtn" data-go="wardrobe" aria-label="My wardrobe" title="My wardrobe">${faceHtml(k, 'sh-pet'+(S.bump?' happy':''))}</button>`}<h1 class="sh-title">${barTitle()}</h1>${gear}`;
 }
 function menuHtml(k){
-  const others = (S.family?.kids||[]).filter(x=>x.id!==k.id);
+  const others = k.test ? [] : (S.family?.kids||[]).filter(x=>x.id!==k.id);
   return `<div class="sh-menu" role="menu">
-    <div class="sh-row sh-now">${faceHtml(k)}<span>${esc(k.name)}</span></div>
+    <div class="sh-row sh-now">${faceHtml(k)}<span>${esc(k.name)}${k.test?' (ניסיון)':''}</span></div>
+    ${k.test?`<button class="sh-row" role="menuitem" data-act="trymereset"><span class="sh-lock">↺</span><span>להתחיל את הניסיון מחדש</span></button>`:''}
     ${others.map(x=>`<button class="sh-row" role="menuitem" data-kid="${x.id}">${faceHtml(x)}<span>לעבור ל${esc(x.name)}</span></button>`).join('')}
     <div class="sh-sep"></div>
     <p class="sh-h">הצבע שלי</p>
@@ -702,7 +714,6 @@ function vKid(){
       </div>
       ${due.length ? `<button class="btn primary" data-act="daily">להתחיל</button>` : ''}
     </div>
-    <button class="lesson-row wr-card" data-go="wardrobe"><span class="t"><b>The Attic Wardrobe</b><small>ארון הבגדים: קונים בגדים בתולעים שהרווחת</small></span><span class="wr-pile">${WORM_IC}<b dir="ltr">${worms(k.id)}</b></span></button>
     <button class="lesson-row" data-go="letters" style="border-color:var(--accent)"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span><span class="prev en" style="font-size:22px">Aa Bb Cc</span></button>
     <div class="meta">${known?`<span>מילים שאת כבר מכירה טוב: <strong>${known}</strong></span>`:''}${p.stars?`<span>תולעים: <strong>${worms(k.id)}</strong></span>`:''}${(p.streak||0)>1?`<span>${p.streak} ימים ברצף</span>`:''}</div>
     <h2>השיעורים שלי</h2>
@@ -713,7 +724,7 @@ function vKid(){
       return `<button class="lesson-row" data-lesson="${l.id}">
       <span class="t"><b>${mixed(l.title||'שיעור')}</b><small>${what}${l.date?` · <span class="date-tag">${heDate(l.date)}</span>`:''}</small></span>
       <span class="prev">${esc(prev)}</span></button>`;}).join('')}</div>`
-    : `<button class="lesson-row wr-card" data-go="wardrobe"><span class="t"><b>The Attic Wardrobe</b><small>ארון הבגדים: קונים בגדים בתולעים שהרווחת</small></span><span class="wr-pile">${WORM_IC}<b dir="ltr">${worms(k.id)}</b></span></button><button class="lesson-row" data-go="letters"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span></button><div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
+    : `<button class="lesson-row" data-go="letters"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span></button><div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
   </div>`;
 }
 
@@ -1373,6 +1384,16 @@ Reply with JSON only: {"quiz":[{"prompt":"...","q":"She ___ got a kite.","option
 
 /* ---------- parent area ---------- */
 function gate(){
+  const pin = S.family?.parentPin;
+  document.querySelector('.scrim')?.remove();
+  const d = document.createElement('div'); d.className='scrim'; d.dataset.act='gateno';
+  d.innerHTML = pin
+    ? `<div class="modal" role="dialog" aria-label="כניסה לאזור ההורים"><h2>אזור ההורים</h2><p class="muted">הקוד שלך:</p><input id="pin" class="pin" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="קוד"><div class="ctrl"><button class="btn primary" data-act="pinok">כניסה</button><button class="btn" data-act="gateno">ביטול</button></div><button class="linkbtn" data-act="pinforgot">שכחתי את הקוד</button></div>`
+    : `<div class="modal" role="dialog" aria-label="קוד להורים"><h2>קוד לאזור ההורים</h2><p class="muted">בחרי 4 ספרות. מעכשיו נכנסים איתן לאזור ההורים.</p><input id="pin" class="pin" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="קוד חדש"><div class="ctrl"><button class="btn primary" data-act="pinset">לשמור</button><button class="btn" data-act="pinmath">בלי קוד, עם תרגיל</button></div></div>`;
+  document.body.appendChild(d); d.querySelector('#pin').focus();
+  d.querySelector('#pin').addEventListener('keydown', e=>{ if(e.key==='Enter') d.querySelector(pin?'[data-act=pinok]':'[data-act=pinset]').click(); });
+}
+function gateMath(){
   const a = 12+Math.floor(Math.random()*20), b = 13+Math.floor(Math.random()*17);
   S.gateAns = a*b;
   document.querySelector('.scrim')?.remove();
@@ -1384,7 +1405,7 @@ function vParent(){
   const kids = S.family?.kids||[];
   return `${topBar({back:true, backTo: S.kidId?'kid':'home'})}
   <div class="sheet">
-    <div class="row"><h1 style="margin-inline-end:auto">אזור ההורים</h1>${S.mcp?`<button class="btn" data-act="mail">${I.mail} ייבוא הערות מהמייל</button>`:''}<button class="btn primary" data-act="addlesson">${I.plus} הוספת שיעור</button></div>
+    <div class="row"><h1 style="margin-inline-end:auto">אזור ההורים</h1>${S.mcp?`<button class="btn" data-act="mail">${I.mail} ייבוא הערות מהמייל</button>`:''}<button class="btn" data-act="tryme">להתנסות בעצמי</button><button class="btn primary" data-act="addlesson">${I.plus} הוספת שיעור</button></div>
     ${S.mode!=='db'?`<div class="notice">הנתונים נשמרים רק בדפדפן הזה. כשפותחים את הקישור ב-Claude, הנתונים נשמרים שם ומופיעים בכל מחשב.</div>`:''}
     ${!S.sample?`<div class="notice">קריאת ההערות מתמונה והסיפורים עובדים רק כשפותחים את הקישור ב-Claude. כאן אפשר להזין מילים ידנית.</div>`:''}
     <div class="p-grid">${kids.map(k=>{
@@ -1710,13 +1731,19 @@ document.addEventListener('click', async e => {
     case 'menu': S.menu = !S.menu; renderBar(); break;
     case 'daily': startSession('daily'); break;
     case 'parent': S.menu=false; renderBar(); if(S.parentOk) go('parent'); else gate(); break;
-    case 'gateok': { const v = +document.getElementById('gate').value; if(v===S.gateAns){ S.parentOk=true; document.querySelector('.scrim')?.remove(); go(S.family?.kids?.length?'parent':'setup'); } else { gate(); toast('זה לא המספר. הנה תרגיל אחר.'); } break; }
+    case 'gateok': { const v = +document.getElementById('gate').value; if(v===S.gateAns){ S.parentOk=true; document.querySelector('.scrim')?.remove(); go(S.family?.kids?.length?'parent':'setup'); } else { gateMath(); toast('זה לא המספר. הנה תרגיל אחר.'); } break; }
     case 'gateno': document.querySelector('.scrim')?.remove(); break;
+    case 'pinforgot': case 'pinmath': gateMath(); break;
+    case 'pinset': { const v = (document.getElementById('pin').value||'').trim(); if(!/^\d{4}$/.test(v)){ toast('צריך 4 ספרות'); break; }
+      const f = {...structuredClone(S.family||{kids:[]}), parentPin:v}; await Store.saveFamily(f); S.parentOk=true; document.querySelector('.scrim')?.remove(); toast('הקוד נשמר'); go(S.family?.kids?.length?'parent':'setup'); break; }
+    case 'pinok': { const v = (document.getElementById('pin').value||'').trim(); if(v===S.family?.parentPin){ S.parentOk=true; document.querySelector('.scrim')?.remove(); go(S.family?.kids?.length?'parent':'setup'); } else { const i=document.getElementById('pin'); i.value=''; i.focus(); toast('זה לא הקוד'); } break; }
+    case 'tryme': S.kidId='tester'; S.parentOk=false; go('kid'); break;
+    case 'trymereset': { await Store.saveProgress('tester', {words:{}, stars:100, streak:0, lastDay:''}); toast('הפרופיל לניסיון התחיל מחדש עם 100 תולעים'); break; }
     case 'kadd': syncSetup(); S.setupKids.push({id:uid(), name:'', color:COLORS.find(c=>!S.setupKids.some(k=>k.color===c))||'grape'}); render(); break;
     case 'ksave': {
       syncSetup(); const kids = S.setupKids.filter(k=>k.name.trim()).map(k=>({...k,name:k.name.trim()})); // keep face, enName and anything else on the record
       if(!kids.length){ toast('צריך לפחות שם אחד'); break; }
-      if(await Store.saveFamily({kids})){ S.setupKids=null; if(!kids.some(k=>k.id===S.kidId)) S.kidId=null; go(S.parentOk?'parent':'home'); }
+      if(await Store.saveFamily({...(S.family||{}), kids})){ S.setupKids=null; if(!kids.some(k=>k.id===S.kidId)) S.kidId=null; go(S.parentOk?'parent':'home'); }
       break; }
     case 'editkids': S.setupKids=null; go('setup'); break;
     case 'addlesson': S.add = newAdd(); go('add'); break;
