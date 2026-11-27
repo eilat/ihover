@@ -307,6 +307,20 @@ td input.flag{border-color:var(--margin);background:var(--hint-bg)}
 .sh-char img{position:absolute;width:170%;left:-35%;top:-14%;max-width:none}
 .pin{font:700 32px/1.2 var(--f-en);letter-spacing:12px;text-align:center;width:180px;padding:8px;border:2px solid var(--line);border-radius:12px;direction:ltr}
 .linkbtn{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:15px;margin-top:6px;cursor:pointer}
+
+/* the room views fill the window under the bar */
+body.roomview{overflow:hidden}
+body.roomview .wrap.wide{max-width:none;padding:0;gap:0}
+body.roomview .wr-frame{height:calc(100vh - var(--barh,72px));border-radius:0;background:#1B1020}
+.sh-tools{display:flex;gap:8px;margin-inline-start:auto;flex:none}
+.sh-tool{width:48px;height:48px;display:grid;place-items:center;padding:0;background:#F1E2C2;color:#2B1D2E;border:4px solid;border-image:linear-gradient(135deg,#B07A45,#7A4B2A 50%,#4E2F1B) 4;outline:2px solid #2B1D2E;box-shadow:inset 0 0 0 1.5px #E6B53A,0 3px 0 rgba(10,4,16,.5);cursor:pointer}
+.sh-tool:hover{background:#fff}
+.sh-tool svg{width:26px;height:26px}
+body.roomview .sh-title{direction:ltr;text-align:center;position:absolute;left:50%;translate:-50% 0;width:auto;max-width:46%}
+.sh-charname{color:#FFE08A}
+.game-card{background:linear-gradient(120deg,#3B2338,#5A2E4A);color:#F4E7C8;border:3px solid #E6B53A!important}
+.game-card b{font-family:"Karantina",var(--f-body);font-size:30px;font-weight:700}
+.game-card small{color:#E9D6AE}
 </style>
 
 </head><body>
@@ -517,7 +531,7 @@ const kid = () => S.family?.kids?.find(k=>k.id===S.kidId) || (S.kidId==='tester'
 const kidLessons = id => id==='tester' ? S.lessons : S.lessons.filter(l => (l.kids||[]).includes(id));
 const prog = id => S.progress[id] || {words:{}, stars: id==='tester'?100:0, streak:0, lastDay:''};
 /* the money is worms: every star earned in practice is a worm; the wardrobe spends them */
-const worms = id => Math.max(0, (prog(id).stars||0) - (prog(id).spent||0));
+const worms = id => Math.max(0, (prog(id).stars||0) + (prog(id).bonus||0) - (prog(id).spent||0));
 const lessonById = id => S.lessons.find(x=>x.id===id);
 
 /* every practicable item of some lessons: vocabulary words and phonics words */
@@ -598,10 +612,12 @@ function go(view, extra){ clearTimeout(S.timer); Object.assign(S, extra||{}, {vi
 function render(){
   const k = kid();
   document.documentElement.className = 'c-' + (k?.color || 'grape');
-  const v = ({wardrobe:vWardrobe, letters:vLetters, mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
-  app.classList.toggle('wide', S.view==='wardrobe');
+  const v = ({wardrobe:vWardrobe, dressme:vDressme, letters:vLetters, mail:vMail, home:vHome, setup:vSetup, kid:vKid, lesson:vLesson, play:vPlay, finish:vFinish, story:vStory, parent:vParent, add:vAdd})[S.view];
+  app.classList.toggle('wide', ['wardrobe','dressme'].includes(S.view));
+  document.body.classList.toggle('roomview', ['wardrobe','dressme'].includes(S.view));
   app.innerHTML = (v ? v() : '');
   renderBar();
+  requestAnimationFrame(()=>{ const b=document.getElementById('bar'); if(b) document.documentElement.style.setProperty('--barh', b.offsetHeight+'px'); });
   after[S.view]?.();
 }
 const after = {};
@@ -620,6 +636,9 @@ const faceHtml = (k, cls='sh-av') => { const c = charOf(k);
   return c ? `<span class="${cls} c-${k.color} sh-char"><img src="wardrobe/img/head_${c}_neutral.webp" alt=""></span>` : `<span class="${cls} c-${k.color}">${FACES[faceOf(k)]}</span>`; };
 const STAR_IC = '<svg class="sh-coin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5-4.9-4.5 6.6-.8z" fill="#F2C230" stroke="#C99A12" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 const WORM_IC = '<svg class="sh-coin sh-worms" viewBox="0 4 48 44" aria-hidden="true"><g class="w w3"><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M22 35c-3-8 1-16 8-18 4-1 7 1 7 4" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="37" cy="21" r="1.2" fill="#2B1D2E"/></g><g class="w w2"><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M34 38c2-7-2-12-7-12" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="27" cy="26.2" r="1.2" fill="#2B1D2E"/></g><g class="w w1"><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#2B1D2E" stroke-width="7" stroke-linecap="round"/><path d="M9 38c-1-6 4-9 8-6s7 4 9 0" fill="none" stroke="#EE93AE" stroke-width="4.4" stroke-linecap="round"/><circle cx="26" cy="32.2" r="1.2" fill="#2B1D2E"/></g><path d="M2 46c2-8 10-11 22-11s20 3 22 11z" fill="#6A442F" stroke="#2B1D2E" stroke-width="1.7" stroke-linejoin="round"/></svg>';
+const SPEAK_IC = '<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+const HANGER_IC = '<svg viewBox="0 0 24 24"><path d="M12 9.5V8a2 2 0 1 0-2-2"/><path d="M12 9.5 3 16.5h18z"/></svg>';
+const SWITCH_IC = '<svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>';
 const GEAR_IC = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/><circle cx="12" cy="12" r="6.6"/></svg>';
 const LOCK_IC = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 function topBar(opts={}){ S.barOpts = opts; queueMicrotask(renderBar); return ''; }
@@ -628,7 +647,8 @@ function barTitle(){
   if(v==='kid' && k) return `<span class="en">What shall we learn today, ${esc(k.enName||k.name)}?</span>`;
   if(v==='lesson' && l) return mixed(l.title||'שיעור');
   if(v==='letters') return 'האותיות שלי';
-  if(v==='wardrobe') return 'The Attic Wardrobe';
+  if(v==='wardrobe'){ const c = k && charOf(k); return `<span class="en">The Attic Wardrobe</span>${c?` <span class="en sh-charname">· ${c[0].toUpperCase()+c.slice(1)}</span>`:''}`; }
+  if(v==='dressme') return '<span class="en">Dress me!</span>';
   if(v==='story') return 'סיפור עם המילים שלי';
   if(v==='play' && S.session) return S.session.mode==='letters' ? 'אימון אותיות' : S.session.quiz ? 'תרגול דקדוק' : S.session.mode==='daily' ? 'התרגול של היום' : (l ? mixed(l.title||'') : 'תרגול');
   if(v==='finish') return 'סיימת!';
@@ -643,9 +663,12 @@ function renderBar(){
   const back = v==='kid' ? '' : v==='play'
     ? `<button class="sh-back" data-act="quit">${I.back}<span>לצאת</span></button>`
     : `<button class="sh-back" data-go="${o.backTo||'kid'}">${I.back}<span>חזרה</span></button>`;
+  const tool = (cmd,ic,label) => `<button class="sh-tool" data-wrcmd="${cmd}" aria-label="${label}" title="${label}">${ic}</button>`;
+  const roomTools = v==='wardrobe' ? `<div class="sh-tools">${tool('again',SPEAK_IC,'Say it again')}${tool('undress',HANGER_IC,'Take it all off')}${tool('switch',SWITCH_IC,'Switch character')}</div>`
+    : v==='dressme' ? `<div class="sh-tools">${tool('again',SPEAK_IC,'Say it again')}</div>` : '';
   const gear = v==='kid' ? `<div class="sh-me"><button class="sh-gear" data-act="menu" aria-expanded="${!!S.menu}" aria-haspopup="true" aria-label="הגדרות">${GEAR_IC}</button>${S.menu?menuHtml(k):''}</div>` : '';
   bar.innerHTML = `${back}<span class="sh-bank ${S.bump?'bump':''}" aria-label="תולעים: ${stars}">${WORM_IC}<span dir="ltr">${stars}</span></span>
-    ${v==='play' ? faceHtml(k, 'sh-pet'+(S.bump?' happy':'')) : `<button class="sh-petbtn" data-go="wardrobe" aria-label="My wardrobe" title="My wardrobe">${faceHtml(k, 'sh-pet'+(S.bump?' happy':''))}</button>`}<h1 class="sh-title">${barTitle()}</h1>${gear}`;
+    ${v==='play' ? faceHtml(k, 'sh-pet'+(S.bump?' happy':'')) : `<button class="sh-petbtn" data-go="wardrobe" aria-label="My wardrobe" title="My wardrobe">${faceHtml(k, 'sh-pet'+(S.bump?' happy':''))}</button>`}<h1 class="sh-title">${barTitle()}</h1>${gear}${roomTools}`;
 }
 function menuHtml(k){
   const others = k.test ? [] : (S.family?.kids||[]).filter(x=>x.id!==k.id);
@@ -714,6 +737,7 @@ function vKid(){
       </div>
       ${due.length ? `<button class="btn primary" data-act="daily">להתחיל</button>` : ''}
     </div>
+    <button class="lesson-row game-card" data-go="dressme"><span class="t"><b class="en">Dress me!</b><small>משחק: הדמות מבקשת בגד באנגלית, ואת מלבישה. כל תשובה נכונה = תולעת</small></span><span class="wr-pile">${WORM_IC}</span></button>
     <button class="lesson-row" data-go="letters" style="border-color:var(--accent)"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span><span class="prev en" style="font-size:22px">Aa Bb Cc</span></button>
     <div class="meta">${known?`<span>מילים שאת כבר מכירה טוב: <strong>${known}</strong></span>`:''}${p.stars?`<span>תולעים: <strong>${worms(k.id)}</strong></span>`:''}${(p.streak||0)>1?`<span>${p.streak} ימים ברצף</span>`:''}</div>
     <h2>השיעורים שלי</h2>
@@ -724,7 +748,7 @@ function vKid(){
       return `<button class="lesson-row" data-lesson="${l.id}">
       <span class="t"><b>${mixed(l.title||'שיעור')}</b><small>${what}${l.date?` · <span class="date-tag">${heDate(l.date)}</span>`:''}</small></span>
       <span class="prev">${esc(prev)}</span></button>`;}).join('')}</div>`
-    : `<button class="lesson-row" data-go="letters"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span></button><div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
+    : `<button class="lesson-row game-card" data-go="dressme"><span class="t"><b class="en">Dress me!</b><small>משחק: הדמות מבקשת בגד באנגלית, ואת מלבישה. כל תשובה נכונה = תולעת</small></span><span class="wr-pile">${WORM_IC}</span></button><button class="lesson-row" data-go="letters"><span class="t"><b>האותיות שלי</b><small>אימון אותיות: צליל, תמונה, אות גדולה וקטנה</small></span></button><div class="empty"><h2>עוד אין כאן שיעורים</h2><p class="muted">אמא תוסיף שיעור מההערות של המורה, והוא יופיע כאן.</p></div>`}
   </div>`;
 }
 
@@ -941,6 +965,12 @@ function vWardrobe(){
   const k = kid(); if(!k) return vHome();
   return `${topBar()}<iframe class="wr-frame" id="wr" src="wardrobe/index.html?embed" title="The Attic Wardrobe"></iframe>`;
 }
+/* Dress me!: the character asks for a piece of clothing; a worm for each right answer */
+function vDressme(){
+  const k = kid(); if(!k) return vHome();
+  return `${topBar()}<iframe class="wr-frame" id="wr" src="wardrobe/index.html?embed&game" title="Dress me!"></iframe>`;
+}
+const wrCmd = cmd => document.getElementById('wr')?.contentWindow?.postMessage({type:'wr-cmd', cmd}, '*');
 function wrSend(){
   const k = kid(), f = document.getElementById('wr'); if(!k || !f?.contentWindow) return;
   f.contentWindow.postMessage({type:'wr-state', wallet: worms(k.id), state: prog(k.id).wardrobe || null}, '*');
@@ -948,18 +978,22 @@ function wrSend(){
 let wrSaveT = null;
 window.addEventListener('message', async e => {
   const f = document.getElementById('wr'), d = e.data;
-  if(!f || e.source !== f.contentWindow || !d || S.view!=='wardrobe') return;
+  if(!f || e.source !== f.contentWindow || !d || !['wardrobe','dressme'].includes(S.view)) return;
   const k = kid(); if(!k) return;
   if(d.type==='wr-ready') wrSend();
-  if(d.type==='wr-size') f.style.height = Math.ceil(d.h) + 'px';
+  if(d.type==='wr-earn'){
+    const p = structuredClone(prog(k.id)); p.bonus = (p.bonus||0) + (+d.n||0);
+    S.bump = true; setTimeout(()=>{ S.bump=false; renderBar(); }, 1200);
+    await Store.saveProgress(k.id, p); renderBar();
+  }
   if(d.type==='wr-spend'){
     const p = structuredClone(prog(k.id)); p.spent = (p.spent||0) + (+d.n||0);
     S.bump = true; setTimeout(()=>{ S.bump=false; renderBar(); }, 1200);
     await Store.saveProgress(k.id, p); renderBar();
   }
-  if(d.type==='wr-save'){
+  if(d.type==='wr-save' && S.view==='wardrobe'){
     clearTimeout(wrSaveT);
-    wrSaveT = setTimeout(()=>{ const p = structuredClone(prog(k.id)); p.wardrobe = d.state; Store.saveProgress(k.id, p); }, 400);
+    wrSaveT = setTimeout(async ()=>{ const p = structuredClone(prog(k.id)); const changed = p.wardrobe?.me !== d.state?.me; p.wardrobe = d.state; await Store.saveProgress(k.id, p); if(changed) renderBar(); }, 400);
   }
 });
 
@@ -1691,6 +1725,7 @@ document.addEventListener('click', async e => {
   if(d.say!==undefined){ speak(d.say); return; }
   if(d.sayslow!==undefined){ speak(d.sayslow, true); return; }
   if(d.gl){ showGloss(t); return; }
+  if(d.wrcmd){ wrCmd(d.wrcmd); return; }
   if(d.go){ if(d.go==='home') S.kidId=null; go(d.go); return; }
   if(d.kid){ S.menu=false; S.kidId=d.kid; try{ localStorage.setItem(LS+':kid', d.kid); }catch(_){} go('kid'); return; }
   if(d.lesson){ S.lessonId=d.lesson; go('lesson'); return; }

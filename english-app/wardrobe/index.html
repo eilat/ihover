@@ -271,6 +271,28 @@ h1{font-family:"Karantina",system-ui,sans-serif;font-weight:700;line-height:1;ma
 @keyframes adjust{25%,55%{translate:0 -.9%}}
 .still .fig img.wingL,.still .fig img.wingR{animation:none}
 @media (prefers-reduced-motion:reduce){.fig img.wingL,.fig img.wingR,.headgrp{animation:none!important}}
+
+/* ---- inside the notebook: the room fills the window under the notebook's bar; no scrolling ---- */
+html.embed,html.embed body{height:100%;overflow:hidden;background:#1B1020}
+.embed .band{padding:0;height:100%}
+.embed .wrap{max-width:none;height:100%;display:flex;align-items:center;justify-content:center}
+.embed .top,.embed .actions,.embed .note,.embed .curpick,.embed .motion{display:none!important}
+.embed .scene{margin:0;width:min(100vw,calc(100vh*1672/941));height:auto;border-radius:0;border:0}
+/* Dress me! */
+.game .door,.game .buy,.game .price,.game .hanger{display:none!important}
+.items.choices{top:36%;bottom:34%;left:49%;right:18%;gap:3%}
+.items.choices .item{flex:1 1 0;max-width:24%;height:100%;background:rgba(241,226,194,.14);border-radius:14px;border:3px solid transparent;transition:transform .15s}
+.items.choices .item:hover{transform:translateY(-4px);border-color:#FFE08A}
+.items.choices .item img{flex:1}
+.item.nope{animation:nope .4s}
+@keyframes nope{20%,60%{translate:-6px 0}40%,80%{translate:6px 0}}
+.item.hint{border-color:#FFE08A!important;box-shadow:0 0 18px #FFE08A;animation:hintp 1s ease-in-out infinite}
+@keyframes hintp{50%{transform:scale(1.06)}}
+.say .round{font-size:.7em;opacity:.65;margin-inline-end:8px}
+.endcard{position:absolute;z-index:7;left:50%;top:50%;translate:-10% -50%;min-width:28%;padding:18px 26px;text-align:center;background:#F1E2C2;border:6px solid;border-image:linear-gradient(135deg,#B07A45,#7A4B2A 50%,#4E2F1B) 6;outline:2px solid #2B1D2E;box-shadow:inset 0 0 0 2px #E6B53A,0 8px 0 rgba(10,4,16,.5);direction:ltr}
+.endcard h2{font:700 clamp(30px,3.4vw,46px)/1 "Amatic SC","Karantina",sans-serif;margin:0}
+.endcard p{margin:6px 0;font-family:"Andika",sans-serif;font-size:clamp(16px,1.6vw,22px)}
+.endcard .won{font-weight:700;font-size:clamp(22px,2.2vw,30px);display:flex;align-items:center;justify-content:center;gap:6px}
 </style>
 </head>
 <body>
@@ -511,7 +533,7 @@ function speak(t){ last=t; try{ speechSynthesis.cancel(); const u=new SpeechSynt
 
 function switchLabel(){ return st.switches===0?'Switch character (free once)':`Switch character (${SWITCH_PRICE} worms)`; }
 function draw(fresh){
-  if(!st.me){ openChooser(); }
+  if(!st.me && !GAME){ openChooser(); }
   const c=char(), w=ward();
   $('wallet').innerHTML=`${coin(null,true)} <span>${st.wallet}</span>`;
   $('wallet').title=CUR[st.cur].he;
@@ -597,8 +619,64 @@ document.addEventListener('click',e=>{
 document.querySelector('.scene .me').addEventListener('click',()=>{ if(st.me) play(MOVES[char().id][0]); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&st.me) closeChooser(); });
 buildRoom();
+
+/* ---- Dress me!: the character asks for one piece of clothing; the girl finds it among four. A worm for each right answer. ---- */
+const ROUNDS=8;
+let G=null;
+const thePhrase=it=>{ const n=it.en.replace(/^(a|an) /,''); return (it.kind==='accessory'?'Hold the ':'Put on the ')+n+'!'; };
+function startGame(){
+  if(!st.me) st.me='luna';
+  const c=char();
+  const pool=ITEMS.filter(i=>!c.outfit.includes(i.id)).sort(()=>Math.random()-.5);
+  const asks=[], kinds=new Set();
+  for(const it of pool){ if(asks.length>=ROUNDS) break; if(kinds.has(it.kind)&&kinds.size<9) continue; kinds.add(it.kind); asks.push(it); }
+  while(asks.length<ROUNDS) asks.push(pool[asks.length]);
+  G={c, worn:[...c.outfit], asks, i:0, score:0, misses:0};
+  document.documentElement.classList.add('game');
+  $('tabs').innerHTML=''; $('buy').classList.remove('on');
+  gameRound();
+}
+function sayPrompt(){ if(G&&G.asks[G.i]) speak(thePhrase(G.asks[G.i])); }
+function gameRound(){
+  const it=G.asks[G.i];
+  if(!it) return gameEnd();
+  G.misses=0;
+  const others=ITEMS.filter(x=>x.id!==it.id&&!G.worn.includes(x.id)&&x.kind!==it.kind).sort(()=>Math.random()-.5).slice(0,3);
+  const choices=[it,...others].sort(()=>Math.random()-.5);
+  $('items').className='items shelf choices';
+  $('items').innerHTML=choices.map(x=>`<button class="item" data-pick-item="${x.id}"><img src="thumb/${x.id}.webp" alt="${x.en}"></button>`).join('');
+  $('say').innerHTML=`<span class="round">${G.i+1}/${ROUNDS}</span> ${thePhrase(it)}`;
+  $('stage').innerHTML=layers(G.c,G.worn); $('stage').className='fig '+G.c.id; $('stage').dataset.key='';
+  setTimeout(sayPrompt,250);
+}
+function gameEnd(){
+  $('items').className='items'; $('items').innerHTML='';
+  $('say').innerHTML='';
+  const box=document.createElement('div'); box.className='endcard';
+  box.innerHTML=`<h2>Well done!</h2><p>You dressed ${G.c.name}.</p><p class="won">+${G.score} ${WORM_PILE()}</p><button class="btn primary" data-again-game>Play again</button>`;
+  $('scene').appendChild(box); speak(`Well done! You dressed ${G.c.name}.`); play('joy');
+}
+const WORM_PILE=()=>coin('worm',true);
+document.addEventListener('click',e=>{
+  if(!GAME||!G) return;
+  const ag=e.target.closest('[data-again-game]'); if(ag){ document.querySelector('.endcard')?.remove(); startGame(); return; }
+  const b=e.target.closest('[data-pick-item]'); if(!b) return;
+  const it=G.asks[G.i], id=b.dataset.pickItem;
+  if(id===it.id){
+    G.worn=wear(G.worn,id); G.score++; G.i++;
+    $('stage').innerHTML=layers(G.c,G.worn,id); $('stage').dataset.key='';
+    $('say').innerHTML=`${it.en.replace(/^./,m=>m.toUpperCase())} ✨`; speak('Yes! '+it.en);
+    play('hop'); parent.postMessage({type:'wr-earn',n:1},'*');
+    document.querySelectorAll('[data-pick-item]').forEach(x=>x.disabled=true);
+    setTimeout(gameRound,1500);
+  } else {
+    G.misses++; b.classList.remove('nope'); void b.offsetWidth; b.classList.add('nope');
+    speak(byId[id].en+'. '+thePhrase(it));
+    if(G.misses>=2) document.querySelector(`[data-pick-item="${it.id}"]`)?.classList.add('hint');
+  }
+},true);
 /* ---- inside מחברת אנגלית: the app owns the worms and keeps the wardrobe in its database ---- */
-const EMBED=new URLSearchParams(location.search).has('embed');
+const EMBED=new URLSearchParams(location.search).has('embed'), GAME=new URLSearchParams(location.search).has('game');
 if(EMBED){
   document.documentElement.classList.add('embed');
   window.addEventListener('message',e=>{
@@ -606,7 +684,13 @@ if(EMBED){
     const keepStill=st.still;
     st=Object.assign(fresh(),d.state||{}); st.wallet=d.wallet; st.cur='worm'; if(keepStill!==undefined&&st.still===undefined) st.still=keepStill;
     CHARS.forEach(c=>{ const w=st.chars[c.id]||(st.chars[c.id]={owned:[],worn:[]}); w.owned=w.owned.filter(id=>byId[id]); w.worn=w.worn.filter(id=>w.owned.includes(id)); });
-    $('stage').dataset.key=''; closeChooser(); draw();
+    $('stage').dataset.key=''; closeChooser(); if(GAME) startGame(); else draw();
+  });
+  window.addEventListener('message',e=>{
+    const d=e.data; if(!d||d.type!=='wr-cmd') return;
+    if(d.cmd==='undress'&&!GAME){ ward().worn=[]; trying=null; $('say').textContent=''; draw(); }
+    if(d.cmd==='again'){ if(GAME) sayPrompt(); else if(last) speak(last); else speak('Tap a piece of clothing to try it on. Buy it with worms. Tap things in the room for surprises!'); }
+    if(d.cmd==='switch'&&!GAME) openChooser();
   });
   let got=false, tries=0; window.addEventListener('message',e=>{ if(e.data&&e.data.type==='wr-state') got=true; });
   (function ask(){ if(got||tries++>40) return; parent.postMessage({type:'wr-ready'},'*'); setTimeout(ask,250); })();
