@@ -309,6 +309,20 @@ html.embed,html.embed body{height:100%;overflow:hidden;background:#1B1020}
 .chooser .x:hover{background:#fff}
 .chooser h2{font-family:"Andika",sans-serif!important;font-weight:700;font-size:clamp(28px,3.4vw,42px)!important}
 .game .say{max-width:48%;font-size:clamp(14px,1.55vw,22px);white-space:normal;line-height:1.2}
+/* 27.11 b: game words under the wardrobe, bigger; bigger option names; wider door tags */
+.game .say{left:66.5%;top:auto;bottom:1.8%;max-width:46%;font-size:clamp(20px,2.3vw,32px);padding:6px 22px}
+.game .say .snd{font-size:1.15em;margin-inline-end:10px}
+.game .say .round{font-size:.6em}
+.items.choices{top:29%;bottom:27%;gap:2%}
+.items.choices .item{max-width:25%!important}
+.items.choices .item{justify-content:space-between;padding:6px 4px}
+.items.choices .item img{flex:1;min-height:0}
+.items.choices .item b{display:block;font-size:clamp(14px,1.45vw,21px)!important;line-height:1.15;color:#FBEFD5;text-shadow:0 0 6px #2B1D2E,0 1px 0 #2B1D2E;margin-top:4px}
+.door{left:85.2%!important;right:1.6%!important}
+.tab{width:96%!important;font-size:clamp(13px,1.3vw,18px)!important}
+.items.choices .item{justify-content:center!important;gap:6px}
+.items.choices .item img{flex:none!important;height:58%!important;width:100%;object-fit:contain}
+.game .say{max-width:62%!important;left:65%!important;white-space:nowrap!important;font-size:clamp(17px,2vw,30px)!important}
 </style>
 </head>
 <body>
@@ -661,7 +675,7 @@ function gameRound(){
   const others=ITEMS.filter(x=>x.id!==it.id&&!G.worn.includes(x.id)&&x.kind!==it.kind).sort(()=>Math.random()-.5).slice(0,3);
   const choices=[it,...others].sort(()=>Math.random()-.5);
   $('items').className='items shelf choices';
-  $('items').innerHTML=choices.map(x=>`<button class="item" data-pick-item="${x.id}"><img src="thumb/${x.id}.webp" alt="${x.en}"></button>`).join('');
+  $('items').innerHTML=choices.map(x=>`<button class="item" data-pick-item="${x.id}"><img src="thumb/${x.id}.webp" alt=""><b>${x.en}</b></button>`).join('');
   $('say').innerHTML=`<button class="snd" data-game-say aria-label="Listen again">🔊</button><span class="round">${G.i+1}/${ROUNDS}</span> ${thePhrase(it)}`;
   $('stage').innerHTML=layers(G.c,G.worn); $('stage').className='fig '+G.c.id; $('stage').dataset.key='';
   setTimeout(sayPrompt,250);
